@@ -36,6 +36,56 @@
     {
       "type": "Feature",
       "properties": {
+        "id": "zone_western_knife_ridge",
+        "name": "Faixa da Fenda do Punhal",
+        "biome_focus": "high_relief_canyons",
+        "zone_type": "faction_hostile",
+        "threat_level": "tier_2",
+        "danger_multiplier": 1.8,
+        "stealth_penalty": 0.70,
+        "description": "Coroa rochosa e desfiladeiros laterais ao oeste, usados por sentinelas e atiradores escondidos em alto relevo."
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [138.30, -30.58],
+            [138.52, -30.58],
+            [138.52, -30.24],
+            [138.30, -30.24],
+            [138.30, -30.58]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "zone_dome_meridian_truce",
+        "name": "Vale de Trégua de Meridiano",
+        "biome_focus": "corporate_domes",
+        "zone_type": "environmental_hazard",
+        "threat_level": "tier_1",
+        "danger_multiplier": 1.3,
+        "stealth_penalty": 0.10,
+        "description": "Cinturão de cúpulas, reservatórios artificiais e vales protegidos entre os dormitórios corporativos e o mercado de escambo."
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [138.46, -30.42],
+            [138.64, -30.42],
+            [138.64, -30.08],
+            [138.46, -30.08],
+            [138.46, -30.42]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
         "id": "zone_frostspire_blizzard",
         "name": "Vórtice Glacial da Torre Espinho",
         "biome_focus": "frozen_wastes",
@@ -61,6 +111,31 @@
     {
       "type": "Feature",
       "properties": {
+        "id": "zone_frost_reach_north",
+        "name": "Muralha do Gelo Negro do Norte",
+        "biome_focus": "frozen_wastes",
+        "zone_type": "environmental_hazard",
+        "threat_level": "tier_2",
+        "danger_multiplier": 1.9,
+        "stealth_penalty": 0.35,
+        "description": "Faixa de gelo negro e nevascas de nitrogênio cobrindo o corredor nordeste de minas, torres de resfriamento e acampamentos de caça."
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [138.72, -30.34],
+            [138.92, -30.34],
+            [138.92, -30.05],
+            [138.72, -30.05],
+            [138.72, -30.34]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
         "id": "zone_radioactive_scorch_flames",
         "name": "Inferno de Cinzas & Dunas Radioativas",
         "biome_focus": "scorched_desert",
@@ -79,6 +154,31 @@
             [138.86, -30.36],
             [138.65, -30.36],
             [138.65, -30.52]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "zone_ember_dunes_south",
+        "name": "Cinturão das Dunas de Cinzas",
+        "biome_focus": "scorched_desert",
+        "zone_type": "environmental_hazard",
+        "threat_level": "tier_2",
+        "danger_multiplier": 2.0,
+        "stealth_penalty": 0.45,
+        "description": "Faixa de areia vermelha superaquecida com poços ardentes, fuligem densa e campos de patrulha armada entre as ruínas do sul."
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [138.62, -30.58],
+            [138.90, -30.58],
+            [138.90, -30.32],
+            [138.62, -30.32],
+            [138.62, -30.58]
           ]
         ]
       }

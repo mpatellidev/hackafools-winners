@@ -206,6 +206,7 @@ async function handleApi(req, res, pathname) {
 
     const name = String(body.name ?? '').trim().slice(0, 80);
     const description = String(body.description ?? '').trim().slice(0, 240);
+    const biomeFocus = String(body.biome_focus ?? 'scorched_desert').trim() || 'scorched_desert';
     const tier = THREAT_TIERS[body.threat_level];
     const corner1 = body.corner1;
     const corner2 = body.corner2;
@@ -250,6 +251,7 @@ async function handleApi(req, res, pathname) {
 
     const zoneInput = {
       name,
+      biomeFocus,
       zoneType: 'community_hazard',
       threatLevel: body.threat_level,
       dangerMultiplier: tier.danger_multiplier,

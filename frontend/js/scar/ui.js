@@ -108,13 +108,16 @@ export function renderZoneLegend(zones) {
     return;
   }
 
-  container.innerHTML = zones.map(z => `
-    <div class="zone-legend-item">
-      <div class="zone-legend-swatch zone-${z.zoneType}"></div>
-      <div>
-        <strong>${z.name}</strong> · ${z.threatLevel} · perigo x${z.dangerMultiplier}<br>
-        <span class="zone-legend-desc">${z.description}</span>
+  container.innerHTML = zones.map(z => {
+    const biomeKey = z.biomeFocus || z.zoneType || 'environmental_hazard';
+    return `
+      <div class="zone-legend-item">
+        <div class="zone-legend-swatch zone-${biomeKey}"></div>
+        <div>
+          <strong>${z.name}</strong> · ${z.threatLevel} · perigo x${z.dangerMultiplier}<br>
+          <span class="zone-legend-desc">${z.description}</span>
+        </div>
       </div>
-    </div>
-  `).join('');
+    `;
+  }).join('');
 }
