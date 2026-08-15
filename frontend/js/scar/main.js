@@ -558,9 +558,11 @@ async function runCalculation() {
 
     updateStats(props);
     renderRouteSteps(props.path_nodes, scene.nodes, scene.edges);
+    showHint(`Rota calculada: ${props.total_distance_km} km`, 3000);
   } catch (err) {
-    addLog('path', `❌ <strong>Falha ao calcular rota:</strong> ${err.message}`);
+    addLog('path', `<strong>Falha ao calcular rota:</strong> ${err.message}`);
     setProgress(0, 'Sem rota');
+    showHint(`Rota indisponível: ${err.message}`, 5000);
   }
 
   state.running = false;
