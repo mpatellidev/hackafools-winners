@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>BestWay — Algoritmo de Rota Inteligente</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app">
+  <div id="map-wrap">
+    <div id="map"></div>
+    <div class="pick-badge" id="pickBadge">📍 Clique no mapa para definir o ponto</div>
+    <div class="map-hint" id="mapHint">Clique no mapa para definir a localização</div>
+
+    <!-- Botão flutuante para abrir/fechar painel (mobile) -->
+    <button class="panel-toggle" id="panelToggle" aria-label="Abrir painel">
+      <svg class="toggle-icon-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 6h18M3 12h18M3 18h18"/>
+      </svg>
+      <svg class="toggle-icon-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 6L6 18M6 6l12 12"/>
+      </svg>
+      <span class="toggle-label-open">Rota</span>
+      <span class="toggle-label-close">Fechar</span>
+    </button>
+
+    <!-- Barra de modo flutuante no mapa (mobile, quando painel fechado) -->
+    <div class="floating-mode-bar" id="floatingModeBar">
+      <button class="float-mode-tab active" data-mode="driving">🚗</button>
+      <button class="float-mode-tab" data-mode="cycling">🚴</button>
+      <button class="float-mode-tab" data-mode="walking">🚶</button>
+    </div>
+
+    <!-- Pill de resultado flutuante (mobile) -->
+    <div class="result-pill" id="resultPill" style="display:none">
+      <span id="pillDist">—</span>
+      <span class="pill-sep">·</span>
+      <span id="pillTime">—</span>
+    </div>
+  </div>
+
+  <!-- Overlay escuro ao abrir painel no mobile -->
+  <div class="panel-overlay" id="panelOverlay"></div>
+
+  <div id="panel" class="panel-closed">
+    <!-- Handle de arrasto (mobile) -->
+    <div class="panel-handle" id="panelHandle">
+      <div class="handle-bar"></div>
+    </div>
+
+    <div class="panel-header">
+      <div class="logo">
+        <div class="logo-icon">
+          <svg viewBox="0 0 18 18" fill="none">
+            <circle cx="9" cy="9" r="7" stroke="#000" stroke-width="1.5"/>
+            <path d="M9 5v4l3 2" stroke="#000" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div>
+          <div class="logo-name">BestWay</div>
+          <div class="logo-sub">A* + OSRM</div>
+          <a class="variant-link" href="game-map.html">🎮 ver versão de mapa de jogo</a>
+        </div>
+        <!-- Botão fechar dentro do painel (desktop) -->
+        <button class="panel-close-btn" id="panelCloseBtn" aria-label="Fechar painel">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <path d="M15 18l-6-6 6-6"/>
+          </svg>
+        </button>
+      </div>
+      <div class="mode-tabs">
+        <button class="mode-tab active" data-mode="driving">🚗 Carro</button>
+        <button class="mode-tab" data-mode="cycling">🚴 Bicicleta</button>
+        <button class="mode-tab" data-mode="walking">🚶 A pé</button>
+      </div>
+    </div>
+
+    <div class="panel-inputs">
+      <div class="input-group" id="srcGroup" style="position:relative">
+        <div class="input-label">
+          <span class="input-dot dot-src"></span>
+          Origem
+        </div>
+        <input class="location-input" id="srcInput" placeholder="Buscar ou clicar no mapa..." autocomplete="off"/>
+        <button class="input-clear" id="srcClear" title="Limpar">×</button>
+        <div class="suggestions" id="srcSug" style="display:none"></div>
+      </div>
+
+      <div class="swap-row">
+        <button class="swap-btn" id="swapBtn" title="Inverter rota">⇅</button>
+      </div>
+
+      <div class="input-group" id="dstGroup" style="position:relative">
+        <div class="input-label">
+          <span class="input-dot dot-dst"></span>
+          Destino
+        </div>
+        <input class="location-input" id="dstInput" placeholder="Buscar ou clicar no mapa..." autocomplete="off"/>
+        <button class="input-clear" id="dstClear" title="Limpar">×</button>
+        <div class="suggestions" id="dstSug" style="display:none"></div>
+      </div>
+
+      <button class="run-btn" id="runBtn" disabled>
+        <span class="btn-icon">⚡</span>
+        Calcular Melhor Rota
+      </button>
+      <div class="clear-all">
+        <button id="clearBtn">↺ Limpar tudo</button>
+        <button id="pickSrcBtn">📍 Clique p/ origem</button>
+        <button id="pickDstBtn">📍 Clique p/ destino</button>
+      </div>
+    </div>
+
+    <div class="algo-panel" id="algoPanel">
+      <div class="idle-state" id="idleState">
+        <div class="idle-icon">🗺️</div>
+        <div class="idle-title">Nenhuma rota calculada</div>
+        <div class="idle-sub">Digite os endereços ou clique no mapa para definir origem e destino. O algoritmo A* calculará o caminho mais curto em tempo real.</div>
+      </div>
+      <div id="algoContent" style="display:none">
+        <div class="section-title">Estatísticas</div>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Distância</div>
+            <div class="stat-value accent2" id="statDist">—<span class="stat-unit">km</span></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Tempo Est.</div>
+            <div class="stat-value accent" id="statTime">—<span class="stat-unit">min</span></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Nós Explorados</div>
+            <div class="stat-value" id="statNodes">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Velocidade Média</div>
+            <div class="stat-value" id="statSpeed">—<span class="stat-unit">km/h</span></div>
+          </div>
+        </div>
+
+        <div class="section-title">Progresso do Algoritmo</div>
+        <div class="progress-wrap">
+          <div class="progress-label">
+            <span id="progLabel">Inicializando...</span>
+            <span id="progPct">0%</span>
+          </div>
+          <div class="progress-track"><div class="progress-fill" id="progFill"></div></div>
+        </div>
+
+        <div class="section-title">Log do Algoritmo</div>
+        <div class="algo-log">
+          <div class="algo-log-header">
+            <span>Execução em tempo real</span>
+            <span id="logCount">0 entradas</span>
+          </div>
+          <div class="log-entries" id="logEntries"></div>
+        </div>
+
+        <div class="section-title">Direções</div>
+        <div class="route-steps" id="routeSteps"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  // Panel toggle logic (self-contained, doesn't depend on modules)
+  const panel = document.getElementById('panel');
+  const toggle = document.getElementById('panelToggle');
+  const overlay = document.getElementById('panelOverlay');
+  const closeBtn = document.getElementById('panelCloseBtn');
+  const floatingBar = document.getElementById('floatingModeBar');
+
+  function openPanel() {
+    panel.classList.remove('panel-closed');
+    panel.classList.add('panel-open');
+    toggle.classList.add('is-open');
+    overlay.classList.add('visible');
+    floatingBar.classList.add('hidden');
+  }
+
+  function closePanel() {
+    panel.classList.add('panel-closed');
+    panel.classList.remove('panel-open');
+    toggle.classList.remove('is-open');
+    overlay.classList.remove('visible');
+    floatingBar.classList.remove('hidden');
+  }
+
+  toggle.addEventListener('click', () => {
+    panel.classList.contains('panel-open') ? closePanel() : openPanel();
+  });
+
+  closeBtn.addEventListener('click', closePanel);
+  overlay.addEventListener('click', closePanel);
+
+  // Sync floating mode tabs with panel mode tabs
+  document.querySelectorAll('.float-mode-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.float-mode-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.mode-tab').forEach(t => {
+        t.classList.toggle('active', t.dataset.mode === tab.dataset.mode);
+      });
+      tab.classList.add('active');
+      // Dispatch a synthetic click on the real mode tab so route.js picks it up
+      const real = document.querySelector(`.mode-tab[data-mode="${tab.dataset.mode}"]`);
+      if (real) real.click();
+    });
+  });
+
+  // On desktop, start with panel open
+  if (window.innerWidth >= 768) openPanel();
+</script>
+<script type="module" src="main.js"></script>
+</body>
+</html>

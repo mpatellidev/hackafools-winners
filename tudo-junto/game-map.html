@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>BestWay — Grafo de Mapa de Jogo (Dijkstra)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="game-styles.css">
+</head>
+<body>
+<div id="app">
+  <div id="map-wrap">
+    <div id="graphMap"></div>
+    <div class="pick-badge" id="pickBadge">📍 Clique num nó para definir o ponto</div>
+    <div class="map-hint" id="mapHint">Clique num nó para definir a localização</div>
+
+    <button class="panel-toggle" id="panelToggle" aria-label="Abrir painel">
+      <svg class="toggle-icon-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 6h18M3 12h18M3 18h18"/>
+      </svg>
+      <svg class="toggle-icon-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 6L6 18M6 6l12 12"/>
+      </svg>
+      <span class="toggle-label-open">Rota</span>
+      <span class="toggle-label-close">Fechar</span>
+    </button>
+
+    <!-- Populado dinamicamente a partir de js/game/graph-data.js (modes) -->
+    <div class="floating-mode-bar" id="floatingModeBar"></div>
+
+    <div class="result-pill" id="resultPill" style="display:none">
+      <span id="pillDist">—</span>
+      <span class="pill-sep">·</span>
+      <span id="pillTime">—</span>
+    </div>
+  </div>
+
+  <div class="panel-overlay" id="panelOverlay"></div>
+
+  <div id="panel" class="panel-closed">
+    <div class="panel-handle" id="panelHandle">
+      <div class="handle-bar"></div>
+    </div>
+
+    <div class="panel-header">
+      <div class="logo">
+        <div class="logo-icon">
+          <svg viewBox="0 0 18 18" fill="none">
+            <circle cx="9" cy="9" r="7" stroke="#000" stroke-width="1.5"/>
+            <path d="M9 5v4l3 2" stroke="#000" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div>
+          <div class="logo-name">BestWay</div>
+          <div class="logo-sub">Dijkstra sobre grafo</div>
+          <a class="variant-link" href="index.html">🗺️ ver versão de mapa real</a>
+        </div>
+        <button class="panel-close-btn" id="panelCloseBtn" aria-label="Fechar painel">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <path d="M15 18l-6-6 6-6"/>
+          </svg>
+        </button>
+      </div>
+      <!-- Populado dinamicamente a partir de js/game/graph-data.js (modes) -->
+      <div class="mode-tabs" id="modeTabs"></div>
+    </div>
+
+    <div class="panel-inputs">
+      <div class="input-group" id="srcGroup" style="position:relative">
+        <div class="input-label">
+          <span class="input-dot dot-src"></span>
+          Origem
+        </div>
+        <input class="location-input" id="srcInput" placeholder="Buscar nó ou clicar no mapa..." autocomplete="off"/>
+        <button class="input-clear" id="srcClear" title="Limpar">×</button>
+        <div class="suggestions" id="srcSug" style="display:none"></div>
+      </div>
+
+      <div class="swap-row">
+        <button class="swap-btn" id="swapBtn" title="Inverter rota">⇅</button>
+      </div>
+
+      <div class="input-group" id="dstGroup" style="position:relative">
+        <div class="input-label">
+          <span class="input-dot dot-dst"></span>
+          Destino
+        </div>
+        <input class="location-input" id="dstInput" placeholder="Buscar nó ou clicar no mapa..." autocomplete="off"/>
+        <button class="input-clear" id="dstClear" title="Limpar">×</button>
+        <div class="suggestions" id="dstSug" style="display:none"></div>
+      </div>
+
+      <button class="run-btn" id="runBtn" disabled>
+        <span class="btn-icon">⚡</span>
+        Calcular Melhor Caminho
+      </button>
+      <div class="clear-all">
+        <button id="clearBtn">↺ Limpar tudo</button>
+        <button id="pickSrcBtn">📍 Clique p/ origem</button>
+        <button id="pickDstBtn">📍 Clique p/ destino</button>
+      </div>
+    </div>
+
+    <div class="algo-panel" id="algoPanel">
+      <div class="idle-state" id="idleState">
+        <div class="idle-icon">🗺️</div>
+        <div class="idle-title">Nenhum caminho calculado</div>
+        <div class="idle-sub">Clique em dois nós do grafo (ou busque pelo nome) para definir origem e destino. O Dijkstra calcula o caminho de menor custo em tempo real, rodando localmente — sem API externa.</div>
+      </div>
+      <div id="algoContent" style="display:none">
+        <div class="section-title">Estatísticas</div>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Custo Total</div>
+            <div class="stat-value accent2" id="statDist">—<span class="stat-unit">un</span></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Tempo Est.</div>
+            <div class="stat-value accent" id="statTime">—<span class="stat-unit">min</span></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Nós Explorados</div>
+            <div class="stat-value" id="statNodes">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Trechos</div>
+            <div class="stat-value" id="statSpeed">—</div>
+          </div>
+        </div>
+
+        <div class="section-title">Progresso do Algoritmo</div>
+        <div class="progress-wrap">
+          <div class="progress-label">
+            <span id="progLabel">Inicializando...</span>
+            <span id="progPct">0%</span>
+          </div>
+          <div class="progress-track"><div class="progress-fill" id="progFill"></div></div>
+        </div>
+
+        <div class="section-title">Log do Algoritmo</div>
+        <div class="algo-log">
+          <div class="algo-log-header">
+            <span>Execução em tempo real</span>
+            <span id="logCount">0 entradas</span>
+          </div>
+          <div class="log-entries" id="logEntries"></div>
+        </div>
+
+        <div class="section-title">Caminho</div>
+        <div class="route-steps" id="routeSteps"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="js/game/main.js"></script>
+</body>
+</html>
