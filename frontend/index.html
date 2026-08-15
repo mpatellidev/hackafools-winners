@@ -12,6 +12,7 @@
 <body>
 <div id="app">
   <div id="map-wrap">
+    <div id="map-surface">
     <div class="hud-topbar" aria-hidden="true">
       <div class="hud-brand">
         <span class="hud-kicker">MATRIZ DE NAVEGAÇÃO</span>
@@ -65,6 +66,41 @@
       <span class="pill-sep">·</span>
       <span id="pillTime">—</span>
     </div>
+    </div>
+
+    <section class="analysis-dock" id="analysisDock" aria-label="Relatório de rota">
+      <button class="analysis-tab" id="analysisDockTab" type="button" aria-controls="algoPanel" aria-expanded="false">
+        <span class="analysis-tab-index">04</span>
+        <span>RELATÓRIO DE ROTA</span>
+        <span class="analysis-tab-status">CONCLUÍDO</span>
+        <span class="analysis-tab-glyph" aria-hidden="true">×</span>
+      </button>
+
+      <div class="algo-panel" id="algoPanel">
+        <div id="algoContent" style="display:none">
+          <div class="section-title"><span class="section-index">04</span> Estatísticas</div>
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-label">Custo Total</div>
+              <div class="stat-value accent2" id="statDist">—<span class="stat-unit">un</span></div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Tempo Est.</div>
+              <div class="stat-value accent" id="statTime">—<span class="stat-unit">min</span></div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Nós Explorados</div>
+              <div class="stat-value" id="statNodes">—</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Trechos</div>
+              <div class="stat-value" id="statSpeed">—</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
   </div>
 
   <div class="panel-overlay" id="panelOverlay"></div>
@@ -167,56 +203,30 @@
       <div class="community-list" id="communityList"></div>
     </div>
 
-    <div class="algo-panel" id="algoPanel">
-      <div class="idle-state" id="idleState">
-        <div class="idle-reticle" aria-hidden="true"><span></span></div>
-        <div class="idle-code">ROUTING CORE // STANDBY</div>
-        <div class="idle-title">Nenhum caminho calculado</div>
-        <div class="idle-sub">Clique em dois nós do grafo (ou busque pelo nome) para definir origem e destino. O Dijkstra calcula o caminho de menor custo em tempo real, rodando localmente — sem API externa.</div>
+    <section class="route-monitor" aria-label="Execução da rota">
+      <div class="section-title"><span class="section-index">05</span> Execução da rota</div>
+      <div class="progress-wrap">
+        <div class="progress-label">
+          <span id="progLabel">Aguardando cálculo...</span>
+          <span id="progPct">0%</span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" id="progFill"></div></div>
       </div>
-      <div id="algoContent" style="display:none">
-        <div class="section-title"><span class="section-index">04</span> Estatísticas</div>
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-label">Custo Total</div>
-            <div class="stat-value accent2" id="statDist">—<span class="stat-unit">un</span></div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">Tempo Est.</div>
-            <div class="stat-value accent" id="statTime">—<span class="stat-unit">min</span></div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">Nós Explorados</div>
-            <div class="stat-value" id="statNodes">—</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">Trechos</div>
-            <div class="stat-value" id="statSpeed">—</div>
-          </div>
-        </div>
 
-        <div class="section-title"><span class="section-index">05</span> Progresso do Algoritmo</div>
-        <div class="progress-wrap">
-          <div class="progress-label">
-            <span id="progLabel">Inicializando...</span>
-            <span id="progPct">0%</span>
-          </div>
-          <div class="progress-track"><div class="progress-fill" id="progFill"></div></div>
+      <div class="algo-log">
+        <div class="algo-log-header">
+          <span>Execução em tempo real</span>
+          <span id="logCount">0 entradas</span>
         </div>
+        <div class="log-entries" id="logEntries"></div>
+      </div>
 
-        <div class="section-title"><span class="section-index">06</span> Log do Algoritmo</div>
-        <div class="algo-log">
-          <div class="algo-log-header">
-            <span>Execução em tempo real</span>
-            <span id="logCount">0 entradas</span>
-          </div>
-          <div class="log-entries" id="logEntries"></div>
-        </div>
-
-        <div class="section-title"><span class="section-index">07</span> Caminho</div>
+      <div class="route-monitor-path">
+        <div class="section-title"><span class="section-index">06</span> Caminho</div>
         <div class="route-steps" id="routeSteps"></div>
       </div>
-    </div>
+    </section>
+
   </div>
 </div>
 

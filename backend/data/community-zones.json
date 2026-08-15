@@ -1,12 +1,13 @@
 [
   {
     "id": "community_zone_1",
-    "name": "Zona dos caba",
+    "name": "Bacia de Refúgio da Chuva Tardia",
+    "type": "community_hazard_zone",
     "zoneType": "community_hazard",
     "threatLevel": "tier_3",
     "dangerMultiplier": 2.6,
     "stealthPenalty": 0.4,
-    "description": "Deu pau de hollywood",
+    "description": "Área comunitária cercada por canais de escoamento e abrigos improvisados. Enxurradas repentinas e falhas de drenagem tornam o acesso instável.",
     "rings": [
       [
         [

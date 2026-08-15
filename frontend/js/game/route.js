@@ -4,7 +4,7 @@ import { getNodes, getEdges } from './community.js';
 import { dijkstra } from './graph.js';
 import { setProgress, addLog, sleep, resetLogCount } from '../utils.js';
 import { drawPath, clearPath, clearNodeStates, setNodeState } from './render.js';
-import { updateStats, renderDirections, showAlgoContent, updateRunBtn } from './ui.js';
+import { updateStats, renderDirections, showAlgoContent, setAnalysisDockOpen, updateRunBtn } from './ui.js';
 
 export async function calculateRoute() {
   if (!state.src || !state.dst) return;
@@ -71,6 +71,7 @@ export async function calculateRoute() {
     setProgress(0, 'Sem rota');
     state.running = false;
     updateRunBtn();
+    setAnalysisDockOpen(true, false, state.src.id);
     return;
   }
 
@@ -107,6 +108,7 @@ export async function calculateRoute() {
 
   updateStats(result.distance, timeMin, result.visitedCount, pathNodes.length - 1);
   renderDirections(pathNodes);
+  setAnalysisDockOpen(true, true, state.src.id);
 
   state.running = false;
   updateRunBtn();
