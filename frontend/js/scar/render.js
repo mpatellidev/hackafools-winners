@@ -112,12 +112,234 @@ function organicBlobPath(center, radius, seed, avoidPoints = []) {
   return d + 'Z';
 }
 
+function createSvgElement(tag, attributes = {}) {
+  const element = document.createElementNS(NS, tag);
+  Object.entries(attributes).forEach(([name, value]) => element.setAttribute(name, String(value)));
+  return element;
+}
+
+function normalizedTerrainText(node) {
+  return `${node.type || ''} ${node.label || ''} ${node.description || ''}`
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+}
+
+function terrainKind(node) {
+  const text = normalizedTerrainText(node);
+  if (/(gelo|glacial|neve|frio|permafrost|frozen|crio|congel)/.test(text)) return 'frozen';
+  if (/(canion|garganta|encosta|declividade|erosao|deslizamento|passagem|rocha)/.test(text)) return 'relief';
+  if (/(oasis|agua|fonte|termal|reservatorio|hidro)/.test(text)) return 'water';
+  if (/(refinaria|combustivel|chama|cinza|incendio|queimado|duna|calor)/.test(text)) return 'scorched';
+  if (/(domo|cupula|citadel|mercado|complexo)/.test(text)) return 'settlement';
+  return 'plain';
+}
+
+function appendLocalTerrainFeatures(layer, nodes, positions) {
+  nodes.forEach(node => {
+    const point = positions.get(node.id) || { x: node.x, y: node.y };
+    const kind = terrainKind(node);
+    const group = createSvgElement('g', { class: `terrain-feature terrain-${kind}` });
+
+    if (kind === 'relief') {
+      [29, 42, 56].forEach((radius, index) => {
+        group.appendChild(createSvgElement('path', {
+          d: organicBlobPath([point.x, point.y], radius, `${node.id}-relief-${index}`),
+          class: 'terrain-contour terrain-contour-local',
+          fill: 'none'
+        }));
+      });
+    } else if (kind === 'frozen') {
+      [-1, 0, 1].forEach(offset => {
+        group.appendChild(createSvgElement('path', {
+          d: `M ${point.x - 48},${point.y + offset * 13} L ${point.x - 20},${point.y - 11 + offset * 9} L ${point.x + 4},${point.y + 6 + offset * 7} L ${point.x + 47},${point.y - 14 + offset * 12}`,
+          class: 'terrain-fracture',
+          fill: 'none'
+        }));
+      });
+    } else if (kind === 'water') {
+      [31, 43].forEach(radius => {
+        group.appendChild(createSvgElement('ellipse', {
+          cx: point.x, cy: point.y, rx: radius, ry: radius * .55,
+          class: 'terrain-waterline', fill: 'none'
+        }));
+      });
+    } else if (kind === 'scorched') {
+      [-18, 0, 18].forEach(offset => {
+        group.appendChild(createSvgElement('path', {
+          d: `M ${point.x - 55},${point.y + offset} Q ${point.x - 22},${point.y - 17 + offset} ${point.x + 4},${point.y + offset} T ${point.x + 58},${point.y + offset}`,
+          class: 'terrain-dune-line', fill: 'none'
+        }));
+      });
+    } else if (kind === 'settlement') {
+      group.appendChild(createSvgElement('circle', {
+        cx: point.x, cy: point.y, r: 42,
+        class: 'terrain-settlement-boundary', fill: 'none'
+      }));
+    }
+
+    if (group.childNodes.length) layer.appendChild(group);
+  });
+}
+
+function appendTerrainZones(layer, zones) {
+  zones.forEach(zone => {
+    const style = zoneVisualStyle(zone);
+    const biome = zone.biomeFocus || zone.zoneType || 'environmental_hazard';
+    const group = createSvgElement('g', { class: `terrain-region terrain-region-${biome}` });
+    const boundaryRadius = zone.radius * .82;
+    const boundary = createSvgElement('path', {
+      d: organicBlobPath(zone.center, boundaryRadius, zone.id || zone.name, zone.nodeAvoidance),
+      class: `danger-zone zone-${biome} risk-${style.risk.replace('_', '-')}`,
+      fill: style.fill,
+      stroke: style.stroke,
+      'stroke-width': style.width
+    });
+    const riskLabel = { tier_1: 'risco baixo', tier_2: 'risco médio', tier_3: 'risco alto' }[style.risk] || 'risco médio';
+    const title = createSvgElement('title');
+    title.textContent = `${zone.name} · ${riskLabel} · perigo x${zone.dangerMultiplier}`;
+    boundary.appendChild(title);
+    group.appendChild(boundary);
+
+    const contourCount = biome === 'high_relief_canyons' ? 6 : biome === 'frozen_wastes' ? 4 : 3;
+    for (let index = 1; index <= contourCount; index++) {
+      const factor = .19 + (index / contourCount) * .52;
+      group.appendChild(createSvgElement('path', {
+        d: organicBlobPath(zone.center, boundaryRadius * factor, `${zone.id}-contour-${index}`),
+        class: `terrain-contour contour-${biome}`,
+        fill: 'none'
+      }));
+    }
+
+    const regionLabel = createSvgElement('text', {
+      x: zone.center[0],
+      y: zone.center[1] - Math.min(boundaryRadius * .27, 42),
+      class: 'terrain-region-label'
+    });
+    regionLabel.textContent = zone.name.toUpperCase();
+    group.appendChild(regionLabel);
+    layer.appendChild(group);
+  });
+}
+
+function attachMapNavigation(svg) {
+  const WORLD_WIDTH = 1000;
+  const WORLD_HEIGHT = 700;
+  const MIN_WIDTH = 300;
+  const view = { x: 0, y: 0, width: WORLD_WIDTH, height: WORLD_HEIGHT };
+  let dragging = false;
+  let moved = false;
+  let startClientX = 0;
+  let startClientY = 0;
+  let startX = 0;
+  let startY = 0;
+
+  function constrain() {
+    view.width = clamp(view.width, MIN_WIDTH, WORLD_WIDTH);
+    view.height = view.width * (WORLD_HEIGHT / WORLD_WIDTH);
+    view.x = clamp(view.x, 0, WORLD_WIDTH - view.width);
+    view.y = clamp(view.y, 0, WORLD_HEIGHT - view.height);
+  }
+
+  function renderView() {
+    constrain();
+    svg.setAttribute('viewBox', `${view.x} ${view.y} ${view.width} ${view.height}`);
+    const visualScale = view.width / WORLD_WIDTH;
+    svg.querySelectorAll('.scar-node-circle').forEach(circle => circle.setAttribute('r', String(15 * visualScale)));
+    svg.querySelectorAll('.scar-node-label').forEach(label => {
+      label.setAttribute('y', String(28 * visualScale));
+      label.style.fontSize = `${10 * visualScale}px`;
+      label.style.strokeWidth = `${3 * visualScale}px`;
+    });
+    svg.querySelectorAll('.terrain-region-label').forEach(label => {
+      label.style.fontSize = `${8 * visualScale}px`;
+      label.style.strokeWidth = `${3 * visualScale}px`;
+    });
+  }
+
+  function zoom(factor, clientX, clientY) {
+    const rect = svg.getBoundingClientRect();
+    const anchorX = clientX == null ? view.x + view.width / 2 : view.x + ((clientX - rect.left) / rect.width) * view.width;
+    const anchorY = clientY == null ? view.y + view.height / 2 : view.y + ((clientY - rect.top) / rect.height) * view.height;
+    const oldWidth = view.width;
+    const oldHeight = view.height;
+    view.width *= factor;
+    view.height = view.width * (WORLD_HEIGHT / WORLD_WIDTH);
+    view.x = anchorX - ((anchorX - view.x) / oldWidth) * view.width;
+    view.y = anchorY - ((anchorY - view.y) / oldHeight) * view.height;
+    renderView();
+  }
+
+  svg.addEventListener('wheel', event => {
+    event.preventDefault();
+    zoom(event.deltaY < 0 ? .84 : 1.19, event.clientX, event.clientY);
+  }, { passive: false });
+
+  svg.addEventListener('pointerdown', event => {
+    if (event.button !== 0 || event.target.closest('.scar-node')) return;
+    dragging = true;
+    moved = false;
+    startClientX = event.clientX;
+    startClientY = event.clientY;
+    startX = view.x;
+    startY = view.y;
+    svg.setPointerCapture(event.pointerId);
+    svg.classList.add('is-dragging');
+  });
+
+  svg.addEventListener('pointermove', event => {
+    if (!dragging) return;
+    const rect = svg.getBoundingClientRect();
+    const dx = (event.clientX - startClientX) * (view.width / rect.width);
+    const dy = (event.clientY - startClientY) * (view.height / rect.height);
+    moved ||= Math.abs(event.clientX - startClientX) > 4 || Math.abs(event.clientY - startClientY) > 4;
+    view.x = startX - dx;
+    view.y = startY - dy;
+    renderView();
+  });
+
+  function endDrag(event) {
+    if (!dragging) return;
+    dragging = false;
+    svg.classList.remove('is-dragging');
+    if (svg.hasPointerCapture(event.pointerId)) svg.releasePointerCapture(event.pointerId);
+    if (moved) window.setTimeout(() => { moved = false; }, 0);
+  }
+
+  svg.addEventListener('pointerup', endDrag);
+  svg.addEventListener('pointercancel', endDrag);
+  svg.addEventListener('click', event => {
+    if (!moved) return;
+    event.preventDefault();
+    event.stopPropagation();
+    moved = false;
+  }, true);
+
+  const zoomIn = document.getElementById('mapZoomIn');
+  const zoomOut = document.getElementById('mapZoomOut');
+  const zoomReset = document.getElementById('mapZoomReset');
+  if (zoomIn) zoomIn.onclick = () => zoom(.78);
+  if (zoomOut) zoomOut.onclick = () => zoom(1.28);
+  if (zoomReset) zoomReset.onclick = () => {
+    Object.assign(view, { x: 0, y: 0, width: WORLD_WIDTH, height: WORLD_HEIGHT });
+    renderView();
+  };
+  renderView();
+}
+
 export function buildScarSvg(container, nodes, edges, zones) {
   const svg = document.createElementNS(NS, 'svg');
   svg.setAttribute('viewBox', '0 0 1000 700');
   svg.setAttribute('id', 'scarSvg');
   svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
 
+  const backgroundLayer = document.createElementNS(NS, 'g');
+  backgroundLayer.setAttribute('id', 'scarBackgroundLayer');
+  backgroundLayer.appendChild(createSvgElement('rect', {
+    x: 0, y: 0, width: 1000, height: 700, class: 'map-land-base'
+  }));
+  const terrainLayer = document.createElementNS(NS, 'g');
+  terrainLayer.setAttribute('id', 'scarTerrainLayer');
   const zoneLayer = document.createElementNS(NS, 'g');
   zoneLayer.setAttribute('id', 'zoneLayer');
   const edgeLayer = document.createElementNS(NS, 'g');
@@ -168,25 +390,8 @@ export function buildScarSvg(container, nodes, edges, zones) {
 
   separatePositions(positions, 110, 12);
 
-  zones.forEach(z => {
-    const path = document.createElementNS(NS, 'path');
-    const style = zoneVisualStyle(z);
-    const biomeClass = z.biomeFocus || z.zoneType || 'environmental_hazard';
-    // Mantém a forma da zona, mas reduz o envelope visual para abrir mais espaço
-    // entre a área de perigo e os nós, soando mais "desviável" na apresentação.
-    path.setAttribute('d', organicBlobPath(z.center, z.radius * 0.82, z.id || z.name, z.nodeAvoidance));
-    path.setAttribute('class', `danger-zone zone-${biomeClass} risk-${style.risk.replace('_', '-')}`);
-    path.setAttribute('fill', style.fill);
-    path.setAttribute('stroke', style.stroke);
-    path.setAttribute('stroke-width', String(style.width));
-
-    const title = document.createElementNS(NS, 'title');
-    const riskLabel = { tier_1: 'risco baixo', tier_2: 'risco médio', tier_3: 'risco alto' }[style.risk] || 'risco médio';
-    title.textContent = `${z.name} · ${riskLabel} · perigo x${z.dangerMultiplier}`;
-    path.appendChild(title);
-
-    zoneLayer.appendChild(path);
-  });
+  appendTerrainZones(zoneLayer, zones);
+  appendLocalTerrainFeatures(terrainLayer, nodes, positions);
 
   edges.forEach(e => {
     const a = nodes.find(n => n.id === e.from);
@@ -241,13 +446,16 @@ export function buildScarSvg(container, nodes, edges, zones) {
     nodeLayer.appendChild(g);
   });
 
+  svg.appendChild(backgroundLayer);
   svg.appendChild(zoneLayer);
+  svg.appendChild(terrainLayer);
   svg.appendChild(edgeLayer);
   svg.appendChild(pathLayer);
   svg.appendChild(nodeLayer);
 
   container.innerHTML = '';
   container.appendChild(svg);
+  attachMapNavigation(svg);
   return svg;
 }
 

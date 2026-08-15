@@ -1,5 +1,4 @@
 import { state } from './state.js';
-import { TYPE_ICONS } from './geo.js';
 
 export const MODES = [
   { id: 'survival', label: 'Sobrevivência', color: '#00e5a0' },
@@ -46,7 +45,7 @@ export function renderRouteSteps(pathNodeIds, nodes, edges) {
 
   const html = pathNodeIds.map((id, i) => {
     const n = nodes.find(x => x.id === id);
-    const icon = i === 0 ? '📍' : i === pathNodeIds.length - 1 ? '🎯' : '→';
+    const marker = i === 0 ? 'INÍCIO' : i === pathNodeIds.length - 1 ? 'FIM' : 'VIA';
     let detail = '';
     if (i > 0) {
       const prevId = pathNodeIds[i - 1];
@@ -54,7 +53,7 @@ export function renderRouteSteps(pathNodeIds, nodes, edges) {
       if (e) detail = `<div class="step-dist">+${e.distanceKm}km · perigo ${e.dangerLevel} · ${e.terrainType}</div>`;
     }
     return `<div class="route-step">
-      <div class="step-icon">${icon}</div>
+      <div class="step-icon">${marker}</div>
       <div class="step-text">${n ? n.label : id}${detail}</div>
     </div>`;
   }).join('');
@@ -62,7 +61,6 @@ export function renderRouteSteps(pathNodeIds, nodes, edges) {
   container.innerHTML = html;
 }
 
-const COMMUNITY_ICONS = { recurso: '💧', seguro: '🛡️', comum: '📌' };
 const COMMUNITY_LABELS = { recurso: 'Recurso', seguro: 'Local Seguro', comum: 'Local Comum' };
 
 export function renderCommunityList(items, onSelect) {
@@ -78,7 +76,6 @@ export function renderCommunityList(items, onSelect) {
 
   list.innerHTML = items.map(n => `
     <div class="community-item" data-id="${n.id}">
-      <div class="community-icon">${COMMUNITY_ICONS[n.category] || '📍'}</div>
       <div class="community-text">
         <div class="community-label">${n.label}</div>
         <div class="community-meta">${COMMUNITY_LABELS[n.category] || n.category}</div>
@@ -96,13 +93,11 @@ export function renderCommunityList(items, onSelect) {
 /** Monta o HTML do mini-card exibido ao passar o mouse sobre um nó — só usa
  *  campos que já vêm prontos de data/nodes.geojson (via geo.js). */
 export function nodeTooltipHtml(n) {
-  const icon = TYPE_ICONS[n.type] || '📍';
-
   const resourcesHtml = n.resources
     ? `<div class="node-tooltip-resources">
-        <span>💧 ${n.resources.water}</span>
-        <span>⛽ ${n.resources.fuel}</span>
-        <span>🔧 ${n.resources.scrap}</span>
+        <span>Água: ${n.resources.water}</span>
+        <span>Combustível: ${n.resources.fuel}</span>
+        <span>Sucata: ${n.resources.scrap}</span>
       </div>`
     : '';
 
@@ -111,7 +106,7 @@ export function nodeTooltipHtml(n) {
     : '';
 
   return `
-    <div class="node-tooltip-title">${icon} ${n.label}</div>
+    <div class="node-tooltip-title">${n.label}</div>
     ${n.description ? `<div class="node-tooltip-desc">${n.description}</div>` : ''}
     <div class="node-tooltip-danger">Perigo: ${n.dangerLevel}/5</div>
     ${resourcesHtml}

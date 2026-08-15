@@ -47,6 +47,12 @@
     <div class="hud-corner corner-bl"></div>
     <div class="hud-corner corner-br"></div>
     <div id="scarMap"></div>
+    <div class="map-zoom-controls" aria-label="Controles do mapa">
+      <button id="mapZoomIn" type="button" aria-label="Aproximar mapa">+</button>
+      <button id="mapZoomOut" type="button" aria-label="Afastar mapa">−</button>
+      <button id="mapZoomReset" type="button" aria-label="Redefinir visualização">1:1</button>
+    </div>
+    <div class="map-attribution" aria-hidden="true">DUSTNAV TERRAIN · DADOS S.C.A.R.</div>
     <div class="node-tooltip" id="nodeTooltip"></div>
     <div class="pick-badge" id="pickBadge">Clique num ponto para definir a localização</div>
     <div class="map-hint" id="mapHint">Carregando mapa real do wasteland...</div>
@@ -134,9 +140,9 @@
     <div class="community-panel" id="communityPanel">
       <div class="section-title">Compartilhar com a comunidade</div>
       <div class="share-buttons">
-        <button class="share-btn cat-recurso" id="shareResourceBtn">💧 Recurso</button>
-        <button class="share-btn cat-seguro" id="shareSafeBtn">🛡️ Local seguro</button>
-        <button class="share-btn cat-comum" id="shareCommonBtn">📌 Local Comum</button>
+        <button class="share-btn cat-recurso" id="shareResourceBtn">Recurso</button>
+        <button class="share-btn cat-seguro" id="shareSafeBtn">Local seguro</button>
+        <button class="share-btn cat-comum" id="shareCommonBtn">Local comum</button>
       </div>
 
       <div class="share-compose" id="shareCompose" style="display:none">
@@ -159,15 +165,15 @@
       <div class="section-title">Zonas de perigo mapeadas</div>
       <div class="zone-legend" id="zoneLegend"></div>
 
-      <button class="zone-report-btn" id="zoneReportBtn">🚧 Reportar zona de perigo</button>
+      <button class="zone-report-btn" id="zoneReportBtn">Reportar zona de perigo</button>
 
       <div class="zone-compose" id="zoneCompose" style="display:none">
         <div class="share-compose-title" id="zoneComposeTitle">Escolha o nível de perigo</div>
 
         <div class="zone-tier-row" id="zoneTierRow">
-          <button class="zone-tier-btn tier-1" data-tier="tier_1">🟡 Baixo</button>
-          <button class="zone-tier-btn tier-2" data-tier="tier_2">🟠 Médio</button>
-          <button class="zone-tier-btn tier-3" data-tier="tier_3">🔴 Alto</button>
+          <button class="zone-tier-btn tier-1" data-tier="tier_1">Baixo</button>
+          <button class="zone-tier-btn tier-2" data-tier="tier_2">Médio</button>
+          <button class="zone-tier-btn tier-3" data-tier="tier_3">Alto</button>
         </div>
 
         <input class="location-input" id="zoneNameInput" placeholder="Nome da zona (ex: Emboscada na Rota 9)" autocomplete="off" style="display:none"/>
