@@ -1,4 +1,5 @@
 import { state } from './state.js';
+import { TYPE_ICONS } from './geo.js';
 
 export const MODES = [
   { id: 'survival', label: 'Sobrevivência', icon: '🛡️', color: '#00e5a0' },
@@ -68,8 +69,8 @@ export function renderRouteSteps(pathNodeIds, nodes, edges) {
   container.innerHTML = html;
 }
 
-const COMMUNITY_ICONS = { recurso: '💧', seguro: '🛡️' };
-const COMMUNITY_LABELS = { recurso: 'Recurso', seguro: 'Local Seguro' };
+const COMMUNITY_ICONS = { recurso: '💧', seguro: '🛡️', comum: '📌' };
+const COMMUNITY_LABELS = { recurso: 'Recurso', seguro: 'Local Seguro', comum: 'Local Comum' };
 
 export function renderCommunityList(items, onSelect) {
   const list = document.getElementById('communityList');
@@ -97,6 +98,32 @@ export function renderCommunityList(items, onSelect) {
       el.addEventListener('click', () => onSelect(el.dataset.id));
     });
   }
+}
+
+/** Monta o HTML do mini-card exibido ao passar o mouse sobre um nó — só usa
+ *  campos que já vêm prontos de data/nodes.geojson (via geo.js). */
+export function nodeTooltipHtml(n) {
+  const icon = TYPE_ICONS[n.type] || '📍';
+
+  const resourcesHtml = n.resources
+    ? `<div class="node-tooltip-resources">
+        <span>💧 ${n.resources.water}</span>
+        <span>⛽ ${n.resources.fuel}</span>
+        <span>🔧 ${n.resources.scrap}</span>
+      </div>`
+    : '';
+
+  const communityHtml = n.isCommunity
+    ? '<div class="node-tooltip-tag">Compartilhado pela comunidade</div>'
+    : '';
+
+  return `
+    <div class="node-tooltip-title">${icon} ${n.label}</div>
+    ${n.description ? `<div class="node-tooltip-desc">${n.description}</div>` : ''}
+    <div class="node-tooltip-danger">Perigo: ${n.dangerLevel}/5</div>
+    ${resourcesHtml}
+    ${communityHtml}
+  `;
 }
 
 export function renderZoneLegend(zones) {
