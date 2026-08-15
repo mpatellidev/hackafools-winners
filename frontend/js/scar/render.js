@@ -24,10 +24,39 @@ function seededRandom(seedStr) {
   };
 }
 
+function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
+
+function zoneVisualStyle(zone) {
+  const biome = zone.biomeFocus || zone.zoneType || 'environmental_hazard';
+  const danger = Number(zone.dangerMultiplier) || 1;
+  const dangerBoost = clamp((danger - 1.3) / 1.8, 0, 1);
+
+  const palettes = {
+    frozen_wastes: { hue: 205, sat: 86, light: 67 },
+    scorched_desert: { hue: 27, sat: 90, light: 57 },
+    high_relief_canyons: { hue: 28, sat: 52, light: 42 },
+    corporate_domes: { hue: 150, sat: 62, light: 52 },
+    faction_hostile: { hue: 332, sat: 72, light: 62 },
+    environmental_hazard: { hue: 44, sat: 95, light: 58 }
+  };
+
+  const base = palettes[biome] || palettes.environmental_hazard;
+  const alpha = 0.18 + dangerBoost * 0.4;
+  const strokeAlpha = 0.7 + dangerBoost * 0.25;
+
+  return {
+    fill: `hsla(${base.hue}, ${base.sat}%, ${base.light}%, ${alpha})`,
+    stroke: `hsla(${base.hue}, ${base.sat}%, ${base.light + 22}%, ${strokeAlpha})`,
+    width: 1.2 + dangerBoost * 1.6
+  };
+}
+
 // Espaço mínimo (px do viewBox) entre o contorno do blob e o círculo de
-// qualquer nó (raio 15 + margem) — é o que evita a ambiguidade de "esse nó
-// está dentro ou fora da zona?".
-const NODE_CLEARANCE = 28;
+// qualquer nó — aumentado para deixar mais ar entre zonas e nós, favorecendo
+// a leitura de desvios e rotas alternadas no painel de apresentação.
+const NODE_CLEARANCE = 60;
 
 // Gera um "d" de <path> em forma de nuvem orgânica (pontos com raio
 // perturbado, unidos por uma spline Catmull-Rom fechada) em vez do
@@ -99,12 +128,58 @@ export function buildScarSvg(container, nodes, edges, zones) {
   const nodeLayer = document.createElementNS(NS, 'g');
   nodeLayer.setAttribute('id', 'scarNodeLayer');
 
+  // Cria uma cópia local das posições dos nós e aplica um algoritmo simples
+  // de separação (repulsão) para evitar sobreposição visual. Isso não muda
+  // os dados subjacentes, apenas a posição renderizada no SVG.
+  const VBW = 1000; const VBH = 700;
+  const positions = new Map(nodes.map(n => [n.id, { x: n.x, y: n.y }]));
+
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+
+  function separatePositions(posMap, minDist = 80, iterations = 8) {
+    const entries = Array.from(posMap.entries());
+    for (let it = 0; it < iterations; it++) {
+      for (let i = 0; i < entries.length; i++) {
+        const [idA, a] = entries[i];
+        for (let j = i + 1; j < entries.length; j++) {
+          const [idB, b] = entries[j];
+          let dx = b.x - a.x;
+          let dy = b.y - a.y;
+          let d = Math.hypot(dx, dy);
+          if (d === 0) {
+            dx = (Math.random() - 0.5) * 0.5;
+            dy = (Math.random() - 0.5) * 0.5;
+            d = Math.hypot(dx, dy);
+          }
+          if (d < minDist) {
+            const overlap = (minDist - d) / 2;
+            const nx = dx / d;
+            const ny = dy / d;
+            a.x = clamp(a.x - nx * overlap, 10, VBW - 10);
+            a.y = clamp(a.y - ny * overlap, 10, VBH - 10);
+            b.x = clamp(b.x + nx * overlap, 10, VBW - 10);
+            b.y = clamp(b.y + ny * overlap, 10, VBH - 10);
+          }
+        }
+      }
+    }
+    // apply back to map
+    for (const [id, p] of entries) posMap.set(id, p);
+  }
+
+  separatePositions(positions, 110, 12);
+
   zones.forEach(z => {
     const path = document.createElementNS(NS, 'path');
-    // Um pouco maior que o raio real: dá a sensação de uma nuvem/território
-    // que "vaza" um pouco além da área estrita mapeada em zones.geojson.
-    path.setAttribute('d', organicBlobPath(z.center, z.radius * 1.1, z.id || z.name, z.nodeAvoidance));
-    path.setAttribute('class', `danger-zone zone-${z.zoneType}`);
+    const style = zoneVisualStyle(z);
+    const biomeClass = z.biomeFocus || z.zoneType || 'environmental_hazard';
+    // Mantém a forma da zona, mas reduz o envelope visual para abrir mais espaço
+    // entre a área de perigo e os nós, soando mais "desviável" na apresentação.
+    path.setAttribute('d', organicBlobPath(z.center, z.radius * 0.82, z.id || z.name, z.nodeAvoidance));
+    path.setAttribute('class', `danger-zone zone-${biomeClass}`);
+    path.setAttribute('fill', style.fill);
+    path.setAttribute('stroke', style.stroke);
+    path.setAttribute('stroke-width', String(style.width));
 
     const title = document.createElementNS(NS, 'title');
     title.textContent = `${z.name} · ${z.threatLevel} · multiplicador x${z.dangerMultiplier}`;
@@ -118,11 +193,14 @@ export function buildScarSvg(container, nodes, edges, zones) {
     const b = nodes.find(n => n.id === e.to);
     if (!a || !b) return;
 
+    const pa = positions.get(a.id) || { x: a.x, y: a.y };
+    const pb = positions.get(b.id) || { x: b.x, y: b.y };
+
     const line = document.createElementNS(NS, 'line');
-    line.setAttribute('x1', a.x);
-    line.setAttribute('y1', a.y);
-    line.setAttribute('x2', b.x);
-    line.setAttribute('y2', b.y);
+    line.setAttribute('x1', pa.x);
+    line.setAttribute('y1', pa.y);
+    line.setAttribute('x2', pb.x);
+    line.setAttribute('y2', pb.y);
     line.setAttribute('class', `scar-edge danger-${dangerBucket(e.dangerLevel)}`);
 
     const title = document.createElementNS(NS, 'title');
@@ -137,7 +215,8 @@ export function buildScarSvg(container, nodes, edges, zones) {
     const g = document.createElementNS(NS, 'g');
     g.setAttribute('class', `scar-node danger-${dangerBucket(n.dangerLevel)}${categoryClass}`);
     g.setAttribute('data-id', n.id);
-    g.setAttribute('transform', `translate(${n.x},${n.y})`);
+    const p = positions.get(n.id) || { x: n.x, y: n.y };
+    g.setAttribute('transform', `translate(${p.x},${p.y})`);
 
     const circle = document.createElementNS(NS, 'circle');
     circle.setAttribute('r', 15);

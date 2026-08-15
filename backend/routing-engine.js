@@ -341,7 +341,7 @@ class WastelandRouter {
    *   rings:number[][][]}} input
    *   `id` só é passado ao repor um registro já persistido em disco no boot.
    */
-  addDangerZone({ id, name, zoneType, threatLevel, dangerMultiplier, stealthPenalty, description, rings }) {
+  addDangerZone({ id, name, biomeFocus, zoneType, threatLevel, dangerMultiplier, stealthPenalty, description, rings }) {
     let finalId = id;
     if (!finalId) {
       finalId = `community_zone_${this.nextCommunityZoneId}`;
@@ -354,6 +354,7 @@ class WastelandRouter {
     const properties = {
       id: finalId,
       name,
+      biome_focus: biomeFocus || 'scorched_desert',
       zone_type: zoneType,
       threat_level: threatLevel,
       danger_multiplier: dangerMultiplier,
