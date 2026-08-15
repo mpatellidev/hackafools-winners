@@ -55,7 +55,6 @@
         <div>
           <div class="logo-name">BestWay</div>
           <div class="logo-sub">Dijkstra sobre grafo</div>
-          <a class="variant-link" href="index.html">🗺️ ver versão de mapa real</a>
         </div>
         <button class="panel-close-btn" id="panelCloseBtn" aria-label="Fechar painel">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
@@ -101,6 +100,30 @@
         <button id="pickSrcBtn">📍 Clique p/ origem</button>
         <button id="pickDstBtn">📍 Clique p/ destino</button>
       </div>
+    </div>
+
+    <div class="community-panel" id="communityPanel">
+      <div class="section-title">Compartilhar com a comunidade</div>
+      <div class="share-buttons">
+        <button class="share-btn cat-recurso" id="shareResourceBtn">💧 Recurso</button>
+        <button class="share-btn cat-seguro" id="shareSafeBtn">🛡️ Local seguro</button>
+      </div>
+
+      <div class="share-compose" id="shareCompose" style="display:none">
+        <div class="share-compose-title" id="shareComposeTitle">Nomear local</div>
+        <input class="location-input" id="shareLabelInput" placeholder="Ex: Poço de água, Abrigo da praça..." autocomplete="off"/>
+        <div class="share-compose-actions">
+          <button class="share-cancel-btn" id="shareCancelBtn">Cancelar</button>
+          <button class="share-confirm-btn" id="shareConfirmBtn">Compartilhar</button>
+        </div>
+      </div>
+
+      <div class="community-header">
+        <span>Locais da comunidade</span>
+        <span id="communityCount">0 compartilhados</span>
+        <button class="community-clear-btn" id="communityClearBtn" title="Limpar locais compartilhados">🗑️</button>
+      </div>
+      <div class="community-list" id="communityList"></div>
     </div>
 
     <div class="algo-panel" id="algoPanel">

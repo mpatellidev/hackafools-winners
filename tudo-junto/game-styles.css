@@ -42,6 +42,18 @@
   pointer-events: none;
 }
 
+.node-badge {
+  font-size: 14px;
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+/* Locais compartilhados pela comunidade ganham um contorno na cor da
+   categoria, sobrescrito pelas regras de estado (src/dst/...) abaixo quando
+   selecionados — por isso vêm antes na cascata. */
+.graph-node.cat-recurso .node-circle { stroke: var(--accent2); }
+.graph-node.cat-seguro .node-circle { stroke: var(--accent); }
+
 .graph-node.state-src .node-circle { fill: var(--accent2); stroke: #fff; }
 .graph-node.state-dst .node-circle { fill: var(--accent3); stroke: #fff; }
 .graph-node.state-visited .node-circle { fill: var(--accent4); }
@@ -49,3 +61,112 @@
 .graph-node.state-path .node-circle { fill: var(--accent); }
 
 #pathLayer polyline { pointer-events: none; }
+
+/* ── Painel: compartilhar recursos / locais seguros ── */
+.community-panel {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.share-buttons { display: flex; gap: 6px; margin-top: 4px; }
+.share-btn {
+  flex: 1;
+  padding: 9px 4px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border2);
+  background: transparent;
+  color: var(--muted2);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  cursor: pointer;
+  transition: all .2s;
+  white-space: nowrap;
+}
+.share-btn.cat-recurso:hover { border-color: var(--accent2); color: var(--accent2); }
+.share-btn.cat-seguro:hover { border-color: var(--accent); color: var(--accent); }
+
+.share-compose {
+  margin-top: 10px;
+  padding: 12px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  flex-direction: column;
+  gap: 8px;
+}
+.share-compose-title {
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--text);
+}
+.share-compose-actions { display: flex; gap: 6px; }
+.share-cancel-btn, .share-confirm-btn {
+  flex: 1;
+  padding: 8px 4px;
+  border-radius: 8px;
+  border: 1px solid var(--border2);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  cursor: pointer;
+  transition: all .2s;
+}
+.share-cancel-btn { background: transparent; color: var(--muted2); }
+.share-cancel-btn:hover { border-color: var(--accent3); color: var(--accent3); }
+.share-confirm-btn { background: var(--accent); color: #000; font-weight: 700; border-color: var(--accent); }
+.share-confirm-btn:hover { background: #00ffb8; }
+
+.community-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  margin-bottom: 8px;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.community-header span:first-child { flex: 1; }
+.community-clear-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  opacity: .6;
+  transition: opacity .2s;
+  padding: 2px;
+}
+.community-clear-btn:hover { opacity: 1; }
+
+.community-list {
+  max-height: 180px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.community-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 8px;
+  border-radius: 8px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: border-color .15s;
+}
+.community-item:hover { border-color: var(--accent); }
+.community-icon { font-size: 15px; flex-shrink: 0; }
+.community-text { min-width: 0; }
+.community-label {
+  font-size: 10px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.community-meta { font-size: 9px; color: var(--muted); margin-top: 1px; }
+.community-empty { font-size: 10px; color: var(--muted); padding: 8px 2px; }

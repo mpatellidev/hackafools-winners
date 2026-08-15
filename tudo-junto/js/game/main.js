@@ -1,12 +1,19 @@
 import { state } from './state.js';
-import { nodes, modes } from './graph-data.js';
+import { modes } from './graph-data.js';
+import { getNodes, getEdges, addSharedLocation, listSharedLocations, clearSharedLocations, CATEGORIES } from './community.js';
 import { buildGraphSvg, setNodeState, clearAllNodeStates, clearPath } from './render.js';
-import { renderModeTabs, updateRunBtn, showAlgoContent } from './ui.js';
+import { renderModeTabs, renderCommunityList, updateRunBtn, showAlgoContent } from './ui.js';
 import { calculateRoute } from './route.js';
 import { resetLogCount } from '../utils.js';
 
 const pickBadge = document.getElementById('pickBadge');
 const mapHint = document.getElementById('mapHint');
+const graphMap = document.getElementById('graphMap');
+
+// Modo de compartilhamento ativo ('recurso' | 'seguro' | null) e o ponto do
+// mapa já escolhido, aguardando confirmação do nome no formulário.
+let shareCategory = null;
+let sharePoint = null;
 
 function resetAlgoUI() {
   showAlgoContent(false);
@@ -15,15 +22,16 @@ function resetAlgoUI() {
 }
 
 function setPickMode(mode) {
+  if (mode) closeShareCompose();
   state.pickMode = mode;
-  const graphMap = document.getElementById('graphMap');
+  const graphMapEl = document.getElementById('graphMap');
   if (mode) {
     const txt = mode === 'src' ? '📍 Clique num nó: ORIGEM' : '🎯 Clique num nó: DESTINO';
     if (pickBadge) { pickBadge.textContent = txt; pickBadge.classList.add('visible'); }
-    if (graphMap) graphMap.style.cursor = 'crosshair';
+    if (graphMapEl) graphMapEl.style.cursor = 'crosshair';
   } else {
     if (pickBadge) pickBadge.classList.remove('visible');
-    if (graphMap) graphMap.style.cursor = '';
+    if (graphMapEl) graphMapEl.style.cursor = '';
   }
 }
 
@@ -34,6 +42,18 @@ function showHint(msg, ms) {
   if (ms && ms < 9999) {
     setTimeout(() => mapHint && mapHint.classList.remove('visible'), ms);
   }
+}
+
+function rebuildGraph() {
+  buildGraphSvg(graphMap, getNodes(), getEdges());
+  // buildGraphSvg troca o SVG inteiro — reaplica os destaques de
+  // origem/destino que só existem como classes no DOM antigo.
+  if (state.src) setNodeState(state.src.id, 'state-src');
+  if (state.dst) setNodeState(state.dst.id, 'state-dst');
+}
+
+function refreshCommunityList() {
+  renderCommunityList(listSharedLocations(), (id) => selectNode(id));
 }
 
 function assign(type, node) {
@@ -61,6 +81,7 @@ function clearPoint(type) {
 
 function clearAll() {
   setPickMode(null);
+  closeShareCompose();
   ['src', 'dst'].forEach(type => { state[type] = null; });
   clearAllNodeStates();
   const srcInput = document.getElementById('srcInput');
@@ -72,7 +93,7 @@ function clearAll() {
 }
 
 function selectNode(id) {
-  const node = nodes.find(n => n.id === id);
+  const node = getNodes().find(n => n.id === id);
   if (!node) return;
 
   if (state.pickMode) {
@@ -103,7 +124,7 @@ function setupSearch(inputId, sugId, type) {
     const q = input.value.trim().toLowerCase();
     if (q.length < 1) { sug.style.display = 'none'; return; }
 
-    const results = nodes.filter(n => n.label.toLowerCase().includes(q)).slice(0, 8);
+    const results = getNodes().filter(n => n.label.toLowerCase().includes(q)).slice(0, 8);
     if (!results.length) { sug.style.display = 'none'; return; }
 
     sug.innerHTML = results.map(n => `
@@ -115,7 +136,7 @@ function setupSearch(inputId, sugId, type) {
 
     sug.querySelectorAll('.suggestion-item').forEach(el => {
       el.addEventListener('click', () => {
-        assign(type, nodes.find(n => n.id === el.dataset.id));
+        assign(type, getNodes().find(n => n.id === el.dataset.id));
         sug.style.display = 'none';
       });
     });
@@ -175,11 +196,77 @@ function initPanelToggle() {
   if (window.innerWidth >= 768) openPanel();
 }
 
+// ── Compartilhamento com a comunidade ──
+
+function svgPointFromEvent(e) {
+  const svg = document.getElementById('graphSvg');
+  if (!svg) return null;
+  const ctm = svg.getScreenCTM();
+  if (!ctm) return null;
+
+  const pt = svg.createSVGPoint();
+  pt.x = e.clientX;
+  pt.y = e.clientY;
+  const local = pt.matrixTransform(ctm.inverse());
+  return { x: Math.round(local.x), y: Math.round(local.y) };
+}
+
+function openShareCompose(category, point) {
+  const compose = document.getElementById('shareCompose');
+  const title = document.getElementById('shareComposeTitle');
+  const input = document.getElementById('shareLabelInput');
+  if (!compose) return;
+
+  shareCategory = category;
+  sharePoint = point;
+
+  const meta = CATEGORIES[category];
+  if (title) title.textContent = `${meta.icon} Nomear ${meta.label.toLowerCase()}`;
+  if (input) input.value = '';
+  compose.style.display = 'flex';
+  if (input) input.focus();
+  showHint('Confirme o nome do local no painel ao lado', 99999);
+}
+
+function closeShareCompose() {
+  shareCategory = null;
+  sharePoint = null;
+  const compose = document.getElementById('shareCompose');
+  if (compose) compose.style.display = 'none';
+  if (mapHint) mapHint.classList.remove('visible');
+}
+
+function confirmShare() {
+  if (!shareCategory || !sharePoint) return;
+  const input = document.getElementById('shareLabelInput');
+  const label = input ? input.value.trim() : '';
+
+  addSharedLocation({ label, category: shareCategory, x: sharePoint.x, y: sharePoint.y });
+
+  closeShareCompose();
+  rebuildGraph();
+  refreshCommunityList();
+  showHint('✅ Local compartilhado com a comunidade!', 2500);
+}
+
+function startShareMode(category) {
+  if (state.running) return;
+  setPickMode(null);
+  shareCategory = category;
+  sharePoint = null;
+  showHint('Clique no mapa para posicionar o local', 99999);
+}
+
 // ── Bootstrap ──
-const graphMap = document.getElementById('graphMap');
-buildGraphSvg(graphMap);
+buildGraphSvg(graphMap, getNodes(), getEdges());
 
 graphMap.addEventListener('click', (e) => {
+  if (shareCategory && !sharePoint) {
+    const point = svgPointFromEvent(e);
+    if (point) openShareCompose(shareCategory, point);
+    return;
+  }
+
   const nodeEl = e.target.closest('.graph-node');
   if (!nodeEl) return;
   selectNode(nodeEl.dataset.id);
@@ -189,6 +276,7 @@ initModeTabs();
 initPanelToggle();
 setupSearch('srcInput', 'srcSug', 'src');
 setupSearch('dstInput', 'dstSug', 'dst');
+refreshCommunityList();
 
 document.getElementById('runBtn').onclick = () => {
   if (!state.src || !state.dst || state.running) return;
@@ -223,5 +311,23 @@ document.getElementById('pickSrcBtn').onclick = () => {
 document.getElementById('pickDstBtn').onclick = () => {
   setPickMode(state.pickMode === 'dst' ? null : 'dst');
 };
+
+document.getElementById('shareResourceBtn').onclick = () => startShareMode('recurso');
+document.getElementById('shareSafeBtn').onclick = () => startShareMode('seguro');
+document.getElementById('shareCancelBtn').onclick = closeShareCompose;
+document.getElementById('shareConfirmBtn').onclick = confirmShare;
+
+document.getElementById('shareLabelInput')?.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') confirmShare();
+  if (e.key === 'Escape') closeShareCompose();
+});
+
+document.getElementById('communityClearBtn')?.addEventListener('click', () => {
+  if (!confirm('Remover todos os locais compartilhados pela comunidade neste navegador?')) return;
+  clearSharedLocations();
+  clearAll();
+  rebuildGraph();
+  refreshCommunityList();
+});
 
 showHint('Clique em dois nós do grafo (ou busque pelo nome) para definir origem e destino', 4500);

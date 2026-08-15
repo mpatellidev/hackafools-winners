@@ -72,12 +72,16 @@ export const edges = [
   { from: 'porto-tempestade', to: 'vilarejo-leste',    weight: 5, type: 'portal' }
 ];
 
+// 'community' é o tipo de aresta usado por community.js para ligar nós
+// criados pelos usuários (recursos/locais seguros) aos nós mais próximos do
+// grafo-base. Fica liberado em todos os modos: um local compartilhado pela
+// comunidade precisa ser alcançável independente de como se está viajando.
 export const modes = [
   {
     id: 'walk',
     label: 'A pé',
     icon: '🚶',
-    allowedTypes: ['road', 'trail'],
+    allowedTypes: ['road', 'trail', 'community'],
     timePerUnit: 1.2,
     color: '#00e5a0'
   },
@@ -85,7 +89,7 @@ export const modes = [
     id: 'mount',
     label: 'Montaria',
     icon: '🐎',
-    allowedTypes: ['road'], // trilhas são estreitas demais pra montaria
+    allowedTypes: ['road', 'community'], // trilhas são estreitas demais pra montaria
     timePerUnit: 0.6,
     color: '#ffcc00'
   },
@@ -93,7 +97,7 @@ export const modes = [
     id: 'portal',
     label: 'Rede de Portais',
     icon: '🌀',
-    allowedTypes: ['road', 'portal'], // magia não se sustenta em trilhas
+    allowedTypes: ['road', 'portal', 'community'], // magia não se sustenta em trilhas
     timePerUnit: 0.3,
     color: '#ff5c8a'
   }

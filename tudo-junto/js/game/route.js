@@ -1,5 +1,6 @@
 import { state } from './state.js';
-import { nodes, edges, modes } from './graph-data.js';
+import { modes } from './graph-data.js';
+import { getNodes, getEdges } from './community.js';
 import { dijkstra } from './graph.js';
 import { setProgress, addLog, sleep, resetLogCount } from '../utils.js';
 import { drawPath, clearPath, clearNodeStates, setNodeState } from './render.js';
@@ -7,6 +8,11 @@ import { updateStats, renderDirections, showAlgoContent, updateRunBtn } from './
 
 export async function calculateRoute() {
   if (!state.src || !state.dst) return;
+
+  // Recalcula a cada rota: assim locais compartilhados pela comunidade
+  // depois do carregamento da página já entram na busca.
+  const nodes = getNodes();
+  const edges = getEdges();
 
   state.running = true;
   updateRunBtn();
@@ -86,7 +92,7 @@ export async function calculateRoute() {
     return { ...n, edgeWeight, edgeType };
   });
 
-  drawPath(result.path, modeCfg.color);
+  drawPath(result.path, modeCfg.color, nodes);
   result.path.forEach(id => {
     if (id === state.src.id) setNodeState(id, 'state-src');
     else if (id === state.dst.id) setNodeState(id, 'state-dst');
