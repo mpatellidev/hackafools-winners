@@ -103,7 +103,7 @@ export async function calculateRoute() {
 
   await sleep(200);
   setProgress(100, 'Caminho mais curto encontrado!');
-  addLog('done', `✅ <strong>Caminho ótimo encontrado!</strong> custo ${result.distance} · ${pathNodes.length - 1} trechos · ${result.visitedCount} nós explorados`);
+  addLog('done', `[OK] <strong>Caminho ótimo encontrado!</strong> custo ${result.distance} · ${pathNodes.length - 1} trechos · ${result.visitedCount} nós explorados`);
 
   updateStats(result.distance, timeMin, result.visitedCount, pathNodes.length - 1);
   renderDirections(pathNodes);

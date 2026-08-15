@@ -5,13 +5,43 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>BestWay — Grafo de Mapa de Jogo (Dijkstra)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="game-styles.css">
 </head>
 <body>
 <div id="app">
   <div id="map-wrap">
+    <div class="hud-topbar" aria-hidden="true">
+      <div class="hud-brand">
+        <span class="hud-kicker">MATRIZ DE NAVEGAÇÃO</span>
+        <strong>BESTWAY // GRAFO TÁTICO</strong>
+      </div>
+      <div class="hud-readouts">
+        <span><i class="status-led"></i>SISTEMA OPERACIONAL</span>
+        <span id="hudMode">MODO: A PÉ</span>
+        <span id="hudClock">CORE // LOCAL</span>
+      </div>
+    </div>
+
+    <div class="hud-legend" aria-label="Legenda do grafo">
+      <span class="hud-module-label">LEGENDA / ESTADOS</span>
+      <span><i class="legend-mark mark-origin"></i>ORIGEM</span>
+      <span><i class="legend-mark mark-destination"></i>DESTINO</span>
+      <span><i class="legend-mark mark-route"></i>ROTA ÓTIMA</span>
+      <span><i class="legend-mark mark-scanned"></i>EXPLORADO</span>
+    </div>
+
+    <div class="hud-counter" aria-hidden="true">
+      <span>REDE LOCAL</span>
+      <strong id="hudGraphCount">—</strong>
+      <small>NÓS / ENLACES</small>
+    </div>
+
+    <div class="hud-corner corner-tl"></div>
+    <div class="hud-corner corner-tr"></div>
+    <div class="hud-corner corner-bl"></div>
+    <div class="hud-corner corner-br"></div>
     <div id="graphMap"></div>
     <div class="pick-badge" id="pickBadge">📍 Clique num nó para definir o ponto</div>
     <div class="map-hint" id="mapHint">Clique num nó para definir a localização</div>
@@ -23,8 +53,8 @@
       <svg class="toggle-icon-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <path d="M18 6L6 18M6 6l12 12"/>
       </svg>
-      <span class="toggle-label-open">Rota</span>
-      <span class="toggle-label-close">Fechar</span>
+      <span class="toggle-label-open">CONTROLE</span>
+      <span class="toggle-label-close">RECOLHER</span>
     </button>
 
     <!-- Populado dinamicamente a partir de js/game/graph-data.js (modes) -->
@@ -45,17 +75,21 @@
     </div>
 
     <div class="panel-header">
+      <div class="equipment-strip">
+        <span>UNIDADE BW-04</span>
+        <span><i class="status-led"></i>PRONTO</span>
+      </div>
       <div class="logo">
         <div class="logo-icon">
           <svg viewBox="0 0 18 18" fill="none">
-            <circle cx="9" cy="9" r="7" stroke="#000" stroke-width="1.5"/>
-            <path d="M9 5v4l3 2" stroke="#000" stroke-width="1.5" stroke-linecap="round"/>
+            <circle cx="9" cy="9" r="7" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M9 5v4l3 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
           </svg>
         </div>
         <div>
-          <div class="logo-name">BestWay</div>
-          <div class="logo-sub">Dijkstra sobre grafo</div>
-          <a class="variant-link" href="scar.html">🛡️ modo S.C.A.R. (dados reais) →</a>
+          <div class="logo-name">BESTWAY</div>
+          <div class="logo-sub">TERMINAL DE ROTEAMENTO // DIJKSTRA</div>
+          <a class="variant-link" href="scar.html">ABRIR MÓDULO S.C.A.R. →</a>
         </div>
         <button class="panel-close-btn" id="panelCloseBtn" aria-label="Fechar painel">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
@@ -64,10 +98,16 @@
         </button>
       </div>
       <!-- Populado dinamicamente a partir de js/game/graph-data.js (modes) -->
+      <div class="control-label"><span>01</span> PERFIL DE DESLOCAMENTO</div>
       <div class="mode-tabs" id="modeTabs"></div>
     </div>
 
     <div class="panel-inputs">
+      <div class="module-heading">
+        <span class="module-index">02</span>
+        <span>COORDENADAS DE ROTA</span>
+        <i class="status-led"></i>
+      </div>
       <div class="input-group" id="srcGroup" style="position:relative">
         <div class="input-label">
           <span class="input-dot dot-src"></span>
@@ -104,7 +144,7 @@
     </div>
 
     <div class="community-panel" id="communityPanel">
-      <div class="section-title">Compartilhar com a comunidade</div>
+      <div class="section-title"><span class="section-index">03</span> Compartilhar com a comunidade</div>
       <div class="share-buttons">
         <button class="share-btn cat-recurso" id="shareResourceBtn">💧 Recurso</button>
         <button class="share-btn cat-seguro" id="shareSafeBtn">🛡️ Local seguro</button>
@@ -129,12 +169,13 @@
 
     <div class="algo-panel" id="algoPanel">
       <div class="idle-state" id="idleState">
-        <div class="idle-icon">🗺️</div>
+        <div class="idle-reticle" aria-hidden="true"><span></span></div>
+        <div class="idle-code">ROUTING CORE // STANDBY</div>
         <div class="idle-title">Nenhum caminho calculado</div>
         <div class="idle-sub">Clique em dois nós do grafo (ou busque pelo nome) para definir origem e destino. O Dijkstra calcula o caminho de menor custo em tempo real, rodando localmente — sem API externa.</div>
       </div>
       <div id="algoContent" style="display:none">
-        <div class="section-title">Estatísticas</div>
+        <div class="section-title"><span class="section-index">04</span> Estatísticas</div>
         <div class="stats-grid">
           <div class="stat-card">
             <div class="stat-label">Custo Total</div>
@@ -154,7 +195,7 @@
           </div>
         </div>
 
-        <div class="section-title">Progresso do Algoritmo</div>
+        <div class="section-title"><span class="section-index">05</span> Progresso do Algoritmo</div>
         <div class="progress-wrap">
           <div class="progress-label">
             <span id="progLabel">Inicializando...</span>
@@ -163,7 +204,7 @@
           <div class="progress-track"><div class="progress-fill" id="progFill"></div></div>
         </div>
 
-        <div class="section-title">Log do Algoritmo</div>
+        <div class="section-title"><span class="section-index">06</span> Log do Algoritmo</div>
         <div class="algo-log">
           <div class="algo-log-header">
             <span>Execução em tempo real</span>
@@ -172,7 +213,7 @@
           <div class="log-entries" id="logEntries"></div>
         </div>
 
-        <div class="section-title">Caminho</div>
+        <div class="section-title"><span class="section-index">07</span> Caminho</div>
         <div class="route-steps" id="routeSteps"></div>
       </div>
     </div>
