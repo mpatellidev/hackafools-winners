@@ -1,13 +1,13 @@
-// Desenho do grafo em SVG. Não sabe nada sobre Dijkstra nem sobre o painel —
-// só sabe desenhar nós/arestas e pintar estados (origem, destino, visitado,
-// caminho final). Consome `nodes`/`edges` de graph-data.js, então também
-// muda sozinho se o mapa mudar.
+// Desenho do grafo em SVG. Não sabe nada sobre Dijkstra, sobre o painel, nem
+// sobre de onde vêm os nós — recebe `nodes`/`edges` já prontos (grafo-base +
+// comunidade, combinados por community.js) e só sabe desenhá-los e pintar
+// estados (origem, destino, visitado, caminho final).
 
-import { nodes, edges } from './graph-data.js';
+import { CATEGORIES } from './community.js';
 
 const NS = 'http://www.w3.org/2000/svg';
 
-export function buildGraphSvg(container) {
+export function buildGraphSvg(container, nodes, edges) {
   const svg = document.createElementNS(NS, 'svg');
   svg.setAttribute('viewBox', '0 0 1000 700');
   svg.setAttribute('id', 'graphSvg');
@@ -40,8 +40,10 @@ export function buildGraphSvg(container) {
   });
 
   nodes.forEach(n => {
+    const category = n.category && CATEGORIES[n.category];
+
     const g = document.createElementNS(NS, 'g');
-    g.setAttribute('class', 'graph-node');
+    g.setAttribute('class', category ? `graph-node cat-${n.category}` : 'graph-node');
     g.setAttribute('data-id', n.id);
     g.setAttribute('transform', `translate(${n.x},${n.y})`);
 
@@ -56,6 +58,22 @@ export function buildGraphSvg(container) {
 
     g.appendChild(circle);
     g.appendChild(label);
+
+    // Nós compartilhados pela comunidade ganham um selo de categoria: assim
+    // o tipo do local continua visível mesmo quando o círculo muda de cor
+    // por estar selecionado/no caminho calculado.
+    if (category) {
+      const badge = document.createElementNS(NS, 'text');
+      badge.setAttribute('class', 'node-badge');
+      badge.setAttribute('y', -18);
+      badge.textContent = category.icon;
+      g.appendChild(badge);
+
+      const title = document.createElementNS(NS, 'title');
+      title.textContent = `${category.label} · compartilhado pela comunidade`;
+      g.appendChild(title);
+    }
+
     nodeLayer.appendChild(g);
   });
 
@@ -92,7 +110,7 @@ export function clearPath() {
   if (layer) layer.innerHTML = '';
 }
 
-export function drawPath(pathNodeIds, color) {
+export function drawPath(pathNodeIds, color, nodes) {
   clearPath();
   const layer = document.getElementById('pathLayer');
   if (!layer || pathNodeIds.length < 2) return;
