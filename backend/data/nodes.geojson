@@ -408,5 +408,123 @@
         ]
       }
     }
+    ,
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "node_zone_canyon_killpeaks_anchor",
+        "name": "Ancoragem - Agulhas de Pedra",
+        "type": "outpost_omega",
+        "biome": "high_relief_canyons",
+        "danger_level": 4,
+        "description": "Ponto de ancoragem criado para referência visual dentro da Zona das Agulhas de Pedra.",
+        "resources": { "water": 10, "fuel": 5, "scrap": 15, "thermal_stability": 40 }
+      },
+      "geometry": { "type": "Point", "coordinates": [138.415, -30.47] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "node_zone_western_knife_ridge_anchor",
+        "name": "Ancoragem - Faixa do Punhal",
+        "type": "canyon_hideout",
+        "biome": "high_relief_canyons",
+        "danger_level": 3,
+        "description": "Ponto referência para a Faixa da Fenda do Punhal.",
+        "resources": { "water": 15, "fuel": 10, "scrap": 20, "thermal_stability": 45 }
+      },
+      "geometry": { "type": "Point", "coordinates": [138.41, -30.41] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "node_zone_dome_meridian_anchor",
+        "name": "Portal - Vale de Trégua",
+        "type": "citadel_dome",
+        "biome": "corporate_domes",
+        "danger_level": 1,
+        "description": "Entrada/portal simbólico no Vale de Trégua de Meridiano.",
+        "resources": { "water": 50, "fuel": 20, "scrap": 30, "thermal_stability": 80 }
+      },
+      "geometry": { "type": "Point", "coordinates": [138.55, -30.25] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "node_zone_frostspire_anchor",
+        "name": "Marcação - Torre Espinho",
+        "type": "weather_tower",
+        "biome": "frozen_wastes",
+        "danger_level": 5,
+        "description": "Marcação para o Vórtice Glacial da Torre Espinho.",
+        "resources": { "water": 20, "fuel": 5, "scrap": 25, "thermal_stability": 5 }
+      },
+      "geometry": { "type": "Point", "coordinates": [138.82, -30.165] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "node_zone_frost_reach_anchor",
+        "name": "Marcação - Muralha do Gelo",
+        "type": "frozen_mine",
+        "biome": "frozen_wastes",
+        "danger_level": 4,
+        "description": "Ponto de referência na Muralha do Gelo Negro do Norte.",
+        "resources": { "water": 30, "fuel": 8, "scrap": 40, "thermal_stability": 15 }
+      },
+      "geometry": { "type": "Point", "coordinates": [138.82, -30.195] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "node_zone_radioactive_scorch_anchor",
+        "name": "Ancoragem - Inferno de Cinzas",
+        "type": "fuel_refinery",
+        "biome": "scorched_desert",
+        "danger_level": 5,
+        "description": "Ponto de referência no Inferno de Cinzas & Dunas Radioativas.",
+        "resources": { "water": 2, "fuel": 80, "scrap": 20, "thermal_stability": 25 }
+      },
+      "geometry": { "type": "Point", "coordinates": [138.755, -30.44] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "node_zone_ember_dunes_anchor",
+        "name": "Ancoragem - Dunas de Cinzas",
+        "type": "bandit_camp",
+        "biome": "scorched_desert",
+        "danger_level": 4,
+        "description": "Marcação para o Cinturão das Dunas de Cinzas.",
+        "resources": { "water": 5, "fuel": 20, "scrap": 30, "thermal_stability": 20 }
+      },
+      "geometry": { "type": "Point", "coordinates": [138.76, -30.45] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "node_gate_west_generic",
+        "name": "Entrada Oeste (Portal Genérico)",
+        "type": "outpost_omega",
+        "biome": "neutral",
+        "danger_level": 1,
+        "description": "Ponto neutro fora das zonas — usado como entrada de cidade/portal para apresentação.",
+        "resources": { "water": 20, "fuel": 10, "scrap": 5, "thermal_stability": 50 }
+      },
+      "geometry": { "type": "Point", "coordinates": [138.20, -30.60] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "node_gate_east_generic",
+        "name": "Ponto Neutro Leste",
+        "type": "outpost_omega",
+        "biome": "neutral",
+        "danger_level": 1,
+        "description": "Ponto neutro fora das zonas — referência para rotas alternativas.",
+        "resources": { "water": 25, "fuel": 15, "scrap": 10, "thermal_stability": 60 }
+      },
+      "geometry": { "type": "Point", "coordinates": [138.95, -30.60] }
+    }
   ]
 }

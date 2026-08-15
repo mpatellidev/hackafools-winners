@@ -14,9 +14,12 @@ import { nodes as baseNodes, edges as baseEdges } from './graph-data.js';
 
 const STORAGE_KEY = 'bestway.community.v1';
 
+// `showBadge` controla só o selo de emoji desenhado em cima do círculo do
+// nó no grafo (render.js) — o ícone continua usado nos botões/lista.
 export const CATEGORIES = {
-  recurso: { label: 'Recurso',       icon: '💧', edgeType: 'community' },
-  seguro:  { label: 'Local Seguro',  icon: '🛡️', edgeType: 'community' }
+  recurso: { label: 'Recurso',       icon: '💧', edgeType: 'community', showBadge: false },
+  seguro:  { label: 'Local Seguro',  icon: '🛡️', edgeType: 'community', showBadge: false },
+  comum:   { label: 'Local Comum',   icon: '📌', edgeType: 'community', showBadge: true }
 };
 
 function loadStore() {

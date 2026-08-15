@@ -15,6 +15,7 @@
   <div id="map-wrap">
     <div id="map-surface">
     <div id="scarMap"></div>
+    <div class="node-tooltip" id="nodeTooltip"></div>
     <div class="pick-badge" id="pickBadge">📍 Clique num ponto pra definir a localização</div>
     <div class="map-hint" id="mapHint">Carregando mapa real do wasteland...</div>
 
@@ -91,7 +92,6 @@
         <div>
           <div class="logo-name">DustNav</div>
           <div class="logo-sub">S.C.A.R. · dados reais do wasteland</div>
-          <a class="variant-link" href="index.html">← modo fantasia (offline)</a>
         </div>
         <button class="panel-close-btn" id="panelCloseBtn" aria-label="Fechar painel">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
@@ -144,6 +144,7 @@
       <div class="share-buttons">
         <button class="share-btn cat-recurso" id="shareResourceBtn">💧 Recurso</button>
         <button class="share-btn cat-seguro" id="shareSafeBtn">🛡️ Local seguro</button>
+        <button class="share-btn cat-comum" id="shareCommonBtn">📌 Local Comum</button>
       </div>
 
       <div class="share-compose" id="shareCompose" style="display:none">
