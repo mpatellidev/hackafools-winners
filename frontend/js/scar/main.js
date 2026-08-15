@@ -44,9 +44,9 @@ let shareCategory = null;
 let sharePoint = null;
 
 const SHARE_CATEGORY_META = {
-  recurso: { icon: '💧', label: 'recurso' },
-  seguro: { icon: '🛡️', label: 'local seguro' },
-  comum: { icon: '📌', label: 'local comum' }
+  recurso: { label: 'recurso' },
+  seguro: { label: 'local seguro' },
+  comum: { label: 'local comum' }
 };
 
 // Fluxo de reportar zona de perigo: nível escolhido, compose aberto, e os
@@ -93,7 +93,7 @@ function setPickMode(mode) {
   if (mode) { closeShareCompose(); closeZoneCompose(); }
   state.pickMode = mode;
   if (mode) {
-    const txt = mode === 'src' ? '📍 Clique num ponto: ORIGEM' : '🎯 Clique num ponto: DESTINO';
+    const txt = mode === 'src' ? 'Clique num ponto: ORIGEM' : 'Clique num ponto: DESTINO';
     if (pickBadge) { pickBadge.textContent = txt; pickBadge.classList.add('visible'); }
     if (mapEl) mapEl.style.cursor = 'crosshair';
   } else {
@@ -296,8 +296,8 @@ function openShareCompose(category, point) {
   shareCategory = category;
   sharePoint = point;
 
-  const meta = SHARE_CATEGORY_META[category] || { icon: '📍', label: 'local' };
-  if (title) title.textContent = `${meta.icon} Nomear ${meta.label}`;
+  const meta = SHARE_CATEGORY_META[category] || { label: 'local' };
+  if (title) title.textContent = `Nomear ${meta.label}`;
   if (input) input.value = '';
   compose.style.display = 'flex';
   if (input) input.focus();
