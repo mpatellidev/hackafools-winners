@@ -80,25 +80,25 @@ export const modes = [
   {
     id: 'walk',
     label: 'A pé',
-    icon: '🚶',
+    icon: '●',
     allowedTypes: ['road', 'trail', 'community'],
     timePerUnit: 1.2,
-    color: '#00e5a0'
+    color: '#9af46f'
   },
   {
     id: 'mount',
     label: 'Montaria',
-    icon: '🐎',
+    icon: '▲',
     allowedTypes: ['road', 'community'], // trilhas são estreitas demais pra montaria
     timePerUnit: 0.6,
-    color: '#ffcc00'
+    color: '#b9e47a'
   },
   {
     id: 'portal',
     label: 'Rede de Portais',
-    icon: '🌀',
+    icon: '◎',
     allowedTypes: ['road', 'portal', 'community'], // magia não se sustenta em trilhas
     timePerUnit: 0.3,
-    color: '#ff5c8a'
+    color: '#75dca0'
   }
 ];

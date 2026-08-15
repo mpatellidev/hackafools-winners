@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>DustNav — S.C.A.R. (Mapa Real do Wasteland)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="game-styles.css">
 <link rel="stylesheet" href="scar-styles.css">
@@ -13,6 +13,7 @@
 <body>
 <div id="app">
   <div id="map-wrap">
+    <div id="map-surface">
     <div id="scarMap"></div>
     <div class="node-tooltip" id="nodeTooltip"></div>
     <div class="pick-badge" id="pickBadge">📍 Clique num ponto pra definir a localização</div>
@@ -37,6 +38,41 @@
       <span class="pill-sep">·</span>
       <span id="pillTime">—</span>
     </div>
+    </div>
+
+    <section class="analysis-dock" id="analysisDock" aria-label="Relatório da rota S.C.A.R.">
+      <button class="analysis-tab" id="analysisDockTab" type="button" aria-controls="algoPanel" aria-expanded="false">
+        <span class="analysis-tab-index">04</span>
+        <span>RELATÓRIO DA ROTA</span>
+        <span class="analysis-tab-status">CONCLUÍDO</span>
+        <span class="analysis-tab-glyph" aria-hidden="true">×</span>
+      </button>
+
+      <div class="algo-panel" id="algoPanel">
+        <div id="algoContent" style="display:none">
+          <div class="section-title">Estatísticas da rota</div>
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-label">Distância</div>
+              <div class="stat-value accent2" id="statDist">—<span class="stat-unit">km</span></div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Nível de Perigo</div>
+              <div class="stat-value accent3" id="statDanger">—<span class="stat-unit">pts</span></div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Combustível Est.</div>
+              <div class="stat-value accent4" id="statFuel">—<span class="stat-unit">L</span></div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Sobrevivência</div>
+              <div class="stat-value accent" id="statSurvival">—<span class="stat-unit">%</span></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
   </div>
 
   <div class="panel-overlay" id="panelOverlay"></div>
@@ -152,55 +188,30 @@
       </div>
     </div>
 
-    <div class="algo-panel" id="algoPanel">
-      <div class="idle-state" id="idleState">
-        <div class="idle-icon">☢️</div>
-        <div class="idle-title">Nenhuma rota calculada</div>
-        <div class="idle-sub">Clique em dois pontos do mapa (ou busque pelo nome) para definir origem e destino. O cálculo roda de verdade no backend (<code>routing-engine.js</code>, Dijkstra sobre os dados de <code>backend/data</code>) considerando terreno, nível de perigo e zonas de risco.</div>
+    <section class="route-monitor" aria-label="Execução da rota">
+      <div class="section-title">Execução da rota</div>
+      <div class="progress-wrap">
+        <div class="progress-label">
+          <span id="progLabel">Aguardando cálculo...</span>
+          <span id="progPct">0%</span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" id="progFill"></div></div>
       </div>
-      <div id="algoContent" style="display:none">
-        <div class="section-title">Estatísticas da rota</div>
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-label">Distância</div>
-            <div class="stat-value accent2" id="statDist">—<span class="stat-unit">km</span></div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">Nível de Perigo</div>
-            <div class="stat-value accent3" id="statDanger">—<span class="stat-unit">pts</span></div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">Combustível Est.</div>
-            <div class="stat-value accent4" id="statFuel">—<span class="stat-unit">L</span></div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">Sobrevivência</div>
-            <div class="stat-value accent" id="statSurvival">—<span class="stat-unit">%</span></div>
-          </div>
-        </div>
 
-        <div class="section-title">Progresso do cálculo</div>
-        <div class="progress-wrap">
-          <div class="progress-label">
-            <span id="progLabel">Inicializando...</span>
-            <span id="progPct">0%</span>
-          </div>
-          <div class="progress-track"><div class="progress-fill" id="progFill"></div></div>
+      <div class="algo-log">
+        <div class="algo-log-header">
+          <span>Execução em tempo real</span>
+          <span id="logCount">0 entradas</span>
         </div>
+        <div class="log-entries" id="logEntries"></div>
+      </div>
 
-        <div class="section-title">Log da requisição</div>
-        <div class="algo-log">
-          <div class="algo-log-header">
-            <span>Execução em tempo real</span>
-            <span id="logCount">0 entradas</span>
-          </div>
-          <div class="log-entries" id="logEntries"></div>
-        </div>
-
+      <div class="route-monitor-path">
         <div class="section-title">Caminho</div>
         <div class="route-steps" id="routeSteps"></div>
       </div>
-    </div>
+    </section>
+
   </div>
 </div>
 

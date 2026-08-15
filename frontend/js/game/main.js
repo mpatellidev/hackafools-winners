@@ -2,7 +2,7 @@ import { state } from './state.js';
 import { modes } from './graph-data.js';
 import { getNodes, getEdges, addSharedLocation, listSharedLocations, clearSharedLocations, CATEGORIES } from './community.js';
 import { buildGraphSvg, setNodeState, clearAllNodeStates, clearPath } from './render.js';
-import { renderModeTabs, renderCommunityList, updateRunBtn, showAlgoContent } from './ui.js';
+import { renderModeTabs, renderCommunityList, updateRunBtn, showAlgoContent, setAnalysisDockOpen } from './ui.js';
 import { calculateRoute } from './route.js';
 import { resetLogCount } from '../utils.js';
 
@@ -26,7 +26,7 @@ function setPickMode(mode) {
   state.pickMode = mode;
   const graphMapEl = document.getElementById('graphMap');
   if (mode) {
-    const txt = mode === 'src' ? '📍 Clique num nó: ORIGEM' : '🎯 Clique num nó: DESTINO';
+    const txt = mode === 'src' ? 'SRC // SELECIONE UM NÓ DE ORIGEM' : 'DST // SELECIONE UM NÓ DE DESTINO';
     if (pickBadge) { pickBadge.textContent = txt; pickBadge.classList.add('visible'); }
     if (graphMapEl) graphMapEl.style.cursor = 'crosshair';
   } else {
@@ -46,10 +46,22 @@ function showHint(msg, ms) {
 
 function rebuildGraph() {
   buildGraphSvg(graphMap, getNodes(), getEdges());
+  updateHudReadouts();
   // buildGraphSvg troca o SVG inteiro — reaplica os destaques de
   // origem/destino que só existem como classes no DOM antigo.
   if (state.src) setNodeState(state.src.id, 'state-src');
   if (state.dst) setNodeState(state.dst.id, 'state-dst');
+}
+
+function updateHudReadouts() {
+  const nodes = getNodes();
+  const edges = getEdges();
+  const activeMode = modes.find(mode => mode.id === state.mode) || modes[0];
+  const count = document.getElementById('hudGraphCount');
+  const mode = document.getElementById('hudMode');
+
+  if (count) count.textContent = `${String(nodes.length).padStart(2, '0')} / ${String(edges.length).padStart(2, '0')}`;
+  if (mode) mode.textContent = `MODO: ${activeMode.label.toUpperCase()}`;
 }
 
 function refreshCommunityList() {
@@ -155,7 +167,9 @@ function initModeTabs() {
     state.mode = modeId;
     document.querySelectorAll('.mode-tab, .float-mode-tab').forEach(t => {
       t.classList.toggle('active', t.dataset.mode === modeId);
+      t.setAttribute('aria-pressed', String(t.dataset.mode === modeId));
     });
+    updateHudReadouts();
     resetAlgoUI();
   }
 
@@ -178,6 +192,7 @@ function initPanelToggle() {
     toggle.classList.add('is-open');
     overlay?.classList.add('visible');
     floatingBar?.classList.add('hidden');
+    toggle.setAttribute('aria-label', 'Recolher painel de controle');
   }
   function closePanel() {
     panel.classList.add('panel-closed');
@@ -185,6 +200,7 @@ function initPanelToggle() {
     toggle.classList.remove('is-open');
     overlay?.classList.remove('visible');
     floatingBar?.classList.remove('hidden');
+    toggle.setAttribute('aria-label', 'Abrir painel de controle');
   }
 
   toggle.addEventListener('click', () => {
@@ -194,6 +210,16 @@ function initPanelToggle() {
   overlay?.addEventListener('click', closePanel);
 
   if (window.innerWidth >= 768) openPanel();
+}
+
+function initAnalysisDock() {
+  const dock = document.getElementById('analysisDock');
+  const tab = document.getElementById('analysisDockTab');
+  if (!dock || !tab) return;
+
+  tab.addEventListener('click', () => {
+    setAnalysisDockOpen(!dock.classList.contains('is-open'));
+  });
 }
 
 // ── Compartilhamento com a comunidade ──
@@ -246,7 +272,7 @@ function confirmShare() {
   closeShareCompose();
   rebuildGraph();
   refreshCommunityList();
-  showHint('✅ Local compartilhado com a comunidade!', 2500);
+  showHint('[OK] Local compartilhado com a comunidade', 2500);
 }
 
 function startShareMode(category) {
@@ -259,6 +285,7 @@ function startShareMode(category) {
 
 // ── Bootstrap ──
 buildGraphSvg(graphMap, getNodes(), getEdges());
+updateHudReadouts();
 
 graphMap.addEventListener('click', (e) => {
   if (shareCategory && !sharePoint) {
@@ -274,6 +301,7 @@ graphMap.addEventListener('click', (e) => {
 
 initModeTabs();
 initPanelToggle();
+initAnalysisDock();
 setupSearch('srcInput', 'srcSug', 'src');
 setupSearch('dstInput', 'dstSug', 'dst');
 refreshCommunityList();
