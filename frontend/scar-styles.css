@@ -6,11 +6,7 @@
 #scarMap {
   width: 100%;
   height: 100%;
-  background-color: #070a07;
-  background-image:
-    linear-gradient(rgba(126, 180, 95, .035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(126, 180, 95, .035) 1px, transparent 1px);
-  background-size: 80px 80px;
+  background: radial-gradient(circle at 30% 20%, #1c140f, var(--bg));
 }
 #scarMap svg { width: 100%; height: 100%; display: block; }
 
@@ -18,19 +14,46 @@
    retângulo exato do dataset — o leve desfoque reforça a sensação de nuvem
    de perigo com bordas difusas, em vez de um polígono técnico. */
 .danger-zone {
-  stroke-width: 1;
-  filter: blur(2.5px);
+  stroke-width: 1.2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  filter: blur(2.5px) saturate(1.15);
 }
-.danger-zone.zone-faction_hostile { fill: rgba(201, 95, 81, .18); stroke: rgba(201, 95, 81, .62); }
-.danger-zone.zone-environmental_hazard { fill: rgba(212, 154, 77, .14); stroke: rgba(212, 154, 77, .55); }
-.danger-zone.zone-community_hazard { fill: rgba(101, 157, 77, .14); stroke: rgba(154, 244, 111, .5); }
+.danger-zone.zone-frozen_wastes,
+.zone-legend-swatch.zone-frozen_wastes {
+  background: linear-gradient(135deg, rgba(125, 211, 252, 0.92), rgba(59, 130, 246, 0.74));
+}
+.danger-zone.zone-scorched_desert,
+.zone-legend-swatch.zone-scorched_desert {
+  background: linear-gradient(135deg, rgba(251, 146, 60, 0.92), rgba(239, 68, 68, 0.74));
+}
+.danger-zone.zone-high_relief_canyons,
+.zone-legend-swatch.zone-high_relief_canyons {
+  background: linear-gradient(135deg, rgba(184, 134, 92, 0.92), rgba(120, 87, 52, 0.76));
+}
+.danger-zone.zone-corporate_domes,
+.zone-legend-swatch.zone-corporate_domes {
+  background: linear-gradient(135deg, rgba(52, 211, 153, 0.92), rgba(16, 185, 129, 0.7));
+}
+.danger-zone.zone-faction_hostile,
+.zone-legend-swatch.zone-faction_hostile {
+  background: linear-gradient(135deg, rgba(251, 113, 133, 0.92), rgba(190, 24, 93, 0.7));
+}
+.danger-zone.zone-environmental_hazard,
+.zone-legend-swatch.zone-environmental_hazard {
+  background: linear-gradient(135deg, rgba(253, 224, 71, 0.96), rgba(249, 115, 22, 0.72));
+}
+.danger-zone.zone-community_hazard,
+.zone-legend-swatch.zone-community_hazard {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.9), rgba(14, 116, 144, 0.72));
+}
 
 .scar-edge {
   stroke: var(--border2);
   stroke-width: 2.5;
 }
 .scar-edge.danger-mid { stroke: var(--accent4); opacity: .6; }
-.scar-edge.danger-high { stroke: var(--danger); stroke-width: 3; opacity: .85; }
+.scar-edge.danger-high { stroke: var(--accent3); stroke-width: 3; opacity: .85; }
 
 .scar-node { cursor: pointer; }
 .scar-node-circle {
@@ -40,7 +63,7 @@
   transition: fill .2s, stroke .2s, r .2s;
 }
 .scar-node.danger-mid .scar-node-circle { stroke: var(--accent4); }
-.scar-node.danger-high .scar-node-circle { stroke: var(--danger); }
+.scar-node.danger-high .scar-node-circle { stroke: var(--accent3); }
 .scar-node:hover .scar-node-circle { stroke: var(--accent); }
 
 /* Locais compartilhados pela comunidade ganham um contorno na cor da
@@ -48,6 +71,7 @@
    vir depois na cascata pra vencer quando o nó também estiver selecionado. */
 .scar-node.cat-recurso .scar-node-circle { stroke: var(--accent2); }
 .scar-node.cat-seguro .scar-node-circle { stroke: var(--accent); }
+.scar-node.cat-comum .scar-node-circle { stroke: var(--accent4); }
 
 .scar-node-icon {
   font-size: 14px;
@@ -68,6 +92,54 @@
 
 #scarPathLayer polyline { pointer-events: none; }
 
+/* Mini-card ao passar o mouse sobre um nó — segue o cursor, posicionado
+   via left/top em px pelo main.js (mouseover/mousemove em #scarMap). */
+.node-tooltip {
+  position: absolute;
+  z-index: 600;
+  left: 0;
+  top: 0;
+  max-width: 240px;
+  padding: 10px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 24px rgba(0,0,0,.5);
+  font-size: 11px;
+  color: var(--text);
+  line-height: 1.5;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, calc(-100% - 14px));
+  transition: opacity .12s ease;
+}
+.node-tooltip.visible { opacity: 1; }
+
+.node-tooltip-title {
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.node-tooltip-desc { color: var(--muted2); margin-bottom: 6px; }
+.node-tooltip-danger { color: var(--accent3); font-size: 10px; margin-bottom: 4px; }
+.node-tooltip-resources {
+  display: flex;
+  gap: 10px;
+  font-size: 10px;
+  color: var(--muted2);
+  margin-bottom: 4px;
+}
+.node-tooltip-tag {
+  display: inline-block;
+  margin-top: 2px;
+  font-size: 9px;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--accent2);
+}
+
 /* Preview ao vivo do quadrado sendo desenhado ao reportar uma zona de
    perigo (dois cliques no mapa) — segue o mouse entre o 1º e o 2º clique. */
 .zone-preview-rect {
@@ -81,12 +153,11 @@
 /* Stat cards extras (S.C.A.R. usa accent3/accent4 além de accent/accent2) */
 .stat-value.accent3 { color: var(--accent3); }
 .stat-value.accent4 { color: var(--accent4); }
-.idle-icon { color: var(--accent-soft); font-size: 38px; opacity: .42; filter: grayscale(1); }
 
 /* ── Painel: zonas de perigo (legenda a partir dos dados reais) ── */
 .zone-panel {
   padding: 16px 20px;
-  border-bottom: 1px solid var(--border2);
+  border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
 .zone-legend { display: flex; flex-direction: column; gap: 10px; }
@@ -104,9 +175,13 @@
   margin-top: 2px;
   flex-shrink: 0;
 }
-.zone-legend-swatch.zone-faction_hostile { background: var(--danger); }
-.zone-legend-swatch.zone-environmental_hazard { background: var(--accent3); }
-.zone-legend-swatch.zone-community_hazard { background: var(--accent); }
+.zone-legend-swatch.zone-frozen_wastes { background: linear-gradient(135deg, rgba(125, 211, 252, 0.95), rgba(59, 130, 246, 0.75)); }
+.zone-legend-swatch.zone-scorched_desert { background: linear-gradient(135deg, rgba(251, 146, 60, 0.95), rgba(239, 68, 68, 0.75)); }
+.zone-legend-swatch.zone-high_relief_canyons { background: linear-gradient(135deg, rgba(180, 130, 80, 0.95), rgba(120, 87, 52, 0.75)); }
+.zone-legend-swatch.zone-corporate_domes { background: linear-gradient(135deg, rgba(52, 211, 153, 0.95), rgba(16, 185, 129, 0.75)); }
+.zone-legend-swatch.zone-faction_hostile { background: linear-gradient(135deg, rgba(251, 113, 133, 0.95), rgba(190, 24, 93, 0.75)); }
+.zone-legend-swatch.zone-environmental_hazard { background: linear-gradient(135deg, rgba(253, 224, 71, 0.95), rgba(249, 115, 22, 0.75)); }
+.zone-legend-swatch.zone-community_hazard { background: linear-gradient(135deg, rgba(56, 189, 248, 0.9), rgba(14, 116, 144, 0.75)); }
 .zone-legend-item strong { color: var(--text); }
 .zone-legend-desc { color: var(--muted); }
 
@@ -141,7 +216,7 @@
 .zone-tier-btn {
   flex: 1;
   padding: 8px 4px;
-  border-radius: 0;
+  border-radius: 8px;
   border: 1px solid var(--border2);
   background: transparent;
   color: var(--muted2);
@@ -152,6 +227,6 @@
   white-space: nowrap;
 }
 .zone-tier-btn:hover { border-color: var(--accent4); color: var(--text); }
-.zone-tier-btn.active.tier-1 { background: rgba(185, 196, 92, .15); border-color: var(--accent4); color: var(--text); }
-.zone-tier-btn.active.tier-2 { background: rgba(212, 154, 77, .18); border-color: var(--accent3); color: var(--text); }
-.zone-tier-btn.active.tier-3 { background: rgba(201, 95, 81, .2); border-color: var(--danger); color: var(--text); }
+.zone-tier-btn.active.tier-1 { background: rgba(255, 204, 0, 0.15); border-color: var(--accent4); color: var(--text); }
+.zone-tier-btn.active.tier-2 { background: rgba(255, 204, 0, 0.25); border-color: var(--accent4); color: var(--text); }
+.zone-tier-btn.active.tier-3 { background: rgba(255, 92, 138, 0.25); border-color: var(--accent3); color: var(--text); }

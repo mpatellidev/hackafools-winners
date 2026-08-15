@@ -139,7 +139,7 @@ function readJsonBody(req) {
   });
 }
 
-const COMMUNITY_CATEGORIES = new Set(['recurso', 'seguro']);
+const COMMUNITY_CATEGORIES = new Set(['recurso', 'seguro', 'comum']);
 
 // Nível de periculosidade que o usuário escolhe ao reportar uma zona: um
 // seletor simples de 3 níveis, que traduz pros mesmos campos numéricos já
@@ -176,7 +176,7 @@ async function handleApi(req, res, pathname) {
       return;
     }
     if (!COMMUNITY_CATEGORIES.has(category)) {
-      sendJson(res, 400, { error: "category deve ser 'recurso' ou 'seguro'." });
+      sendJson(res, 400, { error: "category deve ser 'recurso', 'seguro' ou 'comum'." });
       return;
     }
     if (!Number.isFinite(lon) || !Number.isFinite(lat) || lon < -180 || lon > 180 || lat < -90 || lat > 90) {
@@ -206,6 +206,7 @@ async function handleApi(req, res, pathname) {
 
     const name = String(body.name ?? '').trim().slice(0, 80);
     const description = String(body.description ?? '').trim().slice(0, 240);
+    const biomeFocus = String(body.biome_focus ?? 'scorched_desert').trim() || 'scorched_desert';
     const tier = THREAT_TIERS[body.threat_level];
     const corner1 = body.corner1;
     const corner2 = body.corner2;
@@ -250,6 +251,7 @@ async function handleApi(req, res, pathname) {
 
     const zoneInput = {
       name,
+      biomeFocus,
       zoneType: 'community_hazard',
       threatLevel: body.threat_level,
       dangerMultiplier: tier.danger_multiplier,

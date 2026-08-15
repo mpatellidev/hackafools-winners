@@ -59,15 +59,18 @@ export function buildGraphSvg(container, nodes, edges) {
     g.appendChild(circle);
     g.appendChild(label);
 
-    // Nós compartilhados pela comunidade ganham um selo de categoria: assim
-    // o tipo do local continua visível mesmo quando o círculo muda de cor
-    // por estar selecionado/no caminho calculado.
+    // Nós compartilhados pela comunidade ganham a cor da categoria no
+    // contorno (classe cat-x, via CSS); o selo de emoji em cima do círculo
+    // só aparece pras categorias com `showBadge: true` — as demais ficam
+    // sem nenhum emoji no nó.
     if (category) {
-      const badge = document.createElementNS(NS, 'text');
-      badge.setAttribute('class', 'node-badge');
-      badge.setAttribute('y', -18);
-      badge.textContent = category.icon;
-      g.appendChild(badge);
+      if (category.showBadge) {
+        const badge = document.createElementNS(NS, 'text');
+        badge.setAttribute('class', 'node-badge');
+        badge.setAttribute('y', -18);
+        badge.textContent = category.icon;
+        g.appendChild(badge);
+      }
 
       const title = document.createElementNS(NS, 'title');
       title.textContent = `${category.label} · compartilhado pela comunidade`;

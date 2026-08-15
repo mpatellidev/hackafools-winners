@@ -1,0 +1,52 @@
+DUSTNAV — S.C.A.R. (SUMÁRIO DA LORE)
+
+Visão geral
+-----------
+DustNav é uma plataforma tática de navegação e inteligência geoespacial concebida para comboios que cruzam um mundo pós-apocalíptico extremo. O sistema prioriza a sobrevivência, equilibrando distância, risco e consumo de recursos (combustível/equilíbrio térmico) ao traçar rotas.
+
+A Falha da Geoengenharia
+------------------------
+No auge do colapso ecológico, megacorporações ergueram "Dômos Climáticos" — enclaves com microclimas perfeitos que garantiam conforto e recursos para as elites. A tecnologia de drenagem e geração climática, porém, provocou efeitos colaterais catastróficos: vazamentos térmicos, desertificação local e anomalias criogênicas. O mundo fora das cúpulas se fragmentou em biomas extremos, com choques térmicos que geram zonas de perigo dinâmicas.
+
+Biomas e a paleta do mapa
+-------------------------
+Cada bioma tem identidade cromática e impacto operacional no motor de rotas:
+- Frozen Wastes (gelo negro): tons de azul/ciano. Frio criogênico que congela motores e reduz eficiência; multiplicadores de perigo altos.
+- Scorched Desert (deserto escaldante): laranja/ferrugem. Dunas radioativas, poços em chamas e patrulhas hostis.
+- High Relief Canyons (cânions): ocre/marrom. Sombreamento natural, mas pontos de emboscada e atiradores em alto relevo.
+- Corporate Domes (dômos): verde/neon. Microclimas estáveis, rotas pavimentadas e recursos concentrados — alto valor, alto risco político.
+- Neutral / Community (neutro): tons suaves usados para pontos de passagem e entradas de cidade.
+
+Taxonomia espacial
+------------------
+- Nodes (`data/nodes.geojson`): pontos de interesse (POIs) com atributos de recursos (água, combustível, sucata, estabilidade térmica) e `danger_level` (1 a 5).
+- Edges (`data/edges.geojson`): vias entre nós com `distance_km`, `danger_level`, `fuel_cost_multiplier` e `terrain_type`.
+- Zones (`data/zones.geojson`): polígonos de ameaça com `zone_type` (faction_hostile | environmental_hazard), `threat_level` (tier_1..3), `danger_multiplier` e `stealth_penalty`.
+
+Perfis de roteamento
+--------------------
+- Rota do Louco (direct): minimiza tempo/distância, aceita cruzar zonas altas de risco — exige comboios blindados.
+- Rota dos Vermes (survival): evita áreas perigosas, prefere cânions e corredores de trégua.
+- Rota do Sucateiro (resource): otimiza paradas de reabastecimento e sucata com custo energético equilibrado.
+
+Alterações recentes (consolidadas)
+----------------------------------
+- Paleta visual aplicada: cada `biome_focus` mapeado para cores coerentes (azul — gelo, laranja — deserto, ocre — cânions, verde — dômos). A intensidade da cor varia com `danger_multiplier`.
+- Zonas redesenhadas: a renderização usa blobs orgânicos com bordas difusas; raio visual reduzido para 82% do raio real para facilitar desvios.
+- Espaçamento aumentado: `NODE_CLEARANCE` elevado para 40px no espaço projetado, garantindo folga visual entre nós e zonas e melhor leitura de rotas alternativas.
+- Zonas vinculadas a nós: todas as zonas têm agora ao menos uma "ancoragem" (nó interno) para referência visual e operacional nos cálculos de rota.
+- Pontos genéricos neutros: adicionados "Entradas" e pontos neutros fora das zonas (ex.: Entradas Oeste/Leste) usados para demonstração de desvios e como portais de apresentação.
+
+Notas de design
+---------------
+- Foram mantidos os dados originais: nenhum nó funcional existente foi removido; os novos nós adicionados têm função essencialmente de referência para a apresentação e como âncoras que garantem que cada zona disponha de pelo menos um POI.
+- O motor de rotas calcula penalidades de zona (zonePenalty) multiplicativas que afetam o `survivalWeight` das arestas, então a presença de um nó dentro de uma zona pode alterar comportamentos de roteamento em demonstrações.
+
+Próximos passos sugeridos
+------------------------
+- Colorir nós por `biome` e por tipo de POI para reforçar a leitura visual.
+- Adicionar suavizações de animação quando rotas evitam zonas (traços se curvando ao redor de uma zona).
+- Implementar um modo de "simulação de comboio" que desenhe um desvio animado para apresentações.
+
+---
+Gerado automaticamente pelo assistente — se quiser, atualizo o texto com mais detalhes (histórias de facções, nomes adicionais para pontos, ou versões em inglês).

@@ -9,6 +9,9 @@ const VIEW_H = 700;
 // pouco além do seu raio real (ver organicBlobPath em render.js), então
 // precisam de mais respiro até a borda do viewBox do que um nó pontual.
 const PAD = 100;
+// Fator visual para "espalhar" os pontos a partir do centro do mapa.
+// Valores >1 empurram nós/zona para fora, aumentando o espaço entre eles.
+const SPREAD_FACTOR = 1.12;
 
 export const TYPE_ICONS = {
   citadel: '🏰',
@@ -22,7 +25,8 @@ export const TYPE_ICONS = {
   outpost_omega: '📡',
   // Locais compartilhados pela comunidade — mesmas categorias do modo fantasia.
   recurso: '💧',
-  seguro: '🛡️'
+  seguro: '🛡️',
+  comum: '📌'
 };
 
 export function dangerBucket(level) {
@@ -75,12 +79,28 @@ export function createProjection(nodesGeojson, zonesGeojson) {
     const x = PAD + ((lon - minLon) / lonSpan) * innerW;
     // Latitude cresce pra norte; y do SVG cresce pra baixo — por isso invertido.
     const y = PAD + ((maxLat - lat) / latSpan) * innerH;
-    return [Math.round(x), Math.round(y)];
+    // Aplica spread radial a partir do centro do viewBox para aumentar
+    // visualmente o espaçamento entre nós/zona sem tocar nos dados reais.
+    const cx = VIEW_W / 2;
+    const cy = VIEW_H / 2;
+    const dx = x - cx;
+    const dy = y - cy;
+    const sx = cx + dx * SPREAD_FACTOR;
+    const sy = cy + dy * SPREAD_FACTOR;
+    return [Math.round(sx), Math.round(sy)];
   }
 
   function unproject([x, y]) {
-    const lon = minLon + ((x - PAD) / innerW) * lonSpan;
-    const lat = maxLat - ((y - PAD) / innerH) * latSpan;
+    // Desfaz o spread antes de converter de volta para lon/lat.
+    const cx = VIEW_W / 2;
+    const cy = VIEW_H / 2;
+    const dx = (x - cx) / SPREAD_FACTOR;
+    const dy = (y - cy) / SPREAD_FACTOR;
+    const ux = cx + dx;
+    const uy = cy + dy;
+
+    const lon = minLon + ((ux - PAD) / innerW) * lonSpan;
+    const lat = maxLat - ((uy - PAD) / innerH) * latSpan;
     return [lon, lat];
   }
 
@@ -160,6 +180,7 @@ export function buildScene(nodesGeojson, edgesGeojson, zonesGeojson) {
     return {
       id: props.id,
       name: props.name,
+      biomeFocus: props.biome_focus || props.biome || null,
       zoneType: props.zone_type,
       threatLevel: props.threat_level,
       dangerMultiplier: props.danger_multiplier,
