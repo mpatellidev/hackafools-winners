@@ -139,7 +139,7 @@ function readJsonBody(req) {
   });
 }
 
-const COMMUNITY_CATEGORIES = new Set(['recurso', 'seguro']);
+const COMMUNITY_CATEGORIES = new Set(['recurso', 'seguro', 'comum']);
 
 // Nível de periculosidade que o usuário escolhe ao reportar uma zona: um
 // seletor simples de 3 níveis, que traduz pros mesmos campos numéricos já
@@ -176,7 +176,7 @@ async function handleApi(req, res, pathname) {
       return;
     }
     if (!COMMUNITY_CATEGORIES.has(category)) {
-      sendJson(res, 400, { error: "category deve ser 'recurso' ou 'seguro'." });
+      sendJson(res, 400, { error: "category deve ser 'recurso', 'seguro' ou 'comum'." });
       return;
     }
     if (!Number.isFinite(lon) || !Number.isFinite(lat) || lon < -180 || lon > 180 || lat < -90 || lat > 90) {

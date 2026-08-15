@@ -1,23 +1,36 @@
 import { state } from './state.js';
 import { fetchLayers, fetchRoute, createCommunityNode, createDangerZone } from './api.js';
 import { buildScene } from './geo.js';
-import { buildScarSvg, setScarNodeState, clearAllScarNodeStates, clearScarPath, drawScarPath, setZonePreviewRect } from './render.js';
-import { renderModeTabs, updateRunBtn, showAlgoContent, updateStats, renderRouteSteps, renderZoneLegend, renderCommunityList, MODES } from './ui.js';
+import { buildScarSvg, setScarNodeState, clearAllScarNodeStates, clearScarPath, drawScarPath, setZonePreviewRect, setRouteEdges } from './render.js';
+import { renderModeTabs, updateRunBtn, showAlgoContent, updateStats, renderRouteSteps, renderZoneLegend, renderCommunityList, nodeTooltipHtml, MODES } from './ui.js';
 import { setProgress, addLog, sleep, resetLogCount } from '../utils.js';
 
 const pickBadge = document.getElementById('pickBadge');
 const mapHint = document.getElementById('mapHint');
+const mapWrapEl = document.getElementById('map-wrap');
 const mapEl = document.getElementById('scarMap');
+const nodeTooltip = document.getElementById('nodeTooltip');
 const idleSub = document.querySelector('#idleState .idle-sub');
+
+// Ids do último caminho calculado (ou null) — só as vias desses trechos
+// ficam visíveis no mapa; todas as outras permanecem invisíveis o tempo
+// todo, mesmo depois de calcular uma rota.
+let lastRoutePath = null;
 
 // Preenchida no bootstrap() (e de novo em refreshScene()) a partir da API
 // real: { nodes, edges, zones, project, unproject }
 let scene = null;
 
-// Modo de compartilhamento ativo ('recurso' | 'seguro' | null) e o ponto do
-// mapa já escolhido, aguardando confirmação do nome no formulário.
+// Modo de compartilhamento ativo ('recurso' | 'seguro' | 'comum' | null) e o
+// ponto do mapa já escolhido, aguardando confirmação do nome no formulário.
 let shareCategory = null;
 let sharePoint = null;
+
+const SHARE_CATEGORY_META = {
+  recurso: { icon: '💧', label: 'recurso' },
+  seguro: { icon: '🛡️', label: 'local seguro' },
+  comum: { icon: '📌', label: 'local comum' }
+};
 
 // Fluxo de reportar zona de perigo: nível escolhido, compose aberto, e os
 // dois cantos (em px do viewBox) que definem o retângulo da área, na ordem
@@ -27,10 +40,36 @@ let zoneTier = null;
 let zoneCorner1 = null;
 let zoneCorner2 = null;
 
+function applyEdgeVisibility() {
+  setRouteEdges(lastRoutePath);
+}
+
 function resetAlgoUI() {
   showAlgoContent(false);
   clearScarPath();
   resetLogCount();
+  lastRoutePath = null;
+  applyEdgeVisibility();
+}
+
+// ── Mini-card ao passar o mouse sobre um nó ──
+
+function positionNodeTooltip(clientX, clientY) {
+  if (!nodeTooltip || !mapWrapEl) return;
+  const wrapRect = mapWrapEl.getBoundingClientRect();
+  nodeTooltip.style.left = `${clientX - wrapRect.left}px`;
+  nodeTooltip.style.top = `${clientY - wrapRect.top}px`;
+}
+
+function showNodeTooltip(node, clientX, clientY) {
+  if (!nodeTooltip) return;
+  nodeTooltip.innerHTML = nodeTooltipHtml(node);
+  nodeTooltip.classList.add('visible');
+  positionNodeTooltip(clientX, clientY);
+}
+
+function hideNodeTooltip() {
+  nodeTooltip?.classList.remove('visible');
 }
 
 function setPickMode(mode) {
@@ -57,6 +96,7 @@ function showHint(msg, ms) {
 
 function rebuildGraph() {
   buildScarSvg(mapEl, scene.nodes, scene.edges, scene.zones);
+  applyEdgeVisibility();
   // buildScarSvg troca o SVG inteiro — reaplica os destaques de
   // origem/destino que só existem como classes no DOM antigo.
   if (state.src) setScarNodeState(state.src.id, 'state-src');
@@ -237,7 +277,7 @@ function openShareCompose(category, point) {
   shareCategory = category;
   sharePoint = point;
 
-  const meta = category === 'recurso' ? { icon: '💧', label: 'recurso' } : { icon: '🛡️', label: 'local seguro' };
+  const meta = SHARE_CATEGORY_META[category] || { icon: '📍', label: 'local' };
   if (title) title.textContent = `${meta.icon} Nomear ${meta.label}`;
   if (input) input.value = '';
   compose.style.display = 'flex';
@@ -292,8 +332,8 @@ async function confirmShare() {
   if (!shareCategory || !sharePoint || !scene) return;
 
   const input = document.getElementById('shareLabelInput');
-  const label = (input ? input.value.trim() : '') ||
-    (shareCategory === 'recurso' ? 'Recurso' : 'Local Seguro');
+  const defaultLabels = { recurso: 'Recurso', seguro: 'Local Seguro', comum: 'Local Comum' };
+  const label = (input ? input.value.trim() : '') || defaultLabels[shareCategory] || 'Local';
   const [lon, lat] = scene.unproject([sharePoint.x, sharePoint.y]);
 
   const confirmBtn = document.getElementById('shareConfirmBtn');
@@ -406,6 +446,7 @@ async function refreshScene() {
   const layers = await fetchLayers();
   scene = buildScene(layers.nodes, layers.edges, layers.zones);
   buildScarSvg(mapEl, scene.nodes, scene.edges, scene.zones);
+  applyEdgeVisibility();
   renderZoneLegend(scene.zones);
   refreshCommunityList();
   if (state.src) setScarNodeState(state.src.id, 'state-src');
@@ -476,6 +517,11 @@ async function runCalculation() {
     const points = (result.geometry?.coordinates || []).map(scene.project);
     drawScarPath(points, modeCfg.color);
 
+    // Só as vias que fazem parte desse caminho ficam visíveis — as outras
+    // continuam invisíveis, mesmo depois da rota calculada.
+    lastRoutePath = props.path_nodes;
+    applyEdgeVisibility();
+
     props.path_nodes.forEach(id => {
       if (id === state.src.id) setScarNodeState(id, 'state-src');
       else if (id === state.dst.id) setScarNodeState(id, 'state-dst');
@@ -507,8 +553,19 @@ async function bootstrap() {
     const layers = await fetchLayers();
     scene = buildScene(layers.nodes, layers.edges, layers.zones);
     buildScarSvg(mapEl, scene.nodes, scene.edges, scene.zones);
+    applyEdgeVisibility();
     renderZoneLegend(scene.zones);
     refreshCommunityList();
+
+    mapEl.addEventListener('mousemove', (e) => {
+      const nodeEl = e.target.closest('.scar-node');
+      if (nodeEl && scene) {
+        const node = scene.nodes.find(n => n.id === nodeEl.dataset.id);
+        if (node) { showNodeTooltip(node, e.clientX, e.clientY); return; }
+      }
+      hideNodeTooltip();
+    });
+    mapEl.addEventListener('mouseleave', hideNodeTooltip);
 
     mapEl.addEventListener('click', (e) => {
       if (zoneReportOpen && zoneTier && !zoneCorner2) {
@@ -589,6 +646,7 @@ document.getElementById('pickDstBtn').onclick = () => {
 
 document.getElementById('shareResourceBtn').onclick = () => startShareMode('recurso');
 document.getElementById('shareSafeBtn').onclick = () => startShareMode('seguro');
+document.getElementById('shareCommonBtn').onclick = () => startShareMode('comum');
 document.getElementById('shareCancelBtn').onclick = closeShareCompose;
 document.getElementById('shareConfirmBtn').onclick = confirmShare;
 
