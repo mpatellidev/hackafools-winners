@@ -13,22 +13,6 @@ const PAD = 100;
 // Valores >1 empurram nós/zona para fora, aumentando o espaço entre eles.
 const SPREAD_FACTOR = 1.12;
 
-export const TYPE_ICONS = {
-  citadel: '🏰',
-  water_refinery: '💧',
-  gas_town: '⛽',
-  canyon_hideout: '🪨',
-  rust_graveyard: '🔧',
-  bullet_farm: '💥',
-  dead_pass: '☠️',
-  oasis_mirage: '🌴',
-  outpost_omega: '📡',
-  // Locais compartilhados pela comunidade — mesmas categorias do modo fantasia.
-  recurso: '💧',
-  seguro: '🛡️',
-  comum: '📌'
-};
-
 export function dangerBucket(level) {
   const n = Number(level) || 0;
   if (n >= 4) return 'high';

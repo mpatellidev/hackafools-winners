@@ -1,5 +1,4 @@
 /* Estilos do modo S.C.A.R. (scar.html) — mapa real do wasteland, vindo da
-/* Estilos do modo S.C.A.R. (scar.html) — mapa real do wasteland, vindo da
    API do próprio server.js (routing-engine.js). Carregado depois de
    styles.css, reaproveita as variáveis de tema já definidas lá
    (--bg, --accent, --border2 etc.). */
@@ -7,9 +6,45 @@
 #scarMap {
   width: 100%;
   height: 100%;
-  background: radial-gradient(circle at 30% 20%, #1c140f, var(--bg));
+  background: #c8b58e;
 }
-#scarMap svg { width: 100%; height: 100%; display: block; }
+#scarMap svg { width: 100%; height: 100%; display: block; cursor: grab; touch-action: none; user-select: none; }
+#scarMap svg.is-dragging { cursor: grabbing; }
+
+.map-land-base { fill: #c8b58e; }
+.danger-zone,
+.terrain-contour,
+.terrain-fracture,
+.terrain-waterline,
+.terrain-dune-line,
+.terrain-settlement-boundary {
+  vector-effect: non-scaling-stroke;
+}
+.danger-zone { stroke-linejoin: round; stroke-linecap: round; filter: none; }
+.terrain-contour { stroke: rgba(91, 67, 43, .34); stroke-width: 1.05; }
+.terrain-contour-local { stroke: rgba(75, 51, 31, .42); stroke-width: .9; }
+.contour-high_relief_canyons { stroke: rgba(91, 53, 28, .52); stroke-width: 1.15; }
+.contour-frozen_wastes { stroke: rgba(70, 126, 151, .44); }
+.contour-scorched_desert { stroke: rgba(148, 75, 35, .36); }
+.contour-corporate_domes { stroke: rgba(74, 111, 79, .28); }
+.terrain-fracture { stroke: rgba(78, 137, 162, .5); stroke-width: 1; stroke-linecap: round; }
+.terrain-waterline { stroke: rgba(53, 119, 139, .56); stroke-width: 1.05; }
+.terrain-dune-line { stroke: rgba(151, 78, 36, .4); stroke-width: 1; stroke-linecap: round; }
+.terrain-settlement-boundary { stroke: rgba(72, 97, 69, .42); stroke-width: 1; stroke-dasharray: 5 4; }
+.terrain-region-label {
+  fill: rgba(69, 49, 31, .64);
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: .13em;
+  text-anchor: middle;
+  paint-order: stroke;
+  stroke: rgba(215, 196, 157, .82);
+  stroke-width: 3px;
+  pointer-events: none;
+}
+.terrain-region-frozen_wastes .terrain-region-label { fill: rgba(38, 91, 116, .78); }
+.terrain-feature { pointer-events: none; }
 
 /* HUD tático do mapa: mais compacto e com leitura de alerta em âmbar/vermelho. */
 @media (min-width: 768px) {
@@ -40,17 +75,7 @@
 #map-surface .mark-risk-mid { color: #ed983d; background: rgba(237, 152, 61, .75); }
 #map-surface .mark-risk-high { color: #df594d; background: rgba(223, 89, 77, .82); }
 
-/* Blob orgânico (path com spline Catmull-Rom, ver render.js) em vez do
-   retângulo exato do dataset — o leve desfoque reforça a sensação de nuvem
-   de perigo com bordas difusas, em vez de um polígono técnico. */
-.danger-zone {
-  stroke-linejoin: round;
-  stroke-linecap: round;
-  filter: blur(1.1px) saturate(.88);
-}
-
 #scarEdgeLayer { display: none !important; }
-}
 
 .scar-edge {
   display: none;
@@ -64,35 +89,88 @@
 
 .scar-node { cursor: pointer; }
 .scar-node-circle {
-  fill: var(--surface2);
-  stroke: var(--border2);
+  fill: #f4ead3;
+  stroke: #5a4630;
   stroke-width: 2;
+  vector-effect: non-scaling-stroke;
   transition: fill .2s, stroke .2s, r .2s;
 }
-.scar-node.danger-mid .scar-node-circle { stroke: var(--accent4); }
-.scar-node.danger-high .scar-node-circle { stroke: var(--accent3); }
-.scar-node:hover .scar-node-circle { stroke: var(--accent); }
+.scar-node.danger-mid .scar-node-circle { stroke: #b47735; }
+.scar-node.danger-high .scar-node-circle { stroke: #a54837; }
+.scar-node:hover .scar-node-circle { fill: #fff8e8; stroke: #2f2116; }
 
 /* Locais compartilhados pela comunidade ganham um contorno na cor da
    categoria — as regras de estado (src/dst/caminho) logo abaixo precisam
    vir depois na cascata pra vencer quando o nó também estiver selecionado. */
-.scar-node.cat-recurso .scar-node-circle { stroke: var(--accent2); }
-.scar-node.cat-seguro .scar-node-circle { stroke: var(--accent); }
-.scar-node.cat-comum .scar-node-circle { stroke: var(--accent4); }
+.scar-node.cat-recurso .scar-node-circle { stroke: #427f96; }
+.scar-node.cat-seguro .scar-node-circle { stroke: #4d6c4e; }
+.scar-node.cat-comum .scar-node-circle { stroke: #665442; }
 
 .scar-node-label {
-  fill: var(--muted2);
+  fill: #35281d;
   font-family: var(--font-mono);
   font-size: 10px;
   text-anchor: middle;
+  paint-order: stroke;
+  stroke: rgba(231, 216, 184, .9);
+  stroke-width: 3px;
+  stroke-linejoin: round;
   pointer-events: none;
 }
 
-.scar-node.state-src .scar-node-circle { fill: var(--accent2); stroke: #fff; }
-.scar-node.state-dst .scar-node-circle { fill: var(--accent3); stroke: #fff; }
-.scar-node.state-path .scar-node-circle { fill: var(--accent); }
+.scar-node.state-src .scar-node-circle { fill: #f2c451; stroke: #fff7df; }
+.scar-node.state-dst .scar-node-circle { fill: #d65b49; stroke: #fff1e7; }
+.scar-node.state-path .scar-node-circle { fill: #d48a36; }
 
 #scarPathLayer polyline { pointer-events: none; }
+.route-step .step-icon { width: 42px; color: #d48a36; font-size: 7px; letter-spacing: .05em; }
+
+.map-zoom-controls {
+  position: absolute;
+  right: 20px;
+  bottom: 22px;
+  z-index: 650;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid rgba(83, 61, 38, .42);
+  border-radius: 3px;
+  background: #f5ecd9;
+  box-shadow: 0 2px 8px rgba(51, 36, 22, .24);
+}
+.map-zoom-controls button {
+  width: 36px;
+  height: 34px;
+  border: 0;
+  border-bottom: 1px solid rgba(83, 61, 38, .22);
+  background: #f5ecd9;
+  color: #3f3022;
+  cursor: pointer;
+  font: 18px/1 var(--font-mono);
+}
+.map-zoom-controls button:last-child { border-bottom: 0; font-size: 8px; letter-spacing: .03em; }
+.map-zoom-controls button:hover { background: #e7d7b8; color: #21170f; }
+.map-zoom-controls button:active { background: #dbc49c; }
+.map-zoom-controls button:focus-visible { outline: 2px solid #d48a36; outline-offset: -2px; }
+.map-attribution {
+  position: absolute;
+  right: 68px;
+  bottom: 22px;
+  z-index: 640;
+  padding: 4px 7px;
+  border: 1px solid rgba(83, 61, 38, .25);
+  background: rgba(245, 236, 217, .88);
+  color: #6c573d;
+  font-size: 7px;
+  letter-spacing: .08em;
+  pointer-events: none;
+}
+@media (max-width: 767px) {
+  .map-zoom-controls { right: 96px; bottom: 18px; flex-direction: row; }
+  .map-zoom-controls button { width: 34px; border-right: 1px solid rgba(83, 61, 38, .22); border-bottom: 0; }
+  .map-zoom-controls button:last-child { border-right: 0; }
+  .map-attribution { display: none; }
+}
 
 /* Mini-card ao passar o mouse sobre um nó — segue o cursor, posicionado
    via left/top em px pelo main.js (mouseover/mousemove em #scarMap). */
