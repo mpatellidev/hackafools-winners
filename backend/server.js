@@ -370,6 +370,16 @@ const server = http.createServer((req, res) => {
 
 const port = Number(process.env.PORT || 3000);
 
+server.once('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(`A porta ${port} já está em uso. Encerre a outra instância do servidor ou inicie com PORT=3001.`);
+    process.exitCode = 1;
+    return;
+  }
+  console.error('Não foi possível iniciar o servidor:', err.message);
+  process.exitCode = 1;
+});
+
 server.listen(port, () => {
   console.log(`Servidor rodando em http://localhost:${port}`);
 });
