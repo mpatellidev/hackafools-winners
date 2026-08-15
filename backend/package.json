@@ -5,6 +5,7 @@
   "description": "Servidor HTTP único: serve o frontend estático e a API de rotas S.C.A.R. (sem dependências externas).",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "test": "node routing-engine.test.js"
   }
 }

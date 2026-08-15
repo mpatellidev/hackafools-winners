@@ -327,6 +327,103 @@ function attachMapNavigation(svg) {
   renderView();
 }
 
+function deterministicAngle(a, b) {
+  const text = `${a}|${b}`;
+  let hash = 2166136261;
+  for (let i = 0; i < text.length; i++) {
+    hash ^= text.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return ((hash >>> 0) / 4294967296) * Math.PI * 2;
+}
+
+function layoutNodePositions(nodes, minDistance = 72, iterations = 28) {
+  const positions = new Map(nodes.map(node => [node.id, { x: node.x, y: node.y }]));
+  const anchors = new Map(nodes.map(node => [node.id, { x: node.x, y: node.y }]));
+  const ordered = [...nodes].sort((a, b) => String(a.id).localeCompare(String(b.id)));
+
+  for (let iteration = 0; iteration < iterations; iteration++) {
+    for (let i = 0; i < ordered.length; i++) {
+      for (let j = i + 1; j < ordered.length; j++) {
+        const a = positions.get(ordered[i].id);
+        const b = positions.get(ordered[j].id);
+        let dx = b.x - a.x;
+        let dy = b.y - a.y;
+        let distance = Math.hypot(dx, dy);
+        if (distance >= minDistance) continue;
+        if (distance < 0.001) {
+          const angle = deterministicAngle(ordered[i].id, ordered[j].id);
+          dx = Math.cos(angle);
+          dy = Math.sin(angle);
+          distance = 1;
+        }
+        const push = (minDistance - distance) * 0.52;
+        const nx = dx / distance;
+        const ny = dy / distance;
+        a.x -= nx * push;
+        a.y -= ny * push;
+        b.x += nx * push;
+        b.y += ny * push;
+      }
+    }
+
+    for (const node of ordered) {
+      const point = positions.get(node.id);
+      const anchor = anchors.get(node.id);
+      point.x += (anchor.x - point.x) * 0.045;
+      point.y += (anchor.y - point.y) * 0.045;
+      point.x = clamp(point.x, 32, 968);
+      point.y = clamp(point.y, 32, 668);
+    }
+  }
+  return positions;
+}
+
+function boxesOverlap(a, b) {
+  return Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left)) *
+    Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top));
+}
+
+function layoutNodeLabels(nodes, positions) {
+  const layouts = new Map();
+  const occupied = [];
+  const ordered = [...nodes].sort((a, b) => positions.get(a.id).y - positions.get(b.id).y);
+
+  for (const node of ordered) {
+    const point = positions.get(node.id);
+    const width = clamp(node.label.length * 5.6, 58, 190);
+    const candidates = [
+      { x: 0, y: 29, anchor: 'middle', left: -width / 2, top: 18 },
+      { x: 0, y: -23, anchor: 'middle', left: -width / 2, top: -35 },
+      { x: 23, y: 4, anchor: 'start', left: 23, top: -8 },
+      { x: -23, y: 4, anchor: 'end', left: -23 - width, top: -8 },
+      { x: 20, y: 25, anchor: 'start', left: 20, top: 13 },
+      { x: -20, y: -19, anchor: 'end', left: -20 - width, top: -31 }
+    ];
+
+    let best = null;
+    for (const candidate of candidates) {
+      const box = {
+        left: point.x + candidate.left,
+        right: point.x + candidate.left + width,
+        top: point.y + candidate.top,
+        bottom: point.y + candidate.top + 15
+      };
+      let score = occupied.reduce((sum, other) => sum + boxesOverlap(box, other) * 10, 0);
+      for (const other of nodes) {
+        if (other.id === node.id) continue;
+        const p = positions.get(other.id);
+        if (p.x > box.left - 17 && p.x < box.right + 17 && p.y > box.top - 17 && p.y < box.bottom + 17) score += 500;
+      }
+      if (box.left < 8 || box.right > 992 || box.top < 8 || box.bottom > 692) score += 1000;
+      if (!best || score < best.score) best = { ...candidate, box, score };
+    }
+    layouts.set(node.id, best);
+    occupied.push(best.box);
+  }
+  return layouts;
+}
+
 export function buildScarSvg(container, nodes, edges, zones) {
   const svg = document.createElementNS(NS, 'svg');
   svg.setAttribute('viewBox', '0 0 1000 700');
@@ -349,46 +446,10 @@ export function buildScarSvg(container, nodes, edges, zones) {
   const nodeLayer = document.createElementNS(NS, 'g');
   nodeLayer.setAttribute('id', 'scarNodeLayer');
 
-  // Cria uma cópia local das posições dos nós e aplica um algoritmo simples
-  // de separação (repulsão) para evitar sobreposição visual. Isso não muda
-  // os dados subjacentes, apenas a posição renderizada no SVG.
-  const VBW = 1000; const VBH = 700;
-  const positions = new Map(nodes.map(n => [n.id, { x: n.x, y: n.y }]));
-
-  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
-
-  function separatePositions(posMap, minDist = 80, iterations = 8) {
-    const entries = Array.from(posMap.entries());
-    for (let it = 0; it < iterations; it++) {
-      for (let i = 0; i < entries.length; i++) {
-        const [idA, a] = entries[i];
-        for (let j = i + 1; j < entries.length; j++) {
-          const [idB, b] = entries[j];
-          let dx = b.x - a.x;
-          let dy = b.y - a.y;
-          let d = Math.hypot(dx, dy);
-          if (d === 0) {
-            dx = (Math.random() - 0.5) * 0.5;
-            dy = (Math.random() - 0.5) * 0.5;
-            d = Math.hypot(dx, dy);
-          }
-          if (d < minDist) {
-            const overlap = (minDist - d) / 2;
-            const nx = dx / d;
-            const ny = dy / d;
-            a.x = clamp(a.x - nx * overlap, 10, VBW - 10);
-            a.y = clamp(a.y - ny * overlap, 10, VBH - 10);
-            b.x = clamp(b.x + nx * overlap, 10, VBW - 10);
-            b.y = clamp(b.y + ny * overlap, 10, VBH - 10);
-          }
-        }
-      }
-    }
-    // apply back to map
-    for (const [id, p] of entries) posMap.set(id, p);
-  }
-
-  separatePositions(positions, 110, 12);
+  // Mantém as coordenadas projetadas do GeoJSON, para que vias e zonas se
+  // alinhem com a mesma geometria usada pelo roteador.
+  const positions = layoutNodePositions(nodes);
+  const labelLayouts = layoutNodeLabels(nodes, positions);
 
   appendTerrainZones(zoneLayer, zones);
   appendLocalTerrainFeatures(terrainLayer, nodes, positions);
@@ -432,7 +493,10 @@ export function buildScarSvg(container, nodes, edges, zones) {
 
     const label = document.createElementNS(NS, 'text');
     label.setAttribute('class', 'scar-node-label');
-    label.setAttribute('y', 28);
+    const labelLayout = labelLayouts.get(n.id);
+    label.setAttribute('x', labelLayout.x);
+    label.setAttribute('y', labelLayout.y);
+    label.setAttribute('text-anchor', labelLayout.anchor);
     label.textContent = n.label;
 
     const resourceTxt = n.resources
@@ -482,21 +546,53 @@ export function setRouteEdges(pathNodeIds) {
   });
 }
 
-/**
- * Posição em px onde o nó foi de fato desenhado no SVG atual — lê direto do
- * `transform` do elemento, em vez de recalcular. `buildScarSvg` aplica uma
- * separação (repulsão) sobre as coordenadas projetadas por geo.js pra evitar
- * nós sobrepostos, então a posição real de cada nó pode diferir da posição
- * "crua" retornada por `scene.project()` — qualquer coisa que precise ligar
- * pontos aos nós (o traçado da rota, por exemplo) tem que usar esta função,
- * senão o desenho fica desalinhado do que está na tela.
- */
-export function getNodeRenderPosition(nodeId) {
-  const g = document.querySelector(`.scar-node[data-id="${nodeId}"]`);
-  if (!g) return null;
-  const match = /translate\(([-\d.]+),([-\d.]+)\)/.exec(g.getAttribute('transform') || '');
-  if (!match) return null;
-  return [Number(match[1]), Number(match[2])];
+function renderedNodePositions() {
+  return [...document.querySelectorAll('.scar-node')].map(element => {
+    const match = /translate\(([-\d.]+),([-\d.]+)\)/.exec(element.getAttribute('transform') || '');
+    return match ? { id: element.dataset.id, x: Number(match[1]), y: Number(match[2]) } : null;
+  }).filter(Boolean);
+}
+
+// Conecta os nós do caminho no layout atual e cria pequenos desvios quando
+// um segmento passaria por cima de outro nó que não pertence àquele trecho.
+export function getRouteRenderPoints(pathNodeIds) {
+  const positions = renderedNodePositions();
+  const byId = new Map(positions.map(point => [point.id, point]));
+  const output = [];
+
+  for (let index = 0; index < pathNodeIds.length - 1; index++) {
+    const start = byId.get(pathNodeIds[index]);
+    const end = byId.get(pathNodeIds[index + 1]);
+    if (!start || !end) continue;
+    if (!output.length) output.push([start.x, start.y]);
+
+    const dx = end.x - start.x;
+    const dy = end.y - start.y;
+    const lengthSquared = dx * dx + dy * dy;
+    const length = Math.sqrt(lengthSquared);
+    if (!length) continue;
+    const normal = [-dy / length, dx / length];
+
+    const obstacles = positions.map(point => {
+      if (point.id === start.id || point.id === end.id) return null;
+      const t = ((point.x - start.x) * dx + (point.y - start.y) * dy) / lengthSquared;
+      if (t <= 0.06 || t >= 0.94) return null;
+      const projected = [start.x + dx * t, start.y + dy * t];
+      const signedDistance = (point.x - projected[0]) * normal[0] + (point.y - projected[1]) * normal[1];
+      if (Math.abs(signedDistance) >= 32) return null;
+      return { ...point, t, signedDistance };
+    }).filter(Boolean).sort((a, b) => a.t - b.t);
+
+    for (const obstacle of obstacles) {
+      const side = obstacle.signedDistance >= 0 ? -1 : 1;
+      output.push([
+        clamp(obstacle.x + normal[0] * side * 38, 18, 982),
+        clamp(obstacle.y + normal[1] * side * 38, 18, 682)
+      ]);
+    }
+    output.push([end.x, end.y]);
+  }
+  return output;
 }
 
 export function setScarNodeState(nodeId, stateClass) {

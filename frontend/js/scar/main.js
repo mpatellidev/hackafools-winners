@@ -1,7 +1,7 @@
 import { state } from './state.js';
 import { fetchLayers, fetchRoute, createCommunityNode, createDangerZone } from './api.js';
 import { buildScene } from './geo.js';
-import { buildScarSvg, setScarNodeState, clearAllScarNodeStates, clearScarPath, drawScarPath, setZonePreviewRect, setRouteEdges, getNodeRenderPosition } from './render.js';
+import { buildScarSvg, setScarNodeState, clearAllScarNodeStates, clearScarPath, drawScarPath, setZonePreviewRect, setRouteEdges, getRouteRenderPoints } from './render.js';
 import { renderModeTabs, updateRunBtn, showAlgoContent, updateStats, renderRouteSteps, renderZoneLegend, renderCommunityList, nodeTooltipHtml, MODES } from './ui.js';
 import { setProgress, addLog, sleep, resetLogCount } from '../utils.js';
 
@@ -534,12 +534,8 @@ async function runCalculation() {
     setProgress(80, 'Traçando rota no mapa...');
     addLog('path', 'Desenhando caminho retornado pela API...');
 
-    // Usa a posição real de cada nó desenhado (pós-separação/repulsão), não
-    // a projeção crua da geometria da API — senão o traçado fica desalinhado
-    // dos nós e pode cruzar por cima de outra rota sem relação com a atual.
-    const points = props.path_nodes
-      .map(id => getNodeRenderPosition(id))
-      .filter(Boolean);
+    // Usa o layout visual determinístico e desvia de nós alheios ao trecho.
+    const points = getRouteRenderPoints(props.path_nodes);
     drawScarPath(points, modeCfg.color);
 
     // Só as vias que fazem parte desse caminho ficam visíveis — as outras
