@@ -71,6 +71,7 @@
    vir depois na cascata pra vencer quando o nó também estiver selecionado. */
 .scar-node.cat-recurso .scar-node-circle { stroke: var(--accent2); }
 .scar-node.cat-seguro .scar-node-circle { stroke: var(--accent); }
+.scar-node.cat-comum .scar-node-circle { stroke: var(--accent4); }
 
 .scar-node-icon {
   font-size: 14px;
@@ -90,6 +91,54 @@
 .scar-node.state-path .scar-node-circle { fill: var(--accent); }
 
 #scarPathLayer polyline { pointer-events: none; }
+
+/* Mini-card ao passar o mouse sobre um nó — segue o cursor, posicionado
+   via left/top em px pelo main.js (mouseover/mousemove em #scarMap). */
+.node-tooltip {
+  position: absolute;
+  z-index: 600;
+  left: 0;
+  top: 0;
+  max-width: 240px;
+  padding: 10px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 24px rgba(0,0,0,.5);
+  font-size: 11px;
+  color: var(--text);
+  line-height: 1.5;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, calc(-100% - 14px));
+  transition: opacity .12s ease;
+}
+.node-tooltip.visible { opacity: 1; }
+
+.node-tooltip-title {
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.node-tooltip-desc { color: var(--muted2); margin-bottom: 6px; }
+.node-tooltip-danger { color: var(--accent3); font-size: 10px; margin-bottom: 4px; }
+.node-tooltip-resources {
+  display: flex;
+  gap: 10px;
+  font-size: 10px;
+  color: var(--muted2);
+  margin-bottom: 4px;
+}
+.node-tooltip-tag {
+  display: inline-block;
+  margin-top: 2px;
+  font-size: 9px;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--accent2);
+}
 
 /* Preview ao vivo do quadrado sendo desenhado ao reportar uma zona de
    perigo (dois cliques no mapa) — segue o mouse entre o 1º e o 2º clique. */

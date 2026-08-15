@@ -25,7 +25,8 @@ export const TYPE_ICONS = {
   outpost_omega: '📡',
   // Locais compartilhados pela comunidade — mesmas categorias do modo fantasia.
   recurso: '💧',
-  seguro: '🛡️'
+  seguro: '🛡️',
+  comum: '📌'
 };
 
 export function dangerBucket(level) {

@@ -53,6 +53,7 @@
    selecionados — por isso vêm antes na cascata. */
 .graph-node.cat-recurso .node-circle { stroke: var(--accent2); }
 .graph-node.cat-seguro .node-circle { stroke: var(--accent); }
+.graph-node.cat-comum .node-circle { stroke: var(--accent4); }
 
 .graph-node.state-src .node-circle { fill: var(--accent2); stroke: #fff; }
 .graph-node.state-dst .node-circle { fill: var(--accent3); stroke: #fff; }
@@ -69,9 +70,10 @@
   flex-shrink: 0;
 }
 
-.share-buttons { display: flex; gap: 6px; margin-top: 4px; }
+.share-buttons { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
 .share-btn {
   flex: 1;
+  min-width: 90px;
   padding: 9px 4px;
   border-radius: var(--radius);
   border: 1px solid var(--border2);
@@ -85,6 +87,7 @@
 }
 .share-btn.cat-recurso:hover { border-color: var(--accent2); color: var(--accent2); }
 .share-btn.cat-seguro:hover { border-color: var(--accent); color: var(--accent); }
+.share-btn.cat-comum:hover { border-color: var(--accent4); color: var(--accent4); }
 
 .share-compose {
   margin-top: 10px;

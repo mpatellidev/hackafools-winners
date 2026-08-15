@@ -66,6 +66,11 @@ export async function calculateRoute() {
     if (i % 3 === 0) await sleep(35);
   }
 
+  // Os destaques de "visitado"/"finalizado" acima eram só a animação da
+  // busca — no resultado final queremos exibir só o caminho escolhido, sem
+  // nenhum nó de outros caminhos explorados continuar marcado no mapa.
+  clearNodeStates();
+
   if (!result.path) {
     addLog('path', `<strong>Nenhum caminho encontrado</strong> para o modo ${modeCfg.label} — talvez as arestas permitidas não conectem origem e destino.`);
     setProgress(0, 'Sem rota');
