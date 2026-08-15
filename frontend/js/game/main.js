@@ -314,6 +314,7 @@ document.getElementById('pickDstBtn').onclick = () => {
 
 document.getElementById('shareResourceBtn').onclick = () => startShareMode('recurso');
 document.getElementById('shareSafeBtn').onclick = () => startShareMode('seguro');
+document.getElementById('shareCommonBtn').onclick = () => startShareMode('comum');
 document.getElementById('shareCancelBtn').onclick = closeShareCompose;
 document.getElementById('shareConfirmBtn').onclick = confirmShare;
 

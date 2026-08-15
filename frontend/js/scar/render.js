@@ -124,6 +124,11 @@ export function buildScarSvg(container, nodes, edges, zones) {
     line.setAttribute('x2', b.x);
     line.setAttribute('y2', b.y);
     line.setAttribute('class', `scar-edge danger-${dangerBucket(e.dangerLevel)}`);
+    // Usados por setRouteEdges pra saber quais linhas pertencem ao caminho
+    // calculado — só essas ficam visíveis (ver comentário em setRouteEdges).
+    line.dataset.from = e.from;
+    line.dataset.to = e.to;
+    line.style.display = 'none';
 
     const title = document.createElementNS(NS, 'title');
     title.textContent = `${a.label} ↔ ${b.label} · ${e.distanceKm}km · perigo ${e.dangerLevel} · ${e.terrainType}`;
@@ -153,17 +158,14 @@ export function buildScarSvg(container, nodes, edges, zones) {
     label.setAttribute('y', 31);
     label.textContent = n.label;
 
-    const title = document.createElementNS(NS, 'title');
     const resourceTxt = n.resources
       ? `\nÁgua ${n.resources.water} · Combustível ${n.resources.fuel} · Sucata ${n.resources.scrap}`
       : '';
     const communityTxt = n.isCommunity ? '\n(compartilhado pela comunidade)' : '';
-    title.textContent = `${n.label}\n${n.description}\nPerigo: ${n.dangerLevel}/5${resourceTxt}${communityTxt}`;
 
     g.appendChild(circle);
     g.appendChild(icon);
     g.appendChild(label);
-    g.appendChild(title);
 
     nodeLayer.appendChild(g);
   });
@@ -176,6 +178,29 @@ export function buildScarSvg(container, nodes, edges, zones) {
   container.innerHTML = '';
   container.appendChild(svg);
   return svg;
+}
+
+/**
+ * Mostra só as vias que fazem parte do caminho calculado (pares
+ * consecutivos de `pathNodeIds`) — todas as outras ficam invisíveis. Chamar
+ * com `null`/`[]` esconde a malha inteira (estado antes de calcular rota).
+ */
+export function setRouteEdges(pathNodeIds) {
+  const layer = document.getElementById('scarEdgeLayer');
+  if (!layer) return;
+
+  const usedPairs = new Set();
+  if (Array.isArray(pathNodeIds)) {
+    for (let i = 0; i < pathNodeIds.length - 1; i++) {
+      usedPairs.add(`${pathNodeIds[i]}|${pathNodeIds[i + 1]}`);
+      usedPairs.add(`${pathNodeIds[i + 1]}|${pathNodeIds[i]}`);
+    }
+  }
+
+  layer.querySelectorAll('.scar-edge').forEach(line => {
+    const key = `${line.dataset.from}|${line.dataset.to}`;
+    line.style.display = usedPairs.has(key) ? '' : 'none';
+  });
 }
 
 export function setScarNodeState(nodeId, stateClass) {
