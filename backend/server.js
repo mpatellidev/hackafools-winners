@@ -5,6 +5,7 @@ const { WastelandRouter } = require('./routing-engine');
 
 const rootDir = path.resolve(__dirname, '..');
 const frontendDir = path.join(rootDir, 'frontend');
+const publicDir = path.join(rootDir, 'public');
 const dataDir = path.join(__dirname, 'data');
 const communityFile = path.join(dataDir, 'community.json');
 const communityZonesFile = path.join(dataDir, 'community-zones.json');
@@ -313,13 +314,14 @@ const mimeTypes = {
 };
 
 function serveStatic(req, res, safeUrl) {
-  const requestPath = safeUrl === '/' ? '/index.html' : safeUrl;
+  const staticDir = safeUrl.startsWith('/public/') ? publicDir : frontendDir;
+  const requestPath = safeUrl === '/' ? '/index.html' : safeUrl.startsWith('/public/') ? safeUrl.slice('/public'.length) : safeUrl;
   const normalizedPath = path.normalize(requestPath).replace(/^([.][.][/\\])+/, '');
-  const filePath = path.join(frontendDir, normalizedPath);
+  const filePath = path.join(staticDir, normalizedPath);
 
-  const isInsideFrontend = filePath.startsWith(frontendDir);
+  const isInsideStaticDir = filePath.startsWith(staticDir);
 
-  if (!isInsideFrontend) {
+  if (!isInsideStaticDir) {
     res.statusCode = 403;
     res.end('Forbidden');
     return;
