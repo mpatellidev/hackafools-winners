@@ -33,7 +33,7 @@ export function renderDirections(pathNodes) {
   if (!container) return;
 
   const html = pathNodes.map((n, i) => {
-    const icon = i === 0 ? '📍' : i === pathNodes.length - 1 ? '🎯' : '→';
+    const icon = i === 0 ? 'SRC' : i === pathNodes.length - 1 ? 'DST' : '→';
     const detail = n.edgeWeight != null
       ? `<div class="step-dist">+${n.edgeWeight} (${n.edgeType})</div>`
       : '';
@@ -80,10 +80,10 @@ export function renderModeTabs() {
   const floatWrap = document.getElementById('floatingModeBar');
 
   const panelHtml = modes.map((m, i) =>
-    `<button class="mode-tab${i === 0 ? ' active' : ''}" data-mode="${m.id}">${m.icon} ${m.label}</button>`
+    `<button class="mode-tab${i === 0 ? ' active' : ''}" data-mode="${m.id}" aria-pressed="${i === 0}">${m.icon} ${m.label}</button>`
   ).join('');
   const floatHtml = modes.map((m, i) =>
-    `<button class="float-mode-tab${i === 0 ? ' active' : ''}" data-mode="${m.id}">${m.icon}</button>`
+    `<button class="float-mode-tab${i === 0 ? ' active' : ''}" data-mode="${m.id}" aria-label="${m.label}" aria-pressed="${i === 0}">${m.icon}</button>`
   ).join('');
 
   if (panelWrap) panelWrap.innerHTML = panelHtml;
