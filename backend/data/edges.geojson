@@ -761,6 +761,123 @@
           ]
         ]
       }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "edge_anchor_killpeaks_deadpass",
+        "source_node": "node_zone_canyon_killpeaks_anchor",
+        "target_node": "node_dead_pass",
+        "distance_km": 2.64,
+        "danger_level": 4,
+        "terrain_type": "canyon_trail",
+        "description": "Acesso íngreme entre a ancoragem das Agulhas de Pedra e o Passo da Guilhotina."
+      },
+      "geometry": { "type": "LineString", "coordinates": [[138.415, -30.47], [138.39, -30.48]] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "edge_anchor_knife_gorge",
+        "source_node": "node_zone_western_knife_ridge_anchor",
+        "target_node": "node_gorge_bastion",
+        "distance_km": 3.47,
+        "danger_level": 3,
+        "terrain_type": "canyon_trail",
+        "description": "Trilha de encosta que liga a Faixa do Punhal ao Bastião da Garganta Profunda."
+      },
+      "geometry": { "type": "LineString", "coordinates": [[138.41, -30.41], [138.42, -30.38]] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "edge_anchor_meridian_lastdrop",
+        "source_node": "node_zone_dome_meridian_anchor",
+        "target_node": "node_oasis_last_drop",
+        "distance_km": 3.85,
+        "danger_level": 1,
+        "terrain_type": "safe_pass",
+        "description": "Corredor protegido entre o portal do Vale da Trégua e o Oásis Última Gota."
+      },
+      "geometry": { "type": "LineString", "coordinates": [[138.55, -30.25], [138.53, -30.22]] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "edge_anchor_frostspire_tower",
+        "source_node": "node_zone_frostspire_anchor",
+        "target_node": "node_tower_frostspire",
+        "distance_km": 5.36,
+        "danger_level": 5,
+        "terrain_type": "storm_plains",
+        "description": "Acesso exposto pelo vórtice glacial até a Torre Espinho de Gelo."
+      },
+      "geometry": { "type": "LineString", "coordinates": [[138.82, -30.165], [138.8, -30.12]] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "edge_anchor_frostwall_permafrost",
+        "source_node": "node_zone_frost_reach_anchor",
+        "target_node": "node_mine_permafrost",
+        "distance_km": 6.18,
+        "danger_level": 4,
+        "terrain_type": "storm_plains",
+        "description": "Travessia sobre gelo negro entre a muralha setentrional e a Mina do Permafrost."
+      },
+      "geometry": { "type": "LineString", "coordinates": [[138.82, -30.195], [138.87, -30.16]] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "edge_anchor_radioactive_refinery",
+        "source_node": "node_zone_radioactive_scorch_anchor",
+        "target_node": "node_refinery_scorch",
+        "distance_km": 4.47,
+        "danger_level": 5,
+        "terrain_type": "radioactive_crater",
+        "description": "Faixa contaminada entre o Inferno de Cinzas e a Refinaria da Chama Ardente."
+      },
+      "geometry": { "type": "LineString", "coordinates": [[138.755, -30.44], [138.76, -30.4]] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "edge_anchor_ember_refinery",
+        "source_node": "node_zone_ember_dunes_anchor",
+        "target_node": "node_refinery_scorch",
+        "distance_km": 5.56,
+        "danger_level": 4,
+        "terrain_type": "sand_dunes",
+        "description": "Passagem pelas dunas de cinzas até o perímetro da refinaria."
+      },
+      "geometry": { "type": "LineString", "coordinates": [[138.76, -30.45], [138.76, -30.4]] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "edge_gate_west_deadpass",
+        "source_node": "node_gate_west_generic",
+        "target_node": "node_dead_pass",
+        "distance_km": 22.56,
+        "danger_level": 2,
+        "terrain_type": "packed_dirt",
+        "description": "Acesso regional da Entrada Oeste até o Passo da Guilhotina."
+      },
+      "geometry": { "type": "LineString", "coordinates": [[138.2, -30.6], [138.39, -30.48]] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "edge_gate_east_gastown",
+        "source_node": "node_gate_east_generic",
+        "target_node": "node_gas_town",
+        "distance_km": 19.35,
+        "danger_level": 2,
+        "terrain_type": "packed_dirt",
+        "description": "Acesso regional do Ponto Neutro Leste até a Vila do Óleo."
+      },
+      "geometry": { "type": "LineString", "coordinates": [[138.95, -30.6], [138.83, -30.46]] }
     }
   ]
 }
