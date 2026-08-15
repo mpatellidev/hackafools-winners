@@ -18,17 +18,34 @@
         "threat_level": "tier_3",
         "danger_multiplier": 2.2,
         "stealth_penalty": 0.85,
-        "description": "Desfiladeiros profundos e picos íngremes no sudoeste. Snipers em cavernas de altitude disparam em comboios que tentam cruzar a Guilhotina."
+        "description": "Região de cânions com erosão acelerada e encostas instáveis. Chuvas concentradas provocam enxurradas e deslizamentos que bloqueiam as rotas.",
+        "type_group": "human_pressure",
+        "type": "faction_hostile"
       },
       "geometry": {
         "type": "Polygon",
         "coordinates": [
           [
-            [138.35, -30.52],
-            [138.48, -30.52],
-            [138.48, -30.42],
-            [138.35, -30.42],
-            [138.35, -30.52]
+            [
+              138.35,
+              -30.52
+            ],
+            [
+              138.48,
+              -30.52
+            ],
+            [
+              138.48,
+              -30.42
+            ],
+            [
+              138.35,
+              -30.42
+            ],
+            [
+              138.35,
+              -30.52
+            ]
           ]
         ]
       }
@@ -92,18 +109,35 @@
         "zone_type": "environmental_hazard",
         "threat_level": "tier_3",
         "danger_multiplier": 2.7,
-        "stealth_penalty": 0.30,
-        "description": "Anomalia climática contínua de frio criogênico extremo no nordeste. Congela linhas de combustível, racha blindagens e anula a visibilidade."
+        "stealth_penalty": 0.3,
+        "description": "Área de frio persistente afetada por tempestades de neve e ciclos de congelamento e degelo. A visibilidade cai rapidamente e estruturas sem manutenção colapsam.",
+        "type_group": "climate_hazard",
+        "type": "environmental_hazard"
       },
       "geometry": {
         "type": "Polygon",
         "coordinates": [
           [
-            [138.74, -30.25],
-            [138.90, -30.25],
-            [138.90, -30.08],
-            [138.74, -30.08],
-            [138.74, -30.25]
+            [
+              138.74,
+              -30.25
+            ],
+            [
+              138.9,
+              -30.25
+            ],
+            [
+              138.9,
+              -30.08
+            ],
+            [
+              138.74,
+              -30.08
+            ],
+            [
+              138.74,
+              -30.25
+            ]
           ]
         ]
       }
@@ -142,18 +176,35 @@
         "zone_type": "environmental_hazard",
         "threat_level": "tier_3",
         "danger_multiplier": 2.5,
-        "stealth_penalty": 0.40,
-        "description": "Deserto de poeira atômica e poços petrolíferos em chamas no sul. Ar corrosivo, campos minados e patrulhas suicidas dos Ceifadores."
+        "stealth_penalty": 0.4,
+        "description": "Planície árida marcada por incêndios industriais, poeira contaminada e escassez de água. Ondas de calor prolongadas tornam o ar perigoso e degradam o solo.",
+        "type_group": "climate_hazard",
+        "type": "environmental_hazard"
       },
       "geometry": {
         "type": "Polygon",
         "coordinates": [
           [
-            [138.65, -30.52],
-            [138.86, -30.52],
-            [138.86, -30.36],
-            [138.65, -30.36],
-            [138.65, -30.52]
+            [
+              138.65,
+              -30.52
+            ],
+            [
+              138.86,
+              -30.52
+            ],
+            [
+              138.86,
+              -30.36
+            ],
+            [
+              138.65,
+              -30.36
+            ],
+            [
+              138.65,
+              -30.52
+            ]
           ]
         ]
       }

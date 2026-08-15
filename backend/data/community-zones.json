@@ -1,0 +1,36 @@
+[
+  {
+    "id": "community_zone_1",
+    "name": "Bacia de Refúgio da Chuva Tardia",
+    "type": "community_hazard_zone",
+    "zoneType": "community_hazard",
+    "threatLevel": "tier_3",
+    "dangerMultiplier": 2.6,
+    "stealthPenalty": 0.4,
+    "description": "Área comunitária cercada por canais de escoamento e abrigos improvisados. Enxurradas repentinas e falhas de drenagem tornam o acesso instável.",
+    "rings": [
+      [
+        [
+          138.50797500000002,
+          -30.254672000000003
+        ],
+        [
+          138.604175,
+          -30.254672000000003
+        ],
+        [
+          138.604175,
+          -30.161891200000003
+        ],
+        [
+          138.50797500000002,
+          -30.161891200000003
+        ],
+        [
+          138.50797500000002,
+          -30.254672000000003
+        ]
+      ]
+    ]
+  }
+]

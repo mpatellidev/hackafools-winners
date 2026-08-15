@@ -8,12 +8,54 @@ export function updateRunBtn() {
 }
 
 export function showAlgoContent(show) {
-  const idle = document.getElementById('idleState');
   const content = document.getElementById('algoContent');
-  if (idle && content) {
-    idle.style.display = show ? 'none' : 'flex';
-    content.style.display = show ? 'block' : 'none';
-  }
+  if (content) content.style.display = show ? 'block' : 'none';
+  if (!show) setAnalysisDockOpen(false);
+}
+
+export function setAnalysisDockOpen(open, hasRoute = document.getElementById('algoContent')?.style.display !== 'none', sourceId = null) {
+  const dock = document.getElementById('analysisDock');
+  const tab = document.getElementById('analysisDockTab');
+  const status = tab?.querySelector('.analysis-tab-status');
+  const glyph = tab?.querySelector('.analysis-tab-glyph');
+  if (!dock || !tab) return;
+
+  dock.classList.toggle('is-open', open);
+  tab.setAttribute('aria-expanded', String(open));
+  if (status) status.textContent = hasRoute ? 'CONCLUÍDO' : 'STANDBY';
+  if (glyph) glyph.textContent = '×';
+  if (open && sourceId) positionRouteReport(dock, sourceId);
+}
+
+function positionRouteReport(dock, sourceId) {
+  const surface = document.getElementById('map-surface');
+  const node = document.querySelector(`.graph-node[data-id="${sourceId}"], .scar-node[data-id="${sourceId}"]`);
+  const marker = node?.querySelector('.node-circle, .scar-node-circle');
+  if (!surface || !marker) return;
+
+  const surfaceRect = surface.getBoundingClientRect();
+  const markerRect = marker.getBoundingClientRect();
+  const sourceX = markerRect.left + markerRect.width / 2 - surfaceRect.left;
+  const sourceY = markerRect.top + markerRect.height / 2 - surfaceRect.top;
+  const reportWidth = Math.min(surfaceRect.width < 768 ? 330 : 360, surfaceRect.width - 24);
+  const reportHeight = 195;
+  const minTop = surfaceRect.height < 320 ? 12 : 84;
+  const maxTop = Math.max(12, surfaceRect.height - reportHeight - 12);
+  const placeRight = sourceX + 112 + reportWidth <= surfaceRect.width - 12;
+  const left = Math.max(12, Math.min(surfaceRect.width - reportWidth - 12, placeRight ? sourceX + 112 : sourceX - reportWidth - 112));
+  const top = Math.max(minTop, Math.min(maxTop, sourceY - 48));
+  const targetX = placeRight ? left : left + reportWidth;
+  const targetY = top + 22;
+  const dx = targetX - sourceX;
+  const dy = targetY - sourceY;
+
+  dock.style.setProperty('--source-x', `${sourceX}px`);
+  dock.style.setProperty('--source-y', `${sourceY}px`);
+  dock.style.setProperty('--report-left', `${left}px`);
+  dock.style.setProperty('--report-top', `${top}px`);
+  dock.style.setProperty('--connector-length', `${Math.hypot(dx, dy)}px`);
+  dock.style.setProperty('--connector-angle', `${Math.atan2(dy, dx) * 180 / Math.PI}deg`);
+  dock.dataset.sourceId = sourceId;
 }
 
 export function updateStats(distance, timeMin, nodesExplored, steps) {
@@ -33,7 +75,7 @@ export function renderDirections(pathNodes) {
   if (!container) return;
 
   const html = pathNodes.map((n, i) => {
-    const icon = i === 0 ? '📍' : i === pathNodes.length - 1 ? '🎯' : '→';
+    const icon = i === 0 ? 'SRC' : i === pathNodes.length - 1 ? 'DST' : '→';
     const detail = n.edgeWeight != null
       ? `<div class="step-dist">+${n.edgeWeight} (${n.edgeType})</div>`
       : '';
@@ -80,10 +122,10 @@ export function renderModeTabs() {
   const floatWrap = document.getElementById('floatingModeBar');
 
   const panelHtml = modes.map((m, i) =>
-    `<button class="mode-tab${i === 0 ? ' active' : ''}" data-mode="${m.id}">${m.icon} ${m.label}</button>`
+    `<button class="mode-tab${i === 0 ? ' active' : ''}" data-mode="${m.id}" aria-pressed="${i === 0}">${m.icon} ${m.label}</button>`
   ).join('');
   const floatHtml = modes.map((m, i) =>
-    `<button class="float-mode-tab${i === 0 ? ' active' : ''}" data-mode="${m.id}">${m.icon}</button>`
+    `<button class="float-mode-tab${i === 0 ? ' active' : ''}" data-mode="${m.id}" aria-label="${m.label}" aria-pressed="${i === 0}">${m.icon}</button>`
   ).join('');
 
   if (panelWrap) panelWrap.innerHTML = panelHtml;
