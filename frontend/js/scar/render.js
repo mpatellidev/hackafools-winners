@@ -282,6 +282,23 @@ export function setRouteEdges(pathNodeIds) {
   });
 }
 
+/**
+ * Posição em px onde o nó foi de fato desenhado no SVG atual — lê direto do
+ * `transform` do elemento, em vez de recalcular. `buildScarSvg` aplica uma
+ * separação (repulsão) sobre as coordenadas projetadas por geo.js pra evitar
+ * nós sobrepostos, então a posição real de cada nó pode diferir da posição
+ * "crua" retornada por `scene.project()` — qualquer coisa que precise ligar
+ * pontos aos nós (o traçado da rota, por exemplo) tem que usar esta função,
+ * senão o desenho fica desalinhado do que está na tela.
+ */
+export function getNodeRenderPosition(nodeId) {
+  const g = document.querySelector(`.scar-node[data-id="${nodeId}"]`);
+  if (!g) return null;
+  const match = /translate\(([-\d.]+),([-\d.]+)\)/.exec(g.getAttribute('transform') || '');
+  if (!match) return null;
+  return [Number(match[1]), Number(match[2])];
+}
+
 export function setScarNodeState(nodeId, stateClass) {
   const g = document.querySelector(`.scar-node[data-id="${nodeId}"]`);
   if (!g) return;
