@@ -1,0 +1,35 @@
+[
+  {
+    "id": "community_zone_1",
+    "name": "Zona dos caba",
+    "zoneType": "community_hazard",
+    "threatLevel": "tier_3",
+    "dangerMultiplier": 2.6,
+    "stealthPenalty": 0.4,
+    "description": "Deu pau de hollywood",
+    "rings": [
+      [
+        [
+          138.50797500000002,
+          -30.254672000000003
+        ],
+        [
+          138.604175,
+          -30.254672000000003
+        ],
+        [
+          138.604175,
+          -30.161891200000003
+        ],
+        [
+          138.50797500000002,
+          -30.161891200000003
+        ],
+        [
+          138.50797500000002,
+          -30.254672000000003
+        ]
+      ]
+    ]
+  }
+]

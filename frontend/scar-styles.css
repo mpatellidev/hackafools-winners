@@ -1,0 +1,152 @@
+/* Estilos do modo S.C.A.R. (scar.html) — mapa real do wasteland, vindo da
+   API do próprio server.js (routing-engine.js). Carregado depois de
+   styles.css, reaproveita as variáveis de tema já definidas lá
+   (--bg, --accent, --border2 etc.). */
+
+#scarMap {
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 30% 20%, #1c140f, var(--bg));
+}
+#scarMap svg { width: 100%; height: 100%; display: block; }
+
+/* Blob orgânico (path com spline Catmull-Rom, ver render.js) em vez do
+   retângulo exato do dataset — o leve desfoque reforça a sensação de nuvem
+   de perigo com bordas difusas, em vez de um polígono técnico. */
+.danger-zone {
+  stroke-width: 1;
+  filter: blur(2.5px);
+}
+.danger-zone.zone-faction_hostile { fill: rgba(255, 92, 138, 0.18); stroke: rgba(255, 92, 138, 0.45); }
+.danger-zone.zone-environmental_hazard { fill: rgba(255, 204, 0, 0.16); stroke: rgba(255, 204, 0, 0.4); }
+.danger-zone.zone-community_hazard { fill: rgba(0, 184, 255, 0.16); stroke: rgba(0, 184, 255, 0.45); }
+
+.scar-edge {
+  stroke: var(--border2);
+  stroke-width: 2.5;
+}
+.scar-edge.danger-mid { stroke: var(--accent4); opacity: .6; }
+.scar-edge.danger-high { stroke: var(--accent3); stroke-width: 3; opacity: .85; }
+
+.scar-node { cursor: pointer; }
+.scar-node-circle {
+  fill: var(--surface2);
+  stroke: var(--border2);
+  stroke-width: 2;
+  transition: fill .2s, stroke .2s, r .2s;
+}
+.scar-node.danger-mid .scar-node-circle { stroke: var(--accent4); }
+.scar-node.danger-high .scar-node-circle { stroke: var(--accent3); }
+.scar-node:hover .scar-node-circle { stroke: var(--accent); }
+
+/* Locais compartilhados pela comunidade ganham um contorno na cor da
+   categoria — as regras de estado (src/dst/caminho) logo abaixo precisam
+   vir depois na cascata pra vencer quando o nó também estiver selecionado. */
+.scar-node.cat-recurso .scar-node-circle { stroke: var(--accent2); }
+.scar-node.cat-seguro .scar-node-circle { stroke: var(--accent); }
+
+.scar-node-icon {
+  font-size: 14px;
+  text-anchor: middle;
+  pointer-events: none;
+}
+.scar-node-label {
+  fill: var(--muted2);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+.scar-node.state-src .scar-node-circle { fill: var(--accent2); stroke: #fff; }
+.scar-node.state-dst .scar-node-circle { fill: var(--accent3); stroke: #fff; }
+.scar-node.state-path .scar-node-circle { fill: var(--accent); }
+
+#scarPathLayer polyline { pointer-events: none; }
+
+/* Preview ao vivo do quadrado sendo desenhado ao reportar uma zona de
+   perigo (dois cliques no mapa) — segue o mouse entre o 1º e o 2º clique. */
+.zone-preview-rect {
+  fill: rgba(0, 184, 255, 0.15);
+  stroke: var(--accent2);
+  stroke-width: 2;
+  stroke-dasharray: 6 4;
+  pointer-events: none;
+}
+
+/* Stat cards extras (S.C.A.R. usa accent3/accent4 além de accent/accent2) */
+.stat-value.accent3 { color: var(--accent3); }
+.stat-value.accent4 { color: var(--accent4); }
+
+/* ── Painel: zonas de perigo (legenda a partir dos dados reais) ── */
+.zone-panel {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.zone-legend { display: flex; flex-direction: column; gap: 10px; }
+.zone-legend-item {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  font-size: 10px;
+  color: var(--muted2);
+  line-height: 1.5;
+}
+.zone-legend-swatch {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+.zone-legend-swatch.zone-faction_hostile { background: var(--accent3); }
+.zone-legend-swatch.zone-environmental_hazard { background: var(--accent4); }
+.zone-legend-swatch.zone-community_hazard { background: var(--accent2); }
+.zone-legend-item strong { color: var(--text); }
+.zone-legend-desc { color: var(--muted); }
+
+/* ── Painel: reportar zona de perigo ── */
+.zone-report-btn {
+  width: 100%;
+  margin-top: 14px;
+  padding: 9px 4px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border2);
+  background: transparent;
+  color: var(--muted2);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  cursor: pointer;
+  transition: all .2s;
+}
+.zone-report-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+
+.zone-compose {
+  margin-top: 10px;
+  padding: 12px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.zone-tier-row { display: flex; gap: 6px; }
+.zone-tier-btn {
+  flex: 1;
+  padding: 8px 4px;
+  border-radius: 8px;
+  border: 1px solid var(--border2);
+  background: transparent;
+  color: var(--muted2);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  cursor: pointer;
+  transition: all .2s;
+  white-space: nowrap;
+}
+.zone-tier-btn:hover { border-color: var(--accent4); color: var(--text); }
+.zone-tier-btn.active.tier-1 { background: rgba(255, 204, 0, 0.15); border-color: var(--accent4); color: var(--text); }
+.zone-tier-btn.active.tier-2 { background: rgba(255, 204, 0, 0.25); border-color: var(--accent4); color: var(--text); }
+.zone-tier-btn.active.tier-3 { background: rgba(255, 92, 138, 0.25); border-color: var(--accent3); color: var(--text); }
