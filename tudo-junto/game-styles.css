@@ -1,0 +1,51 @@
+/* Estilos específicos do mapa em grafo (game-map.html).
+   Carregado depois de styles.css — reaproveita as variáveis de tema
+   (--bg, --accent, --border2 etc.) já definidas lá. */
+
+#graphMap {
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 30% 20%, #161a22, var(--bg));
+}
+#graphMap svg { width: 100%; height: 100%; display: block; }
+
+.graph-edge {
+  stroke: var(--border2);
+  stroke-width: 2.5;
+}
+.graph-edge.type-trail {
+  stroke-width: 1.8;
+  stroke-dasharray: 4 4;
+  opacity: .7;
+}
+.graph-edge.type-portal {
+  stroke: var(--accent3);
+  stroke-width: 2;
+  stroke-dasharray: 1 6;
+  opacity: .65;
+}
+
+.graph-node { cursor: pointer; }
+.node-circle {
+  fill: var(--surface2);
+  stroke: var(--border2);
+  stroke-width: 2;
+  transition: fill .2s, stroke .2s, r .2s;
+}
+.graph-node:hover .node-circle { stroke: var(--accent); }
+
+.node-label {
+  fill: var(--muted2);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+.graph-node.state-src .node-circle { fill: var(--accent2); stroke: #fff; }
+.graph-node.state-dst .node-circle { fill: var(--accent3); stroke: #fff; }
+.graph-node.state-visited .node-circle { fill: var(--accent4); }
+.graph-node.state-settled .node-circle { fill: var(--accent4); opacity: .55; }
+.graph-node.state-path .node-circle { fill: var(--accent); }
+
+#pathLayer polyline { pointer-events: none; }
