@@ -16,10 +16,22 @@
         "type": "canyon_hideout",
         "biome": "high_relief_canyons",
         "danger_level": 2,
-        "description": "Fendas rochosas monumentais de 300 metros de altura que bloqueiam radiação, tempestades e rastreadores termais.",
-        "resources": { "water": 45, "fuel": 20, "scrap": 50, "thermal_stability": 60 }
+        "description": "Abrigo em um cânion profundo, protegido do calor direto, mas sujeito a quedas de rocha, enxurradas repentinas e poeira em suspensão.",
+        "resources": {
+          "water": 45,
+          "fuel": 20,
+          "scrap": 50,
+          "thermal_stability": 60
+        },
+        "type_group": "shelter"
       },
-      "geometry": { "type": "Point", "coordinates": [138.38, -30.30] }
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          138.38,
+          -30.3
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -29,10 +41,22 @@
         "type": "canyon_bastion",
         "biome": "high_relief_canyons",
         "danger_level": 2,
-        "description": "Fortificação esculpida nas encostas de um desfiladeiro íngreme; rota protegida por sentinelas independentes.",
-        "resources": { "water": 40, "fuel": 25, "scrap": 65, "thermal_stability": 55 }
+        "description": "Posto instalado numa encosta estreita. A erosão avançou sobre a antiga estrada e chuvas intensas costumam isolar o local.",
+        "resources": {
+          "water": 40,
+          "fuel": 25,
+          "scrap": 65,
+          "thermal_stability": 55
+        },
+        "type_group": "shelter"
       },
-      "geometry": { "type": "Point", "coordinates": [138.42, -30.38] }
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          138.42,
+          -30.38
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -42,10 +66,22 @@
         "type": "scrap_boneyard",
         "biome": "high_relief_canyons",
         "danger_level": 2,
-        "description": "Depósito de carcaças prensadas no fundo de uma garganta rochosa; refúgio de mecânicos eremitas e comércio de peças.",
-        "resources": { "water": 20, "fuel": 15, "scrap": 90, "thermal_stability": 50 }
+        "description": "Pátio de veículos abandonados no fundo do vale, onde peças são recuperadas após anos de enchentes, ferrugem e deslizamentos.",
+        "resources": {
+          "water": 20,
+          "fuel": 15,
+          "scrap": 90,
+          "thermal_stability": 50
+        },
+        "type_group": "recovery"
       },
-      "geometry": { "type": "Point", "coordinates": [138.46, -30.45] }
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          138.46,
+          -30.45
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -55,10 +91,22 @@
         "type": "dead_pass",
         "biome": "high_relief_canyons",
         "danger_level": 5,
-        "description": "Pico escarpado e passagem estreita ladeada por precipícios; local de desabamentos provocados e emboscadas fulminantes.",
-        "resources": { "water": 5, "fuel": 10, "scrap": 40, "thermal_stability": 40 }
+        "description": "Passagem de alta declividade, com solo instável e pouca cobertura. Ventos fortes e deslizamentos tornam a travessia especialmente arriscada.",
+        "resources": {
+          "water": 5,
+          "fuel": 10,
+          "scrap": 40,
+          "thermal_stability": 40
+        },
+        "type_group": "route_hazard"
       },
-      "geometry": { "type": "Point", "coordinates": [138.39, -30.48] }
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          138.39,
+          -30.48
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -68,10 +116,22 @@
         "type": "citadel_dome",
         "biome": "corporate_domes",
         "danger_level": 1,
-        "description": "Bastião corporativo sob cúpula de geoengenharia intacta; ar condicionado filtrado, alta tecnologia e segurança armada impiedosa.",
-        "resources": { "water": 90, "fuel": 60, "scrap": 35, "thermal_stability": 98 }
+        "description": "Complexo corporativo climatizado que concentra água tratada e energia. Do lado de fora, o contraste com o calor e a fumaça é extremo.",
+        "resources": {
+          "water": 90,
+          "fuel": 60,
+          "scrap": 35,
+          "thermal_stability": 98
+        },
+        "type_group": "settlement"
       },
-      "geometry": { "type": "Point", "coordinates": [138.48, -30.15] }
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          138.48,
+          -30.15
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -81,10 +141,22 @@
         "type": "hydro_oasis",
         "biome": "corporate_domes",
         "danger_level": 1,
-        "description": "Reservatório artificial alimentado por condensadores de umidade corporativos; solo neutro inviolável entre todas as facções.",
-        "resources": { "water": 100, "fuel": 15, "scrap": 20, "thermal_stability": 80 }
+        "description": "Reservatório de água de reuso abastecido por condensação e captação irregular. A disponibilidade varia com a umidade e com a energia dos equipamentos.",
+        "resources": {
+          "water": 100,
+          "fuel": 15,
+          "scrap": 20,
+          "thermal_stability": 80
+        },
+        "type_group": "water"
       },
-      "geometry": { "type": "Point", "coordinates": [138.53, -30.22] }
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          138.53,
+          -30.22
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -94,10 +166,22 @@
         "type": "citadel_dome",
         "biome": "corporate_domes",
         "danger_level": 1,
-        "description": "Cúpula secundária semiaberta convertida no maior entreposto de escambo, oficinas de blindagem e troca de mapas do deserto.",
-        "resources": { "water": 75, "fuel": 45, "scrap": 55, "thermal_stability": 85 }
+        "description": "Antiga cúpula parcialmente danificada, usada como mercado e oficina. Falhas na vedação expõem os moradores à poeira e às ondas de calor.",
+        "resources": {
+          "water": 75,
+          "fuel": 45,
+          "scrap": 55,
+          "thermal_stability": 85
+        },
+        "type_group": "settlement"
       },
-      "geometry": { "type": "Point", "coordinates": [138.60, -30.28] }
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          138.6,
+          -30.28
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -107,10 +191,22 @@
         "type": "hydro_oasis",
         "biome": "corporate_domes",
         "danger_level": 2,
-        "description": "Lagoa natural aquecida pelos tubos de escape térmico dos dômos; ponto seguro de hidratação e calibragem de motores.",
-        "resources": { "water": 85, "fuel": 20, "scrap": 25, "thermal_stability": 75 }
+        "description": "Fonte de água aquecida por atividade geotérmica e pela infraestrutura industrial próxima. A qualidade é monitorada devido à contaminação do solo.",
+        "resources": {
+          "water": 85,
+          "fuel": 20,
+          "scrap": 25,
+          "thermal_stability": 75
+        },
+        "type_group": "water"
       },
-      "geometry": { "type": "Point", "coordinates": [138.54, -30.34] }
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          138.54,
+          -30.34
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -120,10 +216,22 @@
         "type": "weather_tower",
         "biome": "frozen_wastes",
         "danger_level": 5,
-        "description": "Monólito de resfriamento desgovernado que expele nevascas de nitrogênio; o solo ao redor é puro gelo negro estilhaçador de eixos.",
-        "resources": { "water": 35, "fuel": 10, "scrap": 50, "thermal_stability": 5 }
+        "description": "Torre meteorológica desativada em uma região de frio persistente. O gelo acumulado rompe estruturas e reduz a visibilidade durante as tempestades.",
+        "resources": {
+          "water": 35,
+          "fuel": 10,
+          "scrap": 50,
+          "thermal_stability": 5
+        },
+        "type_group": "climate_monitoring"
       },
-      "geometry": { "type": "Point", "coordinates": [138.80, -30.12] }
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          138.8,
+          -30.12
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -133,10 +241,22 @@
         "type": "frozen_mine",
         "biome": "frozen_wastes",
         "danger_level": 3,
-        "description": "Complexo minerador em cavernas glaciais subterrâneas; extrai supercondutores intactos preservados a -40°C.",
-        "resources": { "water": 50, "fuel": 15, "scrap": 80, "thermal_stability": 15 }
+        "description": "Mina abandonada sob solo congelado. O degelo sazonal provoca infiltrações, colapsos no teto e liberação de gases presos no permafrost.",
+        "resources": {
+          "water": 50,
+          "fuel": 15,
+          "scrap": 80,
+          "thermal_stability": 15
+        },
+        "type_group": "extraction"
       },
-      "geometry": { "type": "Point", "coordinates": [138.87, -30.16] }
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          138.87,
+          -30.16
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -146,10 +266,22 @@
         "type": "bandit_camp",
         "biome": "frozen_wastes",
         "danger_level": 4,
-        "description": "Acampamento de saqueadores adaptados ao frio que usam esteiras dentadas e arpoadores pneumáticos para caçar nas nevascas.",
-        "resources": { "water": 20, "fuel": 30, "scrap": 65, "thermal_stability": 20 }
+        "description": "Acampamento improvisado junto a um corredor de tempestades de neve. Seus moradores desmontam veículos para obter aquecimento e peças.",
+        "resources": {
+          "water": 20,
+          "fuel": 30,
+          "scrap": 65,
+          "thermal_stability": 20
+        },
+        "type_group": "settlement"
       },
-      "geometry": { "type": "Point", "coordinates": [138.76, -30.22] }
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          138.76,
+          -30.22
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -159,10 +291,22 @@
         "type": "frozen_mine",
         "biome": "frozen_wastes",
         "danger_level": 4,
-        "description": "Campos de fendas congeladas com cristais criogênicos instáveis; risco iminente de congelamento de fluidos veiculares.",
-        "resources": { "water": 30, "fuel": 10, "scrap": 85, "thermal_stability": 10 }
+        "description": "Área de extração com gelo fraturado e equipamentos expostos. Fendas se abrem quando o solo congela e descongela em ciclos rápidos.",
+        "resources": {
+          "water": 30,
+          "fuel": 10,
+          "scrap": 85,
+          "thermal_stability": 10
+        },
+        "type_group": "extraction"
       },
-      "geometry": { "type": "Point", "coordinates": [138.86, -30.27] }
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          138.86,
+          -30.27
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -172,10 +316,22 @@
         "type": "scrap_boneyard",
         "biome": "scorched_desert",
         "danger_level": 3,
-        "description": "Mar de dunas vermelhas pontilhado por esqueletos de tanques de guerra fundidos pelo calor tóxico e sol causticante.",
-        "resources": { "water": 5, "fuel": 25, "scrap": 95, "thermal_stability": 40 }
+        "description": "Grande depósito de sucata em uma planície árida. A exposição ao sol, à areia e à chuva ácida deteriorou quase todos os veículos.",
+        "resources": {
+          "water": 5,
+          "fuel": 25,
+          "scrap": 95,
+          "thermal_stability": 40
+        },
+        "type_group": "recovery"
       },
-      "geometry": { "type": "Point", "coordinates": [138.68, -30.38] }
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          138.68,
+          -30.38
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -185,10 +341,22 @@
         "type": "fuel_refinery",
         "biome": "scorched_desert",
         "danger_level": 4,
-        "description": "Torres de fracionamento em chamas contínuas; o calor ferve radiadores desprotegidos, mas o estoque de combustível é inigualável.",
-        "resources": { "water": 5, "fuel": 100, "scrap": 30, "thermal_stability": 25 }
+        "description": "Refinaria parcialmente operacional cercada por solo queimado. Vazamentos, incêndios recorrentes e fumaça tóxica limitam o trabalho ao ar livre.",
+        "resources": {
+          "water": 5,
+          "fuel": 100,
+          "scrap": 30,
+          "thermal_stability": 25
+        },
+        "type_group": "fuel"
       },
-      "geometry": { "type": "Point", "coordinates": [138.76, -30.40] }
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          138.76,
+          -30.4
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -198,10 +366,22 @@
         "type": "fuel_refinery",
         "biome": "scorched_desert",
         "danger_level": 4,
-        "description": "Cidadela de fumaça negra e fuligem governada pelos Barões do Petróleo; epicentro do comércio de carburadores e combustível puro.",
-        "resources": { "water": 10, "fuel": 95, "scrap": 60, "thermal_stability": 30 }
+        "description": "Aglomerado construído ao redor de instalações de combustível. A poluição do ar é constante e incêndios se espalham rapidamente durante os períodos secos.",
+        "resources": {
+          "water": 10,
+          "fuel": 95,
+          "scrap": 60,
+          "thermal_stability": 30
+        },
+        "type_group": "fuel"
       },
-      "geometry": { "type": "Point", "coordinates": [138.83, -30.46] }
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          138.83,
+          -30.46
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -211,10 +391,22 @@
         "type": "bandit_camp",
         "biome": "scorched_desert",
         "danger_level": 5,
-        "description": "Fortificação armada erguida sobre dunas radioativas; fanáticos que atacam comboios com lança-chamas e veículos espigados.",
-        "resources": { "water": 5, "fuel": 40, "scrap": 70, "thermal_stability": 20 }
+        "description": "Acampamento armado em uma área afetada por incêndios e resíduos industriais. A água é escassa e a poeira contaminada exige proteção respiratória.",
+        "resources": {
+          "water": 5,
+          "fuel": 40,
+          "scrap": 70,
+          "thermal_stability": 20
+        },
+        "type_group": "settlement"
       },
-      "geometry": { "type": "Point", "coordinates": [138.71, -30.48] }
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          138.71,
+          -30.48
+        ]
+      }
     }
   ]
 }

@@ -2,7 +2,7 @@ import { state } from './state.js';
 import { fetchLayers, fetchRoute, createCommunityNode, createDangerZone } from './api.js';
 import { buildScene } from './geo.js';
 import { buildScarSvg, setScarNodeState, clearAllScarNodeStates, clearScarPath, drawScarPath, setZonePreviewRect } from './render.js';
-import { renderModeTabs, updateRunBtn, showAlgoContent, updateStats, renderRouteSteps, renderZoneLegend, renderCommunityList, MODES } from './ui.js';
+import { renderModeTabs, updateRunBtn, showAlgoContent, setAnalysisDockOpen, updateStats, renderRouteSteps, renderZoneLegend, renderCommunityList, MODES } from './ui.js';
 import { setProgress, addLog, sleep, resetLogCount } from '../utils.js';
 
 const pickBadge = document.getElementById('pickBadge');
@@ -206,6 +206,16 @@ function initPanelToggle() {
   overlay?.addEventListener('click', closePanel);
 
   if (window.innerWidth >= 768) openPanel();
+}
+
+function initAnalysisDock() {
+  const dock = document.getElementById('analysisDock');
+  const tab = document.getElementById('analysisDockTab');
+  if (!dock || !tab) return;
+
+  tab.addEventListener('click', () => {
+    setAnalysisDockOpen(!dock.classList.contains('is-open'));
+  });
 }
 
 // ── Compartilhamento com a comunidade ──
@@ -487,9 +497,11 @@ async function runCalculation() {
 
     updateStats(props);
     renderRouteSteps(props.path_nodes, scene.nodes, scene.edges);
+    setAnalysisDockOpen(true, true, state.src.id);
   } catch (err) {
     addLog('path', `❌ <strong>Falha ao calcular rota:</strong> ${err.message}`);
     setProgress(0, 'Sem rota');
+    setAnalysisDockOpen(true, false, state.src.id);
   }
 
   state.running = false;
@@ -499,6 +511,7 @@ async function runCalculation() {
 async function bootstrap() {
   initModeTabs();
   initPanelToggle();
+  initAnalysisDock();
   setupSearch('srcInput', 'srcSug', 'src');
   setupSearch('dstInput', 'dstSug', 'dst');
   updateRunBtn();
