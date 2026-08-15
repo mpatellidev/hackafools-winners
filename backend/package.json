@@ -1,0 +1,10 @@
+{
+  "name": "hackafools-backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Servidor estático para servir a aplicação frontend do protótipo.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  }
+}
