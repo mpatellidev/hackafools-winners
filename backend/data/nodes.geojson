@@ -1,0 +1,183 @@
+{
+  "type": "FeatureCollection",
+  "name": "wasteland_nodes",
+  "crs": {
+    "type": "name",
+    "properties": {
+      "name": "urn:ogc:def:crs:OGC:1.3:CRS84"
+    }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "node_citadel",
+        "name": "A Cidadela Verde",
+        "type": "citadel",
+        "danger_level": 1,
+        "description": "Bastião fortificado sobre aquíferos profundos. Zona neutra armada.",
+        "resources": {
+          "water": 90,
+          "fuel": 40,
+          "scrap": 60
+        }
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [138.52, -30.45]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "node_water_refinery",
+        "name": "Refinaria Aquífera dos Vales",
+        "type": "water_refinery",
+        "danger_level": 2,
+        "description": "Estação de bombeamento e purificação de água condensada.",
+        "resources": {
+          "water": 100,
+          "fuel": 15,
+          "scrap": 30
+        }
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [138.58, -30.42]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "node_gas_town",
+        "name": "Vila da Gasolina (Gas Town)",
+        "type": "gas_town",
+        "danger_level": 4,
+        "description": "Complexo de poços de petróleo e refinarias clandestinas sob fumaça tóxica.",
+        "resources": {
+          "water": 10,
+          "fuel": 100,
+          "scrap": 55
+        }
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [138.74, -30.4]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "node_canyon_hideout",
+        "name": "Esconderijo das Sombras do Cânion",
+        "type": "canyon_hideout",
+        "danger_level": 2,
+        "description": "Fendas rochosas naturais que bloqueiam radares e tempestades.",
+        "resources": {
+          "water": 45,
+          "fuel": 20,
+          "scrap": 40
+        }
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [138.55, -30.32]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "node_rust_graveyard",
+        "name": "Cemitério de Carcaças & Sucata",
+        "type": "rust_graveyard",
+        "danger_level": 3,
+        "description": "Pilhas de comboios e aeronaves destruídas; rico em peças sobressalentes.",
+        "resources": {
+          "water": 5,
+          "fuel": 25,
+          "scrap": 95
+        }
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [138.64, -30.34]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "node_bullet_farm",
+        "name": "Fazenda de Projéteis",
+        "type": "bullet_farm",
+        "danger_level": 4,
+        "description": "Mina de chumbo a céu aberto e forjas automatizadas de munição.",
+        "resources": {
+          "water": 15,
+          "fuel": 35,
+          "scrap": 100
+        }
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [138.73, -30.25]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "node_dead_pass",
+        "name": "Garganta dos Mortos",
+        "type": "dead_pass",
+        "danger_level": 5,
+        "description": "Desfiladeiro estreito infestado por emboscadas e minas terrestres.",
+        "resources": {
+          "water": 0,
+          "fuel": 10,
+          "scrap": 50
+        }
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [138.65, -30.26]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "node_oasis_mirage",
+        "name": "Oásis da Poeira Vermelha",
+        "type": "oasis_mirage",
+        "danger_level": 2,
+        "description": "Poço artesiano protegido por clãs nômades pacíficos.",
+        "resources": {
+          "water": 75,
+          "fuel": 10,
+          "scrap": 25
+        }
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [138.59, -30.22]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "node_outpost_omega",
+        "name": "Posto Avançado Ômega (Portão Norte)",
+        "type": "outpost_omega",
+        "danger_level": 1,
+        "description": "Torre de rádio e entreposto fortificado de reabastecimento.",
+        "resources": {
+          "water": 50,
+          "fuel": 50,
+          "scrap": 50
+        }
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [138.68, -30.17]
+      }
+    }
+  ]
+}

@@ -1,0 +1,232 @@
+{
+  "type": "FeatureCollection",
+  "name": "wasteland_edges",
+  "crs": {
+    "type": "name",
+    "properties": {
+      "name": "urn:ogc:def:crs:OGC:1.3:CRS84"
+    }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "edge_citadel_water",
+        "source_node": "node_citadel",
+        "target_node": "node_water_refinery",
+        "distance_km": 6.6,
+        "danger_level": 1,
+        "terrain_type": "highway_ruins",
+        "fuel_cost_multiplier": 1.0,
+        "description": "Estrada asfaltada rachada, patrulhada pela guarda da Cidadela."
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.52, -30.45],
+          [138.58, -30.42]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "edge_citadel_canyon",
+        "source_node": "node_citadel",
+        "target_node": "node_canyon_hideout",
+        "distance_km": 14.73,
+        "danger_level": 1,
+        "terrain_type": "canyon_trail",
+        "fuel_cost_multiplier": 1.1,
+        "description": "Trilha sinuosa por dentro dos desfiladeiros protegidos."
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.52, -30.45],
+          [138.55, -30.32]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "edge_water_gastown",
+        "source_node": "node_water_refinery",
+        "target_node": "node_gas_town",
+        "distance_km": 15.51,
+        "danger_level": 3,
+        "terrain_type": "sand_dunes",
+        "fuel_cost_multiplier": 1.4,
+        "description": "Trecho aberto de dunas móveis com consumo elevado de combustível."
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.58, -30.42],
+          [138.74, -30.4]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "edge_water_graveyard",
+        "source_node": "node_water_refinery",
+        "target_node": "node_rust_graveyard",
+        "distance_km": 10.58,
+        "danger_level": 2,
+        "terrain_type": "dirt_track",
+        "fuel_cost_multiplier": 1.2,
+        "description": "Estrada de terra batida com visibilidade moderada."
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.58, -30.42],
+          [138.64, -30.34]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "edge_canyon_oasis",
+        "source_node": "node_canyon_hideout",
+        "target_node": "node_oasis_mirage",
+        "distance_km": 11.78,
+        "danger_level": 1,
+        "terrain_type": "sheltered_canyon",
+        "fuel_cost_multiplier": 1.1,
+        "description": "Cânion profundo livre de tempestades e radares de gangues."
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.55, -30.32],
+          [138.59, -30.22]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "edge_graveyard_deadpass",
+        "source_node": "node_rust_graveyard",
+        "target_node": "node_dead_pass",
+        "distance_km": 8.94,
+        "danger_level": 5,
+        "terrain_type": "ambush_corridor",
+        "fuel_cost_multiplier": 1.7,
+        "description": "Corredor estreito com alta incidência de armadilhas Warboy."
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.64, -30.34],
+          [138.65, -30.26]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "edge_gastown_bulletfarm",
+        "source_node": "node_gas_town",
+        "target_node": "node_bullet_farm",
+        "distance_km": 16.71,
+        "danger_level": 5,
+        "terrain_type": "storm_plains",
+        "fuel_cost_multiplier": 1.9,
+        "description": "Planície salgada assolada por tempestades de areia radioativas."
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.74, -30.4],
+          [138.73, -30.25]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "edge_bulletfarm_deadpass",
+        "source_node": "node_bullet_farm",
+        "target_node": "node_dead_pass",
+        "distance_km": 7.74,
+        "danger_level": 4,
+        "terrain_type": "hostile_trail",
+        "fuel_cost_multiplier": 1.5,
+        "description": "Trilha de comboios armados em constante disputa territorial."
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.73, -30.25],
+          [138.65, -30.26]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "edge_deadpass_omega",
+        "source_node": "node_dead_pass",
+        "target_node": "node_outpost_omega",
+        "distance_km": 10.41,
+        "danger_level": 5,
+        "terrain_type": "killzone_highway",
+        "fuel_cost_multiplier": 1.6,
+        "description": "Atalho direto para Ômega, mas atravessa o ninho principal dos Warboys."
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.65, -30.26],
+          [138.68, -30.17]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "edge_oasis_omega",
+        "source_node": "node_oasis_mirage",
+        "target_node": "node_outpost_omega",
+        "distance_km": 10.37,
+        "danger_level": 1,
+        "terrain_type": "safe_pass",
+        "fuel_cost_multiplier": 1.0,
+        "description": "Rota limpa e plana contornando as zonas de conflito ao norte."
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.59, -30.22],
+          [138.68, -30.17]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "edge_graveyard_oasis",
+        "source_node": "node_rust_graveyard",
+        "target_node": "node_oasis_mirage",
+        "distance_km": 14.16,
+        "danger_level": 2,
+        "terrain_type": "dune_bypass",
+        "fuel_cost_multiplier": 1.3,
+        "description": "Desvio seguro para contornar a Garganta dos Mortos."
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.64, -30.34],
+          [138.59, -30.22]
+        ]
+      }
+    }
+  ]
+}
