@@ -2,7 +2,7 @@ import { state } from './state.js';
 import { modes } from './graph-data.js';
 import { getNodes, getEdges, addSharedLocation, listSharedLocations, clearSharedLocations, CATEGORIES } from './community.js';
 import { buildGraphSvg, setNodeState, clearAllNodeStates, clearPath } from './render.js';
-import { renderModeTabs, renderCommunityList, updateRunBtn, showAlgoContent, setAnalysisDockOpen } from './ui.js';
+import { renderModeTabs, renderCommunityList, updateRunBtn, showAlgoContent } from './ui.js';
 import { calculateRoute } from './route.js';
 import { resetLogCount } from '../utils.js';
 
@@ -212,16 +212,6 @@ function initPanelToggle() {
   if (window.innerWidth >= 768) openPanel();
 }
 
-function initAnalysisDock() {
-  const dock = document.getElementById('analysisDock');
-  const tab = document.getElementById('analysisDockTab');
-  if (!dock || !tab) return;
-
-  tab.addEventListener('click', () => {
-    setAnalysisDockOpen(!dock.classList.contains('is-open'));
-  });
-}
-
 // ── Compartilhamento com a comunidade ──
 
 function svgPointFromEvent(e) {
@@ -301,7 +291,6 @@ graphMap.addEventListener('click', (e) => {
 
 initModeTabs();
 initPanelToggle();
-initAnalysisDock();
 setupSearch('srcInput', 'srcSug', 'src');
 setupSearch('dstInput', 'dstSug', 'dst');
 refreshCommunityList();

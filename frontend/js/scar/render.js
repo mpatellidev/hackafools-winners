@@ -3,7 +3,7 @@
 // zonas de perigo poligonais) — não compartilha estado com o grafo de
 // fantasia, então nada do modo antigo é tocado.
 
-import { TYPE_ICONS, dangerBucket } from './geo.js';
+import { dangerBucket } from './geo.js';
 
 const NS = 'http://www.w3.org/2000/svg';
 
@@ -32,24 +32,23 @@ function zoneVisualStyle(zone) {
   const biome = zone.biomeFocus || zone.zoneType || 'environmental_hazard';
   const danger = Number(zone.dangerMultiplier) || 1;
   const dangerBoost = clamp((danger - 1.3) / 1.8, 0, 1);
-
+  const risk = zone.threatLevel || (danger >= 2.1 ? 'tier_3' : danger >= 1.6 ? 'tier_2' : 'tier_1');
   const palettes = {
-    frozen_wastes: { hue: 205, sat: 86, light: 67 },
-    scorched_desert: { hue: 27, sat: 90, light: 57 },
-    high_relief_canyons: { hue: 28, sat: 52, light: 42 },
-    corporate_domes: { hue: 150, sat: 62, light: 52 },
-    faction_hostile: { hue: 332, sat: 72, light: 62 },
-    environmental_hazard: { hue: 44, sat: 95, light: 58 }
+    frozen_wastes: { hue: 205, sat: 72, light: 67 },
+    scorched_desert: { hue: 27, sat: 76, light: 57 },
+    high_relief_canyons: { hue: 28, sat: 44, light: 45 },
+    corporate_domes: { hue: 150, sat: 48, light: 50 },
+    faction_hostile: { hue: 332, sat: 58, light: 61 },
+    environmental_hazard: { hue: 44, sat: 76, light: 58 },
+    community_hazard: { hue: 194, sat: 62, light: 55 }
   };
-
   const base = palettes[biome] || palettes.environmental_hazard;
-  const alpha = 0.18 + dangerBoost * 0.4;
-  const strokeAlpha = 0.7 + dangerBoost * 0.25;
 
   return {
-    fill: `hsla(${base.hue}, ${base.sat}%, ${base.light}%, ${alpha})`,
-    stroke: `hsla(${base.hue}, ${base.sat}%, ${base.light + 22}%, ${strokeAlpha})`,
-    width: 1.2 + dangerBoost * 1.6
+    fill: `hsla(${base.hue}, ${base.sat}%, ${base.light}%, ${0.11 + dangerBoost * 0.11})`,
+    stroke: `hsla(${base.hue}, ${base.sat}%, ${Math.min(base.light + 18, 82)}%, ${0.42 + dangerBoost * 0.18})`,
+    width: 1.1 + dangerBoost * 0.65,
+    risk
   };
 }
 
@@ -176,13 +175,14 @@ export function buildScarSvg(container, nodes, edges, zones) {
     // Mantém a forma da zona, mas reduz o envelope visual para abrir mais espaço
     // entre a área de perigo e os nós, soando mais "desviável" na apresentação.
     path.setAttribute('d', organicBlobPath(z.center, z.radius * 0.82, z.id || z.name, z.nodeAvoidance));
-    path.setAttribute('class', `danger-zone zone-${biomeClass}`);
+    path.setAttribute('class', `danger-zone zone-${biomeClass} risk-${style.risk.replace('_', '-')}`);
     path.setAttribute('fill', style.fill);
     path.setAttribute('stroke', style.stroke);
     path.setAttribute('stroke-width', String(style.width));
 
     const title = document.createElementNS(NS, 'title');
-    title.textContent = `${z.name} · ${z.threatLevel} · multiplicador x${z.dangerMultiplier}`;
+    const riskLabel = { tier_1: 'risco baixo', tier_2: 'risco médio', tier_3: 'risco alto' }[style.risk] || 'risco médio';
+    title.textContent = `${z.name} · ${riskLabel} · perigo x${z.dangerMultiplier}`;
     path.appendChild(title);
 
     zoneLayer.appendChild(path);
@@ -202,11 +202,9 @@ export function buildScarSvg(container, nodes, edges, zones) {
     line.setAttribute('x2', pb.x);
     line.setAttribute('y2', pb.y);
     line.setAttribute('class', `scar-edge danger-${dangerBucket(e.dangerLevel)}`);
-    // Usados por setRouteEdges pra saber quais linhas pertencem ao caminho
-    // calculado — só essas ficam visíveis (ver comentário em setRouteEdges).
+    // Usados por setRouteEdges para destacar os trechos da rota calculada.
     line.dataset.from = e.from;
     line.dataset.to = e.to;
-    line.style.display = 'none';
 
     const title = document.createElementNS(NS, 'title');
     title.textContent = `${a.label} ↔ ${b.label} · ${e.distanceKm}km · perigo ${e.dangerLevel} · ${e.terrainType}`;
@@ -227,14 +225,9 @@ export function buildScarSvg(container, nodes, edges, zones) {
     circle.setAttribute('r', 15);
     circle.setAttribute('class', 'scar-node-circle');
 
-    const icon = document.createElementNS(NS, 'text');
-    icon.setAttribute('class', 'scar-node-icon');
-    icon.setAttribute('y', 5);
-    icon.textContent = TYPE_ICONS[n.type] || '📍';
-
     const label = document.createElementNS(NS, 'text');
     label.setAttribute('class', 'scar-node-label');
-    label.setAttribute('y', 31);
+    label.setAttribute('y', 28);
     label.textContent = n.label;
 
     const resourceTxt = n.resources
@@ -243,7 +236,6 @@ export function buildScarSvg(container, nodes, edges, zones) {
     const communityTxt = n.isCommunity ? '\n(compartilhado pela comunidade)' : '';
 
     g.appendChild(circle);
-    g.appendChild(icon);
     g.appendChild(label);
 
     nodeLayer.appendChild(g);
@@ -278,7 +270,7 @@ export function setRouteEdges(pathNodeIds) {
 
   layer.querySelectorAll('.scar-edge').forEach(line => {
     const key = `${line.dataset.from}|${line.dataset.to}`;
-    line.style.display = usedPairs.has(key) ? '' : 'none';
+    line.classList.toggle('is-route-edge', usedPairs.has(key));
   });
 }
 

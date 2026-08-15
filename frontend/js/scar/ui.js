@@ -2,8 +2,8 @@ import { state } from './state.js';
 import { TYPE_ICONS } from './geo.js';
 
 export const MODES = [
-  { id: 'survival', label: 'Sobrevivência', icon: '🛡️', color: '#00e5a0' },
-  { id: 'direct', label: 'Direto', icon: '🎯', color: '#ff5c8a' }
+  { id: 'survival', label: 'Sobrevivência', color: '#00e5a0' },
+  { id: 'direct', label: 'Direto', color: '#ff5c8a' }
 ];
 
 export function updateRunBtn() {
@@ -11,66 +11,17 @@ export function updateRunBtn() {
   if (btn) btn.disabled = !(state.src && state.dst) || state.running;
 }
 
-export function showAlgoContent(show) {
-  const content = document.getElementById('algoContent');
-  if (content) content.style.display = show ? 'block' : 'none';
-  if (!show) setAnalysisDockOpen(false);
-}
-
-export function setAnalysisDockOpen(open, hasRoute = document.getElementById('algoContent')?.style.display !== 'none', sourceId = null) {
-  const dock = document.getElementById('analysisDock');
-  const tab = document.getElementById('analysisDockTab');
-  const status = tab?.querySelector('.analysis-tab-status');
-  const glyph = tab?.querySelector('.analysis-tab-glyph');
-  if (!dock || !tab) return;
-
-  dock.classList.toggle('is-open', open);
-  tab.setAttribute('aria-expanded', String(open));
-  if (status) status.textContent = hasRoute ? 'CONCLUÍDO' : 'STANDBY';
-  if (glyph) glyph.textContent = '×';
-  if (open && sourceId) positionRouteReport(dock, sourceId);
-}
-
-function positionRouteReport(dock, sourceId) {
-  const surface = document.getElementById('map-surface');
-  const node = document.querySelector(`.scar-node[data-id="${sourceId}"], .graph-node[data-id="${sourceId}"]`);
-  const marker = node?.querySelector('.scar-node-circle, .node-circle');
-  if (!surface || !marker) return;
-
-  const surfaceRect = surface.getBoundingClientRect();
-  const markerRect = marker.getBoundingClientRect();
-  const sourceX = markerRect.left + markerRect.width / 2 - surfaceRect.left;
-  const sourceY = markerRect.top + markerRect.height / 2 - surfaceRect.top;
-  const reportWidth = Math.min(surfaceRect.width < 768 ? 330 : 360, surfaceRect.width - 24);
-  const reportHeight = 195;
-  const minTop = surfaceRect.height < 320 ? 12 : 84;
-  const maxTop = Math.max(12, surfaceRect.height - reportHeight - 12);
-  const placeRight = sourceX + 112 + reportWidth <= surfaceRect.width - 12;
-  const left = Math.max(12, Math.min(surfaceRect.width - reportWidth - 12, placeRight ? sourceX + 112 : sourceX - reportWidth - 112));
-  const top = Math.max(minTop, Math.min(maxTop, sourceY - 48));
-  const targetX = placeRight ? left : left + reportWidth;
-  const targetY = top + 22;
-  const dx = targetX - sourceX;
-  const dy = targetY - sourceY;
-
-  dock.style.setProperty('--source-x', `${sourceX}px`);
-  dock.style.setProperty('--source-y', `${sourceY}px`);
-  dock.style.setProperty('--report-left', `${left}px`);
-  dock.style.setProperty('--report-top', `${top}px`);
-  dock.style.setProperty('--connector-length', `${Math.hypot(dx, dy)}px`);
-  dock.style.setProperty('--connector-angle', `${Math.atan2(dy, dx) * 180 / Math.PI}deg`);
-  dock.dataset.sourceId = sourceId;
-}
+export function showAlgoContent() {}
 
 export function renderModeTabs() {
   const panelWrap = document.getElementById('modeTabs');
   const floatWrap = document.getElementById('floatingModeBar');
 
   const panelHtml = MODES.map((m, i) =>
-    `<button class="mode-tab${i === 0 ? ' active' : ''}" data-mode="${m.id}">${m.icon} ${m.label}</button>`
+    `<button class="mode-tab${i === 0 ? ' active' : ''}" data-mode="${m.id}">${m.label}</button>`
   ).join('');
   const floatHtml = MODES.map((m, i) =>
-    `<button class="float-mode-tab${i === 0 ? ' active' : ''}" data-mode="${m.id}">${m.icon}</button>`
+    `<button class="float-mode-tab${i === 0 ? ' active' : ''}" data-mode="${m.id}">${m.label}</button>`
   ).join('');
 
   if (panelWrap) panelWrap.innerHTML = panelHtml;
@@ -178,12 +129,19 @@ export function renderZoneLegend(zones) {
   }
 
   container.innerHTML = zones.map(z => {
-    const biomeKey = z.biomeFocus || z.zoneType || 'environmental_hazard';
+    const danger = Number(z.dangerMultiplier) || 1;
+    const risk = z.threatLevel || (danger >= 2.1 ? 'tier_3' : danger >= 1.6 ? 'tier_2' : 'tier_1');
+    const riskMeta = {
+      tier_1: { label: 'BAIXO', className: 'risk-tier-1' },
+      tier_2: { label: 'MÉDIO', className: 'risk-tier-2' },
+      tier_3: { label: 'ALTO', className: 'risk-tier-3' }
+    }[risk] || { label: 'MÉDIO', className: 'risk-tier-2' };
     return `
       <div class="zone-legend-item">
-        <div class="zone-legend-swatch zone-${biomeKey}"></div>
+        <div class="zone-legend-swatch ${riskMeta.className}"></div>
         <div>
-          <strong>${z.name}</strong> · ${z.threatLevel} · perigo x${z.dangerMultiplier}<br>
+          <div class="zone-legend-heading"><strong>${z.name}</strong><span class="zone-risk-badge ${riskMeta.className}">${riskMeta.label}</span></div>
+          <span class="zone-risk-multiplier">Perigo x${z.dangerMultiplier}</span><br>
           <span class="zone-legend-desc">${z.description}</span>
         </div>
       </div>

@@ -17,6 +17,23 @@ const idleSub = document.querySelector('#idleState .idle-sub');
 // todo, mesmo depois de calcular uma rota.
 let lastRoutePath = null;
 
+function updateHudReadouts() {
+  const count = document.getElementById('hudGraphCount');
+  const mode = document.getElementById('hudMode');
+  const activeMode = MODES.find(item => item.id === state.mode) || MODES[0];
+
+  if (count && scene) {
+    count.textContent = `${String(scene.nodes.length).padStart(2, '0')} / ${String(scene.edges.length).padStart(2, '0')}`;
+  }
+  if (mode) mode.textContent = `MODO: ${activeMode.label.toUpperCase()}`;
+}
+
+function updateHudClock() {
+  const clock = document.getElementById('hudClock');
+  if (!clock) return;
+  clock.textContent = `CORE // ${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
+}
+
 // Preenchida no bootstrap() (e de novo em refreshScene()) a partir da API
 // real: { nodes, edges, zones, project, unproject }
 let scene = null;
@@ -97,6 +114,7 @@ function showHint(msg, ms) {
 function rebuildGraph() {
   buildScarSvg(mapEl, scene.nodes, scene.edges, scene.zones);
   applyEdgeVisibility();
+  updateHudReadouts();
   // buildScarSvg troca o SVG inteiro — reaplica os destaques de
   // origem/destino que só existem como classes no DOM antigo.
   if (state.src) setScarNodeState(state.src.id, 'state-src');
@@ -208,6 +226,7 @@ function initModeTabs() {
     document.querySelectorAll('.mode-tab, .float-mode-tab').forEach(t => {
       t.classList.toggle('active', t.dataset.mode === modeId);
     });
+    updateHudReadouts();
     resetAlgoUI();
   }
 
@@ -447,6 +466,7 @@ async function refreshScene() {
   scene = buildScene(layers.nodes, layers.edges, layers.zones);
   buildScarSvg(mapEl, scene.nodes, scene.edges, scene.zones);
   applyEdgeVisibility();
+  updateHudReadouts();
   renderZoneLegend(scene.zones);
   refreshCommunityList();
   if (state.src) setScarNodeState(state.src.id, 'state-src');
@@ -500,7 +520,7 @@ async function runCalculation() {
   setProgress(10, 'Conectando à API S.C.A.R....');
   addLog('start', `Origem: <strong>${state.src.label}</strong>`);
   addLog('start', `Destino: <strong>${state.dst.label}</strong>`);
-  addLog('start', `Modo: <strong>${modeCfg.icon} ${modeCfg.label}</strong>`);
+  addLog('start', `Modo: <strong>${modeCfg.label}</strong>`);
 
   await sleep(150);
   setProgress(35, 'Executando Dijkstra real no backend...');
@@ -550,6 +570,8 @@ async function runCalculation() {
 async function bootstrap() {
   initModeTabs();
   initPanelToggle();
+  updateHudClock();
+  setInterval(updateHudClock, 30000);
   setupSearch('srcInput', 'srcSug', 'src');
   setupSearch('dstInput', 'dstSug', 'dst');
   updateRunBtn();
@@ -559,6 +581,7 @@ async function bootstrap() {
     scene = buildScene(layers.nodes, layers.edges, layers.zones);
     buildScarSvg(mapEl, scene.nodes, scene.edges, scene.zones);
     applyEdgeVisibility();
+    updateHudReadouts();
     renderZoneLegend(scene.zones);
     refreshCommunityList();
 
@@ -641,13 +664,6 @@ document.getElementById('swapBtn').onclick = () => {
 document.getElementById('srcClear').onclick = () => clearPoint('src');
 document.getElementById('dstClear').onclick = () => clearPoint('dst');
 document.getElementById('clearBtn').onclick = clearAll;
-
-document.getElementById('pickSrcBtn').onclick = () => {
-  setPickMode(state.pickMode === 'src' ? null : 'src');
-};
-document.getElementById('pickDstBtn').onclick = () => {
-  setPickMode(state.pickMode === 'dst' ? null : 'dst');
-};
 
 document.getElementById('shareResourceBtn').onclick = () => startShareMode('recurso');
 document.getElementById('shareSafeBtn').onclick = () => startShareMode('seguro');

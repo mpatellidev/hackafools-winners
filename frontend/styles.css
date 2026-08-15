@@ -112,76 +112,8 @@ button { -webkit-tap-highlight-color: transparent; }
 .corner-bl { bottom: 10px; left: 10px; border-bottom: 1px solid var(--accent); border-left: 1px solid var(--accent); }
 .corner-br { bottom: 10px; right: 10px; border-bottom: 1px solid var(--accent); border-right: 1px solid var(--accent); }
 
-/* Relatório de rota: apresentado somente ao fim do cálculo. */
-.analysis-dock {
-  position: absolute;
-  inset: 0;
-  z-index: 120;
-  display: none;
-  pointer-events: none;
-}
-.analysis-dock.is-open { display: block; }
-.analysis-dock.is-open::before {
-  content: '';
-  position: absolute;
-  left: var(--source-x, 50%);
-  top: var(--source-y, 50%);
-  width: var(--connector-length, 110px);
-  height: 1px;
-  background: var(--accent);
-  box-shadow: 0 0 7px rgba(154, 244, 111, .55);
-  transform: rotate(var(--connector-angle, 0deg));
-  transform-origin: left center;
-}
-.analysis-dock.is-open::after {
-  content: '';
-  position: absolute;
-  left: calc(var(--source-x, 50%) - 4px);
-  top: calc(var(--source-y, 50%) - 4px);
-  width: 7px;
-  height: 7px;
-  border: 1px solid #d8ffc8;
-  border-radius: 50%;
-  background: var(--accent);
-  box-shadow: 0 0 8px var(--accent);
-}
-.analysis-tab {
-  position: absolute;
-  left: var(--report-left, 24px);
-  top: var(--report-top, 100px);
-  width: min(360px, calc(100% - 24px));
-  min-height: 43px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 16px;
-  border: 1px solid var(--border-strong);
-  border-bottom: 0;
-  background: #1b2118;
-  color: var(--muted2);
-  cursor: pointer;
-  pointer-events: auto;
-  font-family: var(--font-head);
-  font-size: 10px;
-  letter-spacing: .12em;
-  text-align: left;
-  box-shadow: 5px 0 0 rgba(0, 0, 0, .25);
-}
-.analysis-tab:hover { background: #1c2419; color: var(--accent); }
-.analysis-dock.is-open .analysis-tab { border-left: 3px solid var(--accent); color: var(--accent); }
-.analysis-tab-index { display: inline-grid; place-items: center; width: 22px; height: 17px; border: 1px solid var(--border2); color: var(--accent-soft); font: 8px var(--font-mono); }
-.analysis-tab-status { margin-left: auto; color: var(--muted); font: 8px var(--font-mono); letter-spacing: .1em; }
-.analysis-dock.is-open .analysis-tab-status { color: var(--accent); }
-.analysis-tab-glyph { width: 18px; color: var(--accent); font: 17px/1 var(--font-mono); text-align: center; }
-
-.analysis-dock .algo-panel { position: absolute; left: var(--report-left, 24px); top: calc(var(--report-top, 100px) + 43px); width: min(360px, calc(100% - 24px)); min-height: 0; padding: 13px 14px 14px; overflow: hidden; border: 1px solid var(--border-strong); background: var(--surface); box-shadow: 5px 6px 0 rgba(0, 0, 0, .3); pointer-events: auto; }
-.analysis-dock:not(.is-open) .algo-panel { display: none; }
-.analysis-dock .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-bottom: 0; }
-.analysis-dock .stat-card { min-height: 60px; }
-
 .route-monitor { flex: 0 0 auto; padding: 14px 18px 18px; border-bottom: 1px solid var(--border2); }
-.route-monitor .progress-wrap, .route-monitor .algo-log { margin-bottom: 13px; }
-.route-monitor .log-entries { max-height: 125px; }
+.route-monitor .progress-wrap { margin-bottom: 13px; }
 .route-monitor-path .section-title { margin-top: 1px; }
 
 /* Painel lateral */
@@ -222,6 +154,7 @@ button { -webkit-tap-highlight-color: transparent; }
 .logo { display: flex; align-items: center; gap: 11px; margin-bottom: 16px; min-width: 0; }
 .logo-icon { width: 38px; height: 38px; flex: 0 0 auto; display: grid; place-items: center; border: 1px solid var(--accent-soft); background: #182116; color: var(--accent); box-shadow: inset 0 0 0 3px #0d100c; }
 .logo-icon svg { width: 20px; height: 20px; }
+.logo-icon img { width: 100%; height: 100%; display: block; object-fit: contain; }
 .logo-name { color: var(--accent); font: 21px/.95 var(--font-head); letter-spacing: .12em; text-shadow: 0 0 8px rgba(154, 244, 111, .25); }
 .logo-sub { margin-top: 4px; color: var(--muted2); font-size: 8px; letter-spacing: .08em; }
 
@@ -389,8 +322,6 @@ button { -webkit-tap-highlight-color: transparent; }
   .panel-header { padding: 10px 16px 13px; }
   .equipment-strip { margin: -10px -16px 12px; }
   .panel-inputs, .community-panel { padding-left: 16px; padding-right: 16px; }
-  .analysis-tab { width: min(330px, calc(100% - 24px)); padding: 10px 12px; }
-  .analysis-dock .algo-panel { width: min(330px, calc(100% - 24px)); padding: 12px 14px 15px; }
   .route-monitor { padding-left: 16px; padding-right: 16px; }
   .map-hint { left: 12px; right: 12px; bottom: 18px; transform: none; text-align: center; white-space: normal; }
   .pick-badge { top: 66px; max-width: calc(100% - 24px); overflow: hidden; text-overflow: ellipsis; }
