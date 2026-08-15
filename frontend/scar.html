@@ -3,18 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>BestWay — Grafo de Mapa de Jogo (Dijkstra)</title>
+<title>DustNav — S.C.A.R. (Mapa Real do Wasteland)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="game-styles.css">
+<link rel="stylesheet" href="scar-styles.css">
 </head>
 <body>
 <div id="app">
   <div id="map-wrap">
-    <div id="graphMap"></div>
-    <div class="pick-badge" id="pickBadge">📍 Clique num nó para definir o ponto</div>
-    <div class="map-hint" id="mapHint">Clique num nó para definir a localização</div>
+    <div id="scarMap"></div>
+    <div class="pick-badge" id="pickBadge">📍 Clique num ponto pra definir a localização</div>
+    <div class="map-hint" id="mapHint">Carregando mapa real do wasteland...</div>
 
     <button class="panel-toggle" id="panelToggle" aria-label="Abrir painel">
       <svg class="toggle-icon-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -27,7 +28,7 @@
       <span class="toggle-label-close">Fechar</span>
     </button>
 
-    <!-- Populado dinamicamente a partir de js/game/graph-data.js (modes) -->
+    <!-- Populado dinamicamente a partir de js/scar/ui.js (MODES) -->
     <div class="floating-mode-bar" id="floatingModeBar"></div>
 
     <div class="result-pill" id="resultPill" style="display:none">
@@ -48,14 +49,13 @@
       <div class="logo">
         <div class="logo-icon">
           <svg viewBox="0 0 18 18" fill="none">
-            <circle cx="9" cy="9" r="7" stroke="#000" stroke-width="1.5"/>
-            <path d="M9 5v4l3 2" stroke="#000" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M9 2L2 6v6l7 4 7-4V6L9 2z" stroke="#000" stroke-width="1.5" stroke-linejoin="round"/>
           </svg>
         </div>
         <div>
-          <div class="logo-name">BestWay</div>
-          <div class="logo-sub">Dijkstra sobre grafo</div>
-          <a class="variant-link" href="scar.html">🛡️ modo S.C.A.R. (dados reais) →</a>
+          <div class="logo-name">DustNav</div>
+          <div class="logo-sub">S.C.A.R. · dados reais do wasteland</div>
+          <a class="variant-link" href="index.html">← modo fantasia (offline)</a>
         </div>
         <button class="panel-close-btn" id="panelCloseBtn" aria-label="Fechar painel">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
@@ -63,7 +63,7 @@
           </svg>
         </button>
       </div>
-      <!-- Populado dinamicamente a partir de js/game/graph-data.js (modes) -->
+      <!-- Populado dinamicamente a partir de js/scar/ui.js (MODES) -->
       <div class="mode-tabs" id="modeTabs"></div>
     </div>
 
@@ -73,7 +73,7 @@
           <span class="input-dot dot-src"></span>
           Origem
         </div>
-        <input class="location-input" id="srcInput" placeholder="Buscar nó ou clicar no mapa..." autocomplete="off"/>
+        <input class="location-input" id="srcInput" placeholder="Buscar local ou clicar no mapa..." autocomplete="off"/>
         <button class="input-clear" id="srcClear" title="Limpar">×</button>
         <div class="suggestions" id="srcSug" style="display:none"></div>
       </div>
@@ -87,14 +87,14 @@
           <span class="input-dot dot-dst"></span>
           Destino
         </div>
-        <input class="location-input" id="dstInput" placeholder="Buscar nó ou clicar no mapa..." autocomplete="off"/>
+        <input class="location-input" id="dstInput" placeholder="Buscar local ou clicar no mapa..." autocomplete="off"/>
         <button class="input-clear" id="dstClear" title="Limpar">×</button>
         <div class="suggestions" id="dstSug" style="display:none"></div>
       </div>
 
       <button class="run-btn" id="runBtn" disabled>
         <span class="btn-icon">⚡</span>
-        Calcular Melhor Caminho
+        Calcular Rota S.C.A.R.
       </button>
       <div class="clear-all">
         <button id="clearBtn">↺ Limpar tudo</button>
@@ -112,7 +112,7 @@
 
       <div class="share-compose" id="shareCompose" style="display:none">
         <div class="share-compose-title" id="shareComposeTitle">Nomear local</div>
-        <input class="location-input" id="shareLabelInput" placeholder="Ex: Poço de água, Abrigo da praça..." autocomplete="off"/>
+        <input class="location-input" id="shareLabelInput" placeholder="Ex: Poço de água, Abrigo blindado..." autocomplete="off"/>
         <div class="share-compose-actions">
           <button class="share-cancel-btn" id="shareCancelBtn">Cancelar</button>
           <button class="share-confirm-btn" id="shareConfirmBtn">Compartilhar</button>
@@ -122,39 +122,63 @@
       <div class="community-header">
         <span>Locais da comunidade</span>
         <span id="communityCount">0 compartilhados</span>
-        <button class="community-clear-btn" id="communityClearBtn" title="Limpar locais compartilhados">🗑️</button>
       </div>
       <div class="community-list" id="communityList"></div>
     </div>
 
+    <div class="zone-panel" id="zonePanel">
+      <div class="section-title">Zonas de perigo mapeadas</div>
+      <div class="zone-legend" id="zoneLegend"></div>
+
+      <button class="zone-report-btn" id="zoneReportBtn">🚧 Reportar zona de perigo</button>
+
+      <div class="zone-compose" id="zoneCompose" style="display:none">
+        <div class="share-compose-title" id="zoneComposeTitle">Escolha o nível de perigo</div>
+
+        <div class="zone-tier-row" id="zoneTierRow">
+          <button class="zone-tier-btn tier-1" data-tier="tier_1">🟡 Baixo</button>
+          <button class="zone-tier-btn tier-2" data-tier="tier_2">🟠 Médio</button>
+          <button class="zone-tier-btn tier-3" data-tier="tier_3">🔴 Alto</button>
+        </div>
+
+        <input class="location-input" id="zoneNameInput" placeholder="Nome da zona (ex: Emboscada na Rota 9)" autocomplete="off" style="display:none"/>
+        <input class="location-input" id="zoneDescInput" placeholder="Descrição (opcional)" autocomplete="off" style="display:none"/>
+
+        <div class="share-compose-actions">
+          <button class="share-cancel-btn" id="zoneCancelBtn">Cancelar</button>
+          <button class="share-confirm-btn" id="zoneConfirmBtn" style="display:none">Reportar</button>
+        </div>
+      </div>
+    </div>
+
     <div class="algo-panel" id="algoPanel">
       <div class="idle-state" id="idleState">
-        <div class="idle-icon">🗺️</div>
-        <div class="idle-title">Nenhum caminho calculado</div>
-        <div class="idle-sub">Clique em dois nós do grafo (ou busque pelo nome) para definir origem e destino. O Dijkstra calcula o caminho de menor custo em tempo real, rodando localmente — sem API externa.</div>
+        <div class="idle-icon">☢️</div>
+        <div class="idle-title">Nenhuma rota calculada</div>
+        <div class="idle-sub">Clique em dois pontos do mapa (ou busque pelo nome) para definir origem e destino. O cálculo roda de verdade no backend (<code>routing-engine.js</code>, Dijkstra sobre os dados de <code>backend/data</code>) considerando terreno, nível de perigo e zonas de risco.</div>
       </div>
       <div id="algoContent" style="display:none">
-        <div class="section-title">Estatísticas</div>
+        <div class="section-title">Estatísticas da rota</div>
         <div class="stats-grid">
           <div class="stat-card">
-            <div class="stat-label">Custo Total</div>
-            <div class="stat-value accent2" id="statDist">—<span class="stat-unit">un</span></div>
+            <div class="stat-label">Distância</div>
+            <div class="stat-value accent2" id="statDist">—<span class="stat-unit">km</span></div>
           </div>
           <div class="stat-card">
-            <div class="stat-label">Tempo Est.</div>
-            <div class="stat-value accent" id="statTime">—<span class="stat-unit">min</span></div>
+            <div class="stat-label">Nível de Perigo</div>
+            <div class="stat-value accent3" id="statDanger">—<span class="stat-unit">pts</span></div>
           </div>
           <div class="stat-card">
-            <div class="stat-label">Nós Explorados</div>
-            <div class="stat-value" id="statNodes">—</div>
+            <div class="stat-label">Combustível Est.</div>
+            <div class="stat-value accent4" id="statFuel">—<span class="stat-unit">L</span></div>
           </div>
           <div class="stat-card">
-            <div class="stat-label">Trechos</div>
-            <div class="stat-value" id="statSpeed">—</div>
+            <div class="stat-label">Sobrevivência</div>
+            <div class="stat-value accent" id="statSurvival">—<span class="stat-unit">%</span></div>
           </div>
         </div>
 
-        <div class="section-title">Progresso do Algoritmo</div>
+        <div class="section-title">Progresso do cálculo</div>
         <div class="progress-wrap">
           <div class="progress-label">
             <span id="progLabel">Inicializando...</span>
@@ -163,7 +187,7 @@
           <div class="progress-track"><div class="progress-fill" id="progFill"></div></div>
         </div>
 
-        <div class="section-title">Log do Algoritmo</div>
+        <div class="section-title">Log da requisição</div>
         <div class="algo-log">
           <div class="algo-log-header">
             <span>Execução em tempo real</span>
@@ -179,6 +203,6 @@
   </div>
 </div>
 
-<script type="module" src="js/game/main.js"></script>
+<script type="module" src="js/scar/main.js"></script>
 </body>
 </html>

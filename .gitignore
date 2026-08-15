@@ -354,6 +354,10 @@ paket-files/
 **/__pycache__/
 *.pyc
 
+# Locais compartilhados pela comunidade (S.C.A.R.) — estado gerado em
+# runtime pelo backend, não dado-fonte do mapa.
+backend/data/community.json
+
 # Cake - Uncomment if you are using it
 #tools/**
 #!tools/packages.config
