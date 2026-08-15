@@ -1,6 +1,6 @@
 {
   "type": "FeatureCollection",
-  "name": "wasteland_nodes",
+  "name": "dustnav_nodes",
   "crs": {
     "type": "name",
     "properties": {
@@ -11,173 +11,210 @@
     {
       "type": "Feature",
       "properties": {
-        "id": "node_citadel",
-        "name": "A Cidadela Verde",
-        "type": "citadel",
-        "danger_level": 1,
-        "description": "Bastião fortificado sobre aquíferos profundos. Zona neutra armada.",
-        "resources": {
-          "water": 90,
-          "fuel": 40,
-          "scrap": 60
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [138.52, -30.45]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "id": "node_water_refinery",
-        "name": "Refinaria Aquífera dos Vales",
-        "type": "water_refinery",
-        "danger_level": 2,
-        "description": "Estação de bombeamento e purificação de água condensada.",
-        "resources": {
-          "water": 100,
-          "fuel": 15,
-          "scrap": 30
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [138.58, -30.42]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "id": "node_gas_town",
-        "name": "Vila da Gasolina (Gas Town)",
-        "type": "gas_town",
-        "danger_level": 4,
-        "description": "Complexo de poços de petróleo e refinarias clandestinas sob fumaça tóxica.",
-        "resources": {
-          "water": 10,
-          "fuel": 100,
-          "scrap": 55
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [138.74, -30.4]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
         "id": "node_canyon_hideout",
         "name": "Esconderijo das Sombras do Cânion",
         "type": "canyon_hideout",
+        "biome": "high_relief_canyons",
         "danger_level": 2,
-        "description": "Fendas rochosas naturais que bloqueiam radares e tempestades.",
-        "resources": {
-          "water": 45,
-          "fuel": 20,
-          "scrap": 40
-        }
+        "description": "Fendas rochosas monumentais de 300 metros de altura que bloqueiam radiação, tempestades e rastreadores termais.",
+        "resources": { "water": 45, "fuel": 20, "scrap": 50, "thermal_stability": 60 }
       },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [138.55, -30.32]
-      }
+      "geometry": { "type": "Point", "coordinates": [138.38, -30.30] }
     },
     {
       "type": "Feature",
       "properties": {
-        "id": "node_rust_graveyard",
-        "name": "Cemitério de Carcaças & Sucata",
-        "type": "rust_graveyard",
-        "danger_level": 3,
-        "description": "Pilhas de comboios e aeronaves destruídas; rico em peças sobressalentes.",
-        "resources": {
-          "water": 5,
-          "fuel": 25,
-          "scrap": 95
-        }
+        "id": "node_gorge_bastion",
+        "name": "Bastião da Garganta Profunda",
+        "type": "canyon_bastion",
+        "biome": "high_relief_canyons",
+        "danger_level": 2,
+        "description": "Fortificação esculpida nas encostas de um desfiladeiro íngreme; rota protegida por sentinelas independentes.",
+        "resources": { "water": 40, "fuel": 25, "scrap": 65, "thermal_stability": 55 }
       },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [138.64, -30.34]
-      }
+      "geometry": { "type": "Point", "coordinates": [138.42, -30.38] }
     },
     {
       "type": "Feature",
       "properties": {
-        "id": "node_bullet_farm",
-        "name": "Fazenda de Projéteis",
-        "type": "bullet_farm",
-        "danger_level": 4,
-        "description": "Mina de chumbo a céu aberto e forjas automatizadas de munição.",
-        "resources": {
-          "water": 15,
-          "fuel": 35,
-          "scrap": 100
-        }
+        "id": "node_boneyard_iron_widow",
+        "name": "Sucata da Viúva das Fendas",
+        "type": "scrap_boneyard",
+        "biome": "high_relief_canyons",
+        "danger_level": 2,
+        "description": "Depósito de carcaças prensadas no fundo de uma garganta rochosa; refúgio de mecânicos eremitas e comércio de peças.",
+        "resources": { "water": 20, "fuel": 15, "scrap": 90, "thermal_stability": 50 }
       },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [138.73, -30.25]
-      }
+      "geometry": { "type": "Point", "coordinates": [138.46, -30.45] }
     },
     {
       "type": "Feature",
       "properties": {
         "id": "node_dead_pass",
-        "name": "Garganta dos Mortos",
+        "name": "Passo da Guilhotina",
         "type": "dead_pass",
+        "biome": "high_relief_canyons",
         "danger_level": 5,
-        "description": "Desfiladeiro estreito infestado por emboscadas e minas terrestres.",
-        "resources": {
-          "water": 0,
-          "fuel": 10,
-          "scrap": 50
-        }
+        "description": "Pico escarpado e passagem estreita ladeada por precipícios; local de desabamentos provocados e emboscadas fulminantes.",
+        "resources": { "water": 5, "fuel": 10, "scrap": 40, "thermal_stability": 40 }
       },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [138.65, -30.26]
-      }
+      "geometry": { "type": "Point", "coordinates": [138.39, -30.48] }
     },
     {
       "type": "Feature",
       "properties": {
-        "id": "node_oasis_mirage",
-        "name": "Oásis da Poeira Vermelha",
-        "type": "oasis_mirage",
-        "danger_level": 2,
-        "description": "Poço artesiano protegido por clãs nômades pacíficos.",
-        "resources": {
-          "water": 75,
-          "fuel": 10,
-          "scrap": 25
-        }
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [138.59, -30.22]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "id": "node_outpost_omega",
-        "name": "Posto Avançado Ômega (Portão Norte)",
-        "type": "outpost_omega",
+        "id": "node_dome_hyperion",
+        "name": "Dômo Hyperion Prime",
+        "type": "citadel_dome",
+        "biome": "corporate_domes",
         "danger_level": 1,
-        "description": "Torre de rádio e entreposto fortificado de reabastecimento.",
-        "resources": {
-          "water": 50,
-          "fuel": 50,
-          "scrap": 50
-        }
+        "description": "Bastião corporativo sob cúpula de geoengenharia intacta; ar condicionado filtrado, alta tecnologia e segurança armada impiedosa.",
+        "resources": { "water": 90, "fuel": 60, "scrap": 35, "thermal_stability": 98 }
       },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [138.68, -30.17]
-      }
+      "geometry": { "type": "Point", "coordinates": [138.48, -30.15] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "node_oasis_last_drop",
+        "name": "Oásis Última Gota",
+        "type": "hydro_oasis",
+        "biome": "corporate_domes",
+        "danger_level": 1,
+        "description": "Reservatório artificial alimentado por condensadores de umidade corporativos; solo neutro inviolável entre todas as facções.",
+        "resources": { "water": 100, "fuel": 15, "scrap": 20, "thermal_stability": 80 }
+      },
+      "geometry": { "type": "Point", "coordinates": [138.53, -30.22] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "node_dome_meridian",
+        "name": "Dômo Meridiano da Trégua",
+        "type": "citadel_dome",
+        "biome": "corporate_domes",
+        "danger_level": 1,
+        "description": "Cúpula secundária semiaberta convertida no maior entreposto de escambo, oficinas de blindagem e troca de mapas do deserto.",
+        "resources": { "water": 75, "fuel": 45, "scrap": 55, "thermal_stability": 85 }
+      },
+      "geometry": { "type": "Point", "coordinates": [138.60, -30.28] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "node_oasis_thermal_spring",
+        "name": "Fonte Termal dos Vales",
+        "type": "hydro_oasis",
+        "biome": "corporate_domes",
+        "danger_level": 2,
+        "description": "Lagoa natural aquecida pelos tubos de escape térmico dos dômos; ponto seguro de hidratação e calibragem de motores.",
+        "resources": { "water": 85, "fuel": 20, "scrap": 25, "thermal_stability": 75 }
+      },
+      "geometry": { "type": "Point", "coordinates": [138.54, -30.34] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "node_tower_frostspire",
+        "name": "Torre Espinho de Gelo",
+        "type": "weather_tower",
+        "biome": "frozen_wastes",
+        "danger_level": 5,
+        "description": "Monólito de resfriamento desgovernado que expele nevascas de nitrogênio; o solo ao redor é puro gelo negro estilhaçador de eixos.",
+        "resources": { "water": 35, "fuel": 10, "scrap": 50, "thermal_stability": 5 }
+      },
+      "geometry": { "type": "Point", "coordinates": [138.80, -30.12] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "node_mine_permafrost",
+        "name": "Mina do Permafrost Negro",
+        "type": "frozen_mine",
+        "biome": "frozen_wastes",
+        "danger_level": 3,
+        "description": "Complexo minerador em cavernas glaciais subterrâneas; extrai supercondutores intactos preservados a -40°C.",
+        "resources": { "water": 50, "fuel": 15, "scrap": 80, "thermal_stability": 15 }
+      },
+      "geometry": { "type": "Point", "coordinates": [138.87, -30.16] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "node_camp_vulture",
+        "name": "Ninho dos Abutres de Gelo",
+        "type": "bandit_camp",
+        "biome": "frozen_wastes",
+        "danger_level": 4,
+        "description": "Acampamento de saqueadores adaptados ao frio que usam esteiras dentadas e arpoadores pneumáticos para caçar nas nevascas.",
+        "resources": { "water": 20, "fuel": 30, "scrap": 65, "thermal_stability": 20 }
+      },
+      "geometry": { "type": "Point", "coordinates": [138.76, -30.22] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "node_mine_cryo_veins",
+        "name": "Veias Criogênicas de Minério",
+        "type": "frozen_mine",
+        "biome": "frozen_wastes",
+        "danger_level": 4,
+        "description": "Campos de fendas congeladas com cristais criogênicos instáveis; risco iminente de congelamento de fluidos veiculares.",
+        "resources": { "water": 30, "fuel": 10, "scrap": 85, "thermal_stability": 10 }
+      },
+      "geometry": { "type": "Point", "coordinates": [138.86, -30.27] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "node_boneyard_rust_king",
+        "name": "Cemitério do Rei da Ferrugem",
+        "type": "scrap_boneyard",
+        "biome": "scorched_desert",
+        "danger_level": 3,
+        "description": "Mar de dunas vermelhas pontilhado por esqueletos de tanques de guerra fundidos pelo calor tóxico e sol causticante.",
+        "resources": { "water": 5, "fuel": 25, "scrap": 95, "thermal_stability": 40 }
+      },
+      "geometry": { "type": "Point", "coordinates": [138.68, -30.38] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "node_refinery_scorch",
+        "name": "Refinaria da Chama Ardente",
+        "type": "fuel_refinery",
+        "biome": "scorched_desert",
+        "danger_level": 4,
+        "description": "Torres de fracionamento em chamas contínuas; o calor ferve radiadores desprotegidos, mas o estoque de combustível é inigualável.",
+        "resources": { "water": 5, "fuel": 100, "scrap": 30, "thermal_stability": 25 }
+      },
+      "geometry": { "type": "Point", "coordinates": [138.76, -30.40] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "node_gas_town",
+        "name": "Vila do Óleo (Gas Town)",
+        "type": "fuel_refinery",
+        "biome": "scorched_desert",
+        "danger_level": 4,
+        "description": "Cidadela de fumaça negra e fuligem governada pelos Barões do Petróleo; epicentro do comércio de carburadores e combustível puro.",
+        "resources": { "water": 10, "fuel": 95, "scrap": 60, "thermal_stability": 30 }
+      },
+      "geometry": { "type": "Point", "coordinates": [138.83, -30.46] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "node_camp_ash_reapers",
+        "name": "Forte dos Ceifadores de Cinzas",
+        "type": "bandit_camp",
+        "biome": "scorched_desert",
+        "danger_level": 5,
+        "description": "Fortificação armada erguida sobre dunas radioativas; fanáticos que atacam comboios com lança-chamas e veículos espigados.",
+        "resources": { "water": 5, "fuel": 40, "scrap": 70, "thermal_stability": 20 }
+      },
+      "geometry": { "type": "Point", "coordinates": [138.71, -30.48] }
     }
   ]
 }

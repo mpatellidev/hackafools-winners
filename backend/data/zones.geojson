@@ -1,6 +1,6 @@
 {
   "type": "FeatureCollection",
-  "name": "wasteland_zones",
+  "name": "dustnav_zones",
   "crs": {
     "type": "name",
     "properties": {
@@ -11,23 +11,24 @@
     {
       "type": "Feature",
       "properties": {
-        "id": "zone_warboy_stronghold",
-        "name": "Território dos Saqueadores Warboy",
+        "id": "zone_canyon_killpeaks",
+        "name": "Zona das Agulhas de Pedra & Guilhotina",
+        "biome_focus": "high_relief_canyons",
         "zone_type": "faction_hostile",
         "threat_level": "tier_3",
-        "danger_multiplier": 2.5,
-        "stealth_penalty": 0.8,
-        "description": "Zona de alta densidade de patrulhas hostis, atiradores e bloqueios de estrada blindados."
+        "danger_multiplier": 2.2,
+        "stealth_penalty": 0.85,
+        "description": "Desfiladeiros profundos e picos íngremes no sudoeste. Snipers em cavernas de altitude disparam em comboios que tentam cruzar a Guilhotina."
       },
       "geometry": {
         "type": "Polygon",
         "coordinates": [
           [
-            [138.61, -30.36],
-            [138.71, -30.36],
-            [138.71, -30.2],
-            [138.62, -30.2],
-            [138.61, -30.36]
+            [138.35, -30.52],
+            [138.48, -30.52],
+            [138.48, -30.42],
+            [138.35, -30.42],
+            [138.35, -30.52]
           ]
         ]
       }
@@ -35,23 +36,49 @@
     {
       "type": "Feature",
       "properties": {
-        "id": "zone_radioactive_sandstorm",
-        "name": "Frente de Tempestade Radioativa",
+        "id": "zone_frostspire_blizzard",
+        "name": "Vórtice Glacial da Torre Espinho",
+        "biome_focus": "frozen_wastes",
         "zone_type": "environmental_hazard",
         "threat_level": "tier_3",
-        "danger_multiplier": 2.8,
-        "stealth_penalty": 0.3,
-        "description": "Ventos de 140 km/h com poeira ionizada. Visibilidade zero, desgaste acelerado de motor e dano por radiação."
+        "danger_multiplier": 2.7,
+        "stealth_penalty": 0.30,
+        "description": "Anomalia climática contínua de frio criogênico extremo no nordeste. Congela linhas de combustível, racha blindagens e anula a visibilidade."
       },
       "geometry": {
         "type": "Polygon",
         "coordinates": [
           [
-            [138.7, -30.43],
-            [138.78, -30.43],
-            [138.76, -30.22],
-            [138.69, -30.22],
-            [138.7, -30.43]
+            [138.74, -30.25],
+            [138.90, -30.25],
+            [138.90, -30.08],
+            [138.74, -30.08],
+            [138.74, -30.25]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "zone_radioactive_scorch_flames",
+        "name": "Inferno de Cinzas & Dunas Radioativas",
+        "biome_focus": "scorched_desert",
+        "zone_type": "environmental_hazard",
+        "threat_level": "tier_3",
+        "danger_multiplier": 2.5,
+        "stealth_penalty": 0.40,
+        "description": "Deserto de poeira atômica e poços petrolíferos em chamas no sul. Ar corrosivo, campos minados e patrulhas suicidas dos Ceifadores."
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [138.65, -30.52],
+            [138.86, -30.52],
+            [138.86, -30.36],
+            [138.65, -30.36],
+            [138.65, -30.52]
           ]
         ]
       }
