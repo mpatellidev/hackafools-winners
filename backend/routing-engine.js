@@ -1,7 +1,8 @@
 // Motor de rotas S.C.A.R. — porta em JS puro (sem dependências) do antigo
 // core/engine.py (networkx + shapely). Carrega os GeoJSON de data/, monta um
 // grafo direcionado em memória e calcula o caminho de menor custo (Dijkstra)
-// nos modos "survival" (pondera perigo/terreno/zonas) e "direct" (só terreno).
+// nos modos "survival" (maximiza a probabilidade de chegada) e "direct"
+// (minimiza exclusivamente a distância).
 
 'use strict';
 
@@ -24,6 +25,30 @@ const TERRAIN_MULTIPLIERS = {
   storm_plains: 1.6,
   radioactive_crater: 2.5
 };
+
+// Exposição relativa ao risco por quilômetro.  Estes valores não são usados
+// pela rota direta: eles representam apenas quanto o tipo de terreno aumenta
+// ou reduz a chance de incidente durante uma travessia.
+const TERRAIN_RISK_MULTIPLIERS = {
+  safe_pass: 0.65,
+  corporate_highway: 0.85,
+  sheltered_valley: 0.8,
+  canyon_trail: 1.05,
+  canyon_trench: 1.15,
+  packed_dirt: 1.2,
+  transition_plains: 1.3,
+  high_relief_pass: 1.75,
+  storm_plains: 1.8,
+  black_ice_highway: 2.05,
+  scorched_dunes: 2.15,
+  sand_dunes: 2.2,
+  shockwave_boundary: 2.5,
+  minefield_pass: 2.8,
+  radioactive_crater: 3.1
+};
+
+const BASE_HAZARD_PER_KM = 0.0015;
+const DANGER_HAZARD_PER_KM = 0.0045;
 
 // ── Geometria (substitui o shapely) ──
 
@@ -80,6 +105,81 @@ function lineIntersectsPolygon(lineCoords, polygonRings) {
     }
   }
   return false;
+}
+
+function pointInPolygonRings(point, rings) {
+  if (!rings.length || !pointInPolygon(point, rings[0])) return false;
+  return !rings.slice(1).some((hole) => pointInPolygon(point, hole));
+}
+
+function segmentIntersectionParameter(a, b, c, d) {
+  const r = [b[0] - a[0], b[1] - a[1]];
+  const s = [d[0] - c[0], d[1] - c[1]];
+  const cross = (u, v) => u[0] * v[1] - u[1] * v[0];
+  const denominator = cross(r, s);
+  if (Math.abs(denominator) < 1e-12) return null;
+  const offset = [c[0] - a[0], c[1] - a[1]];
+  const t = cross(offset, s) / denominator;
+  const u = cross(offset, r) / denominator;
+  if (t < -1e-10 || t > 1 + 1e-10 || u < -1e-10 || u > 1 + 1e-10) return null;
+  return Math.max(0, Math.min(1, t));
+}
+
+// Calcula exatamente a fração da linha dentro do polígono. Cada segmento é
+// dividido nos pontos em que cruza uma borda; o ponto médio determina se o
+// intervalo pertence à zona. Isso evita saltos de peso causados por amostras.
+function lineExposureFraction(lineCoords, polygonRings) {
+  let total = 0;
+  let exposed = 0;
+  for (let i = 0; i < lineCoords.length - 1; i++) {
+    const a = lineCoords[i];
+    const b = lineCoords[i + 1];
+    const length = haversineKm(a, b);
+    if (length === 0) continue;
+
+    const cuts = [0, 1];
+    for (const ring of polygonRings) {
+      for (let j = 0; j < ring.length - 1; j++) {
+        const t = segmentIntersectionParameter(a, b, ring[j], ring[j + 1]);
+        if (t != null) cuts.push(t);
+      }
+    }
+
+    cuts.sort((x, y) => x - y);
+    const uniqueCuts = cuts.filter((value, index) => index === 0 || Math.abs(value - cuts[index - 1]) > 1e-9);
+    total += length;
+    for (let j = 0; j < uniqueCuts.length - 1; j++) {
+      const start = uniqueCuts[j];
+      const end = uniqueCuts[j + 1];
+      const midpoint = (start + end) / 2;
+      const point = [a[0] + (b[0] - a[0]) * midpoint, a[1] + (b[1] - a[1]) * midpoint];
+      if (pointInPolygonRings(point, polygonRings)) exposed += length * (end - start);
+    }
+  }
+  return total ? exposed / total : 0;
+}
+
+function calculateZoneRiskMultiplier(lineCoords, zones) {
+  return zones.reduce((multiplier, zone) => {
+    const exposure = lineExposureFraction(lineCoords, zone.rings);
+    if (!exposure) return multiplier;
+    const dangerMultiplier = Number(zone.properties.danger_multiplier ?? zone.properties.penalty_multiplier ?? 1);
+    // A exposição parcial escala a penalidade; zonas sobrepostas acumulam.
+    return multiplier * (1 + Math.max(0, dangerMultiplier - 1) * exposure);
+  }, 1);
+}
+
+function calculateEdgeHazard(distanceKm, dangerLevel, terrainType, zoneRiskMultiplier) {
+  const terrainRisk = TERRAIN_RISK_MULTIPLIERS[terrainType] ?? 1;
+  const perKm = (BASE_HAZARD_PER_KM + Number(dangerLevel || 0) * DANGER_HAZARD_PER_KM) * terrainRisk;
+  return distanceKm * perKm * zoneRiskMultiplier;
+}
+
+function formatSurvivalProbability(totalHazard) {
+  const probability = Math.exp(-totalHazard) * 100;
+  if (probability >= 10) return Math.round(probability * 10) / 10;
+  if (probability >= 1) return Math.round(probability * 100) / 100;
+  return Math.round(probability * 1000) / 1000;
 }
 
 // Distância em km entre dois pontos [lon, lat] (fórmula de haversine) — usada
@@ -189,23 +289,18 @@ class WastelandRouter {
       const oneWay = props.one_way ?? false;
       const geometryCoords = feature.geometry.coordinates;
 
-      let zonePenalty = 1.0;
-      for (const zone of this.dangerZones) {
-        if (lineIntersectsPolygon(geometryCoords, zone.rings)) {
-          const zp = zone.properties;
-          zonePenalty *= zp.danger_multiplier ?? zp.penalty_multiplier ?? 1.0;
-        }
-      }
+      const zonePenalty = calculateZoneRiskMultiplier(geometryCoords, this.dangerZones);
 
-      if (!(terrain in TERRAIN_MULTIPLIERS)) {
+      if (!(terrain in TERRAIN_RISK_MULTIPLIERS)) {
         console.warn(
           `terrain_type '${terrain}' (aresta ${feature.id || props.id || `${u}_${v}`}) não mapeado ` +
-          `em TERRAIN_MULTIPLIERS; usando multiplicador padrão 1.0x`
+          `em TERRAIN_RISK_MULTIPLIERS; usando multiplicador padrão 1.0x`
         );
       }
-      const terrainMult = TERRAIN_MULTIPLIERS[terrain] ?? 1.0;
-      const directWeight = dist * terrainMult;
-      const survivalWeight = dist * (1.0 + danger * 1.5) * terrainMult * zonePenalty;
+      const directWeight = dist;
+      // Somar hazard equivale a maximizar o produto das probabilidades de
+      // sobrevivência dos trechos (P = exp(-hazard)).
+      const survivalWeight = calculateEdgeHazard(dist, danger, terrain, zonePenalty);
 
       const baseAttrs = {
         edgeId: feature.id || props.id || `${u}_${v}`,
@@ -251,8 +346,6 @@ class WastelandRouter {
     const coords = [lon, lat];
     const dangerLevel = 1; // local vetado pela comunidade: risco baixo por padrão
     const terrain = 'safe_pass';
-    const terrainMult = TERRAIN_MULTIPLIERS[terrain];
-
     const existingIds = [...this.adjacency.keys()];
     const linkCount = existingIds.length > 1 ? 2 : Math.min(1, existingIds.length);
     const neighbors = existingIds
@@ -267,17 +360,10 @@ class WastelandRouter {
     neighbors.forEach(({ nid, dist: distanceKm }) => {
       const geometryCoords = [coords, this.nodesData.get(nid).coords];
 
-      let zonePenalty = 1.0;
-      for (const zone of this.dangerZones) {
-        if (lineIntersectsPolygon(geometryCoords, zone.rings)) {
-          const zp = zone.properties;
-          zonePenalty *= zp.danger_multiplier ?? zp.penalty_multiplier ?? 1.0;
-        }
-      }
-
-      const directWeight = distanceKm * terrainMult;
-      const survivalWeight = distanceKm * (1.0 + dangerLevel * 1.5) * terrainMult * zonePenalty;
+      const zonePenalty = calculateZoneRiskMultiplier(geometryCoords, this.dangerZones);
       const roundedDist = Math.round(distanceKm * 100) / 100;
+      const directWeight = roundedDist;
+      const survivalWeight = calculateEdgeHazard(roundedDist, dangerLevel, terrain, zonePenalty);
 
       const baseAttrs = {
         edgeId: `edge_${finalId}_${nid}`,
@@ -365,12 +451,15 @@ class WastelandRouter {
 
     this.dangerZones.push({ rings, properties });
 
+    // Recalcular contra todas as zonas, em vez de multiplicar cegamente a
+    // nova penalidade. Assim uma aresta que apenas raspa a zona recebe risco
+    // proporcional à exposição e não uma penalidade integral.
     for (const edges of this.adjacency.values()) {
       for (const edge of edges) {
-        if (!lineIntersectsPolygon(edge.geometry, rings)) continue;
-        edge.zonePenalty *= dangerMultiplier;
-        const terrainMult = TERRAIN_MULTIPLIERS[edge.terrainType] ?? 1.0;
-        edge.survivalWeight = edge.distanceKm * (1.0 + edge.dangerLevel * 1.5) * terrainMult * edge.zonePenalty;
+        edge.zonePenalty = calculateZoneRiskMultiplier(edge.geometry, this.dangerZones);
+        edge.survivalWeight = calculateEdgeHazard(
+          edge.distanceKm, edge.dangerLevel, edge.terrainType, edge.zonePenalty
+        );
       }
     }
 
@@ -434,12 +523,12 @@ class WastelandRouter {
     }
 
     let totalDistance = 0;
-    let totalDanger = 0;
+    let totalHazard = 0;
     let routeCoordinates = [];
 
     for (const edge of pathEdges) {
       totalDistance += edge.distanceKm;
-      totalDanger += edge.dangerLevel;
+      totalHazard += edge.survivalWeight;
 
       // Acumula coordenadas sem duplicar o ponto de intersecção.
       if (!routeCoordinates.length) routeCoordinates = routeCoordinates.concat(edge.geometry);
@@ -454,9 +543,15 @@ class WastelandRouter {
         navigation_mode: mode,
         path_nodes: pathNodes,
         total_distance_km: Math.round(totalDistance * 100) / 100,
-        total_danger_score: totalDanger,
+        // Escala legível e coerente: menor pontuação significa menor risco.
+        // Ela inclui distância, terreno e exposição às zonas, exatamente como
+        // o custo otimizado no modo sobrevivência.
+        total_danger_score: Math.round(totalHazard * 100) / 10,
         estimated_fuel_liters: fuelEstimate,
-        survival_probability: Math.max(1, Math.trunc(100 - totalDanger * 8.5))
+        // Probabilidades independentes se compõem por multiplicação;
+        // log(P) transforma o problema em Dijkstra com pesos não negativos.
+        survival_probability: formatSurvivalProbability(totalHazard),
+        survival_hazard_score: Math.round(totalHazard * 10000) / 10000
       },
       geometry: {
         type: 'LineString',
@@ -466,4 +561,4 @@ class WastelandRouter {
   }
 }
 
-module.exports = { WastelandRouter, TERRAIN_MULTIPLIERS };
+module.exports = { WastelandRouter, TERRAIN_MULTIPLIERS, TERRAIN_RISK_MULTIPLIERS };
