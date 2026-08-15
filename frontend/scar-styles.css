@@ -14,12 +14,39 @@
    retângulo exato do dataset — o leve desfoque reforça a sensação de nuvem
    de perigo com bordas difusas, em vez de um polígono técnico. */
 .danger-zone {
-  stroke-width: 1;
-  filter: blur(2.5px);
+  stroke-width: 1.2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  filter: blur(2.5px) saturate(1.15);
 }
-.danger-zone.zone-faction_hostile { fill: rgba(255, 92, 138, 0.18); stroke: rgba(255, 92, 138, 0.45); }
-.danger-zone.zone-environmental_hazard { fill: rgba(255, 204, 0, 0.16); stroke: rgba(255, 204, 0, 0.4); }
-.danger-zone.zone-community_hazard { fill: rgba(0, 184, 255, 0.16); stroke: rgba(0, 184, 255, 0.45); }
+.danger-zone.zone-frozen_wastes,
+.zone-legend-swatch.zone-frozen_wastes {
+  background: linear-gradient(135deg, rgba(125, 211, 252, 0.92), rgba(59, 130, 246, 0.74));
+}
+.danger-zone.zone-scorched_desert,
+.zone-legend-swatch.zone-scorched_desert {
+  background: linear-gradient(135deg, rgba(251, 146, 60, 0.92), rgba(239, 68, 68, 0.74));
+}
+.danger-zone.zone-high_relief_canyons,
+.zone-legend-swatch.zone-high_relief_canyons {
+  background: linear-gradient(135deg, rgba(184, 134, 92, 0.92), rgba(120, 87, 52, 0.76));
+}
+.danger-zone.zone-corporate_domes,
+.zone-legend-swatch.zone-corporate_domes {
+  background: linear-gradient(135deg, rgba(52, 211, 153, 0.92), rgba(16, 185, 129, 0.7));
+}
+.danger-zone.zone-faction_hostile,
+.zone-legend-swatch.zone-faction_hostile {
+  background: linear-gradient(135deg, rgba(251, 113, 133, 0.92), rgba(190, 24, 93, 0.7));
+}
+.danger-zone.zone-environmental_hazard,
+.zone-legend-swatch.zone-environmental_hazard {
+  background: linear-gradient(135deg, rgba(253, 224, 71, 0.96), rgba(249, 115, 22, 0.72));
+}
+.danger-zone.zone-community_hazard,
+.zone-legend-swatch.zone-community_hazard {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.9), rgba(14, 116, 144, 0.72));
+}
 
 .scar-edge {
   stroke: var(--border2);
@@ -99,9 +126,13 @@
   margin-top: 2px;
   flex-shrink: 0;
 }
-.zone-legend-swatch.zone-faction_hostile { background: var(--accent3); }
-.zone-legend-swatch.zone-environmental_hazard { background: var(--accent4); }
-.zone-legend-swatch.zone-community_hazard { background: var(--accent2); }
+.zone-legend-swatch.zone-frozen_wastes { background: linear-gradient(135deg, rgba(125, 211, 252, 0.95), rgba(59, 130, 246, 0.75)); }
+.zone-legend-swatch.zone-scorched_desert { background: linear-gradient(135deg, rgba(251, 146, 60, 0.95), rgba(239, 68, 68, 0.75)); }
+.zone-legend-swatch.zone-high_relief_canyons { background: linear-gradient(135deg, rgba(180, 130, 80, 0.95), rgba(120, 87, 52, 0.75)); }
+.zone-legend-swatch.zone-corporate_domes { background: linear-gradient(135deg, rgba(52, 211, 153, 0.95), rgba(16, 185, 129, 0.75)); }
+.zone-legend-swatch.zone-faction_hostile { background: linear-gradient(135deg, rgba(251, 113, 133, 0.95), rgba(190, 24, 93, 0.75)); }
+.zone-legend-swatch.zone-environmental_hazard { background: linear-gradient(135deg, rgba(253, 224, 71, 0.95), rgba(249, 115, 22, 0.75)); }
+.zone-legend-swatch.zone-community_hazard { background: linear-gradient(135deg, rgba(56, 189, 248, 0.9), rgba(14, 116, 144, 0.75)); }
 .zone-legend-item strong { color: var(--text); }
 .zone-legend-desc { color: var(--muted); }
 

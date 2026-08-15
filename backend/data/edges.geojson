@@ -20,7 +20,13 @@
         "fuel_cost_multiplier": 1.1,
         "description": "Trilha subterrânea entre desfiladeiros rochosos com sombra constante."
       },
-      "geometry": { "type": "LineString", "coordinates": [[138.38, -30.30], [138.42, -30.38]] }
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.38, -30.3],
+          [138.42, -30.38]
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -34,7 +40,13 @@
         "fuel_cost_multiplier": 1.2,
         "description": "Descida sinuosa em fendas de arenito até os pátios de desmanche."
       },
-      "geometry": { "type": "LineString", "coordinates": [[138.42, -30.38], [138.46, -30.45]] }
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.42, -30.38],
+          [138.46, -30.45]
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -48,7 +60,13 @@
         "fuel_cost_multiplier": 1.8,
         "description": "Subida íngreme e instável em direção ao pico vigiado por atiradores."
       },
-      "geometry": { "type": "LineString", "coordinates": [[138.46, -30.45], [138.39, -30.48]] }
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.46, -30.45],
+          [138.39, -30.48]
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -62,7 +80,13 @@
         "fuel_cost_multiplier": 1.7,
         "description": "Passagem elevada exposta a fortes ventos de altitude e emboscadas."
       },
-      "geometry": { "type": "LineString", "coordinates": [[138.38, -30.30], [138.39, -30.48]] }
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.38, -30.3],
+          [138.39, -30.48]
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -76,7 +100,13 @@
         "fuel_cost_multiplier": 1.0,
         "description": "Via pavimentada remanescente com patrulhas automatizadas de trégua."
       },
-      "geometry": { "type": "LineString", "coordinates": [[138.48, -30.15], [138.53, -30.22]] }
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.48, -30.15],
+          [138.53, -30.22]
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -90,7 +120,13 @@
         "fuel_cost_multiplier": 1.0,
         "description": "Estrada comercial mais segura do deserto, livre de radiação e tempestades."
       },
-      "geometry": { "type": "LineString", "coordinates": [[138.53, -30.22], [138.60, -30.28]] }
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.53, -30.22],
+          [138.6, -30.28]
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -104,7 +140,13 @@
         "fuel_cost_multiplier": 1.0,
         "description": "Vale protegido margeando os dutos de água dos dômos."
       },
-      "geometry": { "type": "LineString", "coordinates": [[138.53, -30.22], [138.54, -30.34]] }
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.53, -30.22],
+          [138.54, -30.34]
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -118,7 +160,13 @@
         "fuel_cost_multiplier": 1.1,
         "description": "Passagem arborizada artificialmente entre a fonte e a cúpula de comércio."
       },
-      "geometry": { "type": "LineString", "coordinates": [[138.54, -30.34], [138.60, -30.28]] }
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.54, -30.34],
+          [138.6, -30.28]
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -132,7 +180,13 @@
         "fuel_cost_multiplier": 1.1,
         "description": "Canal de fuga rochoso ligando a cúpula principal às fendas do oeste."
       },
-      "geometry": { "type": "LineString", "coordinates": [[138.48, -30.15], [138.38, -30.30]] }
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.48, -30.15],
+          [138.38, -30.3]
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -146,7 +200,13 @@
         "fuel_cost_multiplier": 1.2,
         "description": "Trilha de desfiladeiro conectando o centro neutro às fortalezas rochosas."
       },
-      "geometry": { "type": "LineString", "coordinates": [[138.54, -30.34], [138.42, -30.38]] }
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.54, -30.34],
+          [138.42, -30.38]
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -160,7 +220,13 @@
         "fuel_cost_multiplier": 1.1,
         "description": "Desvio seguro da sucata para reabastecimento de água termal."
       },
-      "geometry": { "type": "LineString", "coordinates": [[138.46, -30.45], [138.54, -30.34]] }
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.46, -30.45],
+          [138.54, -30.34]
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -174,7 +240,13 @@
         "fuel_cost_multiplier": 1.8,
         "description": "Pista de gelo negro sob rajadas de congelamento instantâneo da torre."
       },
-      "geometry": { "type": "LineString", "coordinates": [[138.80, -30.12], [138.87, -30.16]] }
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.8, -30.12],
+          [138.87, -30.16]
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -188,7 +260,13 @@
         "fuel_cost_multiplier": 2.2,
         "description": "Corredor glacial minado onde os Abutres caçam veículos com motores paralisados."
       },
-      "geometry": { "type": "LineString", "coordinates": [[138.80, -30.12], [138.76, -30.22]] }
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.8, -30.12],
+          [138.76, -30.22]
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -202,7 +280,13 @@
         "fuel_cost_multiplier": 1.7,
         "description": "Trilha de estepes congeladas com fendas traiçoeiras cobertas de neve."
       },
-      "geometry": { "type": "LineString", "coordinates": [[138.76, -30.22], [138.87, -30.16]] }
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.76, -30.22],
+          [138.87, -30.16]
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -216,7 +300,13 @@
         "fuel_cost_multiplier": 1.6,
         "description": "Estrada congelada industrial entre minas de supercondutores."
       },
-      "geometry": { "type": "LineString", "coordinates": [[138.87, -30.16], [138.86, -30.27]] }
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.87, -30.16],
+          [138.86, -30.27]
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -230,7 +320,13 @@
         "fuel_cost_multiplier": 1.9,
         "description": "Zona de caça dos Abutres ao redor das fendas de minério criogênico."
       },
-      "geometry": { "type": "LineString", "coordinates": [[138.76, -30.22], [138.86, -30.27]] }
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.76, -30.22],
+          [138.86, -30.27]
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -244,7 +340,13 @@
         "fuel_cost_multiplier": 1.5,
         "description": "Dunas de areia vermelha escaldante em meio a poços de petróleo jorrando."
       },
-      "geometry": { "type": "LineString", "coordinates": [[138.68, -30.38], [138.76, -30.40]] }
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.68, -30.38],
+          [138.76, -30.4]
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -258,7 +360,13 @@
         "fuel_cost_multiplier": 1.6,
         "description": "Autoestrada da fúria entre as refinarias, dominada por comboios armados."
       },
-      "geometry": { "type": "LineString", "coordinates": [[138.76, -30.40], [138.83, -30.46]] }
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.76, -30.4],
+          [138.83, -30.46]
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -272,7 +380,13 @@
         "fuel_cost_multiplier": 2.1,
         "description": "Travessia mortal de dunas radioativas sob artilharia dos Ceifadores."
       },
-      "geometry": { "type": "LineString", "coordinates": [[138.76, -30.40], [138.71, -30.48]] }
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.76, -30.4],
+          [138.71, -30.48]
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -286,7 +400,13 @@
         "fuel_cost_multiplier": 1.8,
         "description": "Faixa de sucata radioativa com alto risco de contaminação e emboscada."
       },
-      "geometry": { "type": "LineString", "coordinates": [[138.68, -30.38], [138.71, -30.48]] }
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.68, -30.38],
+          [138.71, -30.48]
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -300,7 +420,13 @@
         "fuel_cost_multiplier": 1.7,
         "description": "Perímetro leste disputado entre os Barões de Gas Town e os Ceifadores."
       },
-      "geometry": { "type": "LineString", "coordinates": [[138.83, -30.46], [138.71, -30.48]] }
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.83, -30.46],
+          [138.71, -30.48]
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -314,7 +440,13 @@
         "fuel_cost_multiplier": 1.4,
         "description": "Transição climática brusca: o calor artificial da cúpula colide com a frente fria."
       },
-      "geometry": { "type": "LineString", "coordinates": [[138.60, -30.28], [138.76, -30.22]] }
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.6, -30.28],
+          [138.76, -30.22]
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -328,7 +460,13 @@
         "fuel_cost_multiplier": 2.0,
         "description": "Atalho direto Norte do Louco: sai do conforto do Dômo para o olho do vórtice congelante."
       },
-      "geometry": { "type": "LineString", "coordinates": [[138.48, -30.15], [138.80, -30.12]] }
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.48, -30.15],
+          [138.8, -30.12]
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -342,7 +480,13 @@
         "fuel_cost_multiplier": 1.3,
         "description": "Descida suave da cúpula em direção às planícies de sucata do deserto."
       },
-      "geometry": { "type": "LineString", "coordinates": [[138.60, -30.28], [138.68, -30.38]] }
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.6, -30.28],
+          [138.68, -30.38]
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -356,7 +500,13 @@
         "fuel_cost_multiplier": 1.2,
         "description": "Corredor de comércio de sucata e água com tráfego frequente de caravanas."
       },
-      "geometry": { "type": "LineString", "coordinates": [[138.54, -30.34], [138.68, -30.38]] }
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.54, -30.34],
+          [138.68, -30.38]
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -370,7 +520,493 @@
         "fuel_cost_multiplier": 2.3,
         "description": "Fronteira do Choque Térmico: gelo a -30°C colide com poços a 60°C gerando tempestades violentas de vapor."
       },
-      "geometry": { "type": "LineString", "coordinates": [[138.86, -30.27], [138.83, -30.46]] }
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.86, -30.27],
+          [138.83, -30.46]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "edge_killpeaks_deadpass",
+        "source_node": "node_zone_canyon_killpeaks_anchor",
+        "target_node": "node_dead_pass",
+        "distance_km": 2.62,
+        "danger_level": 4,
+        "terrain_type": "high_relief_pass",
+        "fuel_cost_multiplier": 1.8,
+        "description": "Acesso estreito aos rochedos pontiagudos das Agulhas de Pedra."
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.415, -30.47],
+          [138.39, -30.48]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "edge_killpeaks_widow",
+        "source_node": "node_zone_canyon_killpeaks_anchor",
+        "target_node": "node_boneyard_iron_widow",
+        "distance_km": 4.86,
+        "danger_level": 3,
+        "terrain_type": "canyon_trench",
+        "fuel_cost_multiplier": 1.4,
+        "description": "Trilha de descida rochosa até o ferro-velho da Viúva."
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.415, -30.47],
+          [138.46, -30.45]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "edge_kniferidge_gorge",
+        "source_node": "node_zone_western_knife_ridge_anchor",
+        "target_node": "node_gorge_bastion",
+        "distance_km": 3.46,
+        "danger_level": 2,
+        "terrain_type": "canyon_trench",
+        "fuel_cost_multiplier": 1.2,
+        "description": "Desfiladeiro lateral ao longo da crista do punhal até o bastião."
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.41, -30.41],
+          [138.42, -30.38]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "edge_kniferidge_killpeaks",
+        "source_node": "node_zone_western_knife_ridge_anchor",
+        "target_node": "node_zone_canyon_killpeaks_anchor",
+        "distance_km": 6.69,
+        "danger_level": 3,
+        "terrain_type": "high_relief_pass",
+        "fuel_cost_multiplier": 1.5,
+        "description": "Corredor de crista elevado entre as ancoragens de defesa dos cânions."
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.41, -30.41],
+          [138.415, -30.47]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "edge_kniferidge_canyon",
+        "source_node": "node_zone_western_knife_ridge_anchor",
+        "target_node": "node_canyon_hideout",
+        "distance_km": 12.55,
+        "danger_level": 2,
+        "terrain_type": "canyon_trench",
+        "fuel_cost_multiplier": 1.3,
+        "description": "Passagem sombreada entre as fendas superiores do cânion."
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.41, -30.41],
+          [138.38, -30.3]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "edge_meridiananchor_lastdrop",
+        "source_node": "node_zone_dome_meridian_anchor",
+        "target_node": "node_oasis_last_drop",
+        "distance_km": 3.85,
+        "danger_level": 1,
+        "terrain_type": "corporate_highway",
+        "fuel_cost_multiplier": 1.0,
+        "description": "Passagem segura e plana entre o portal da trégua e o oásis."
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.55, -30.25],
+          [138.53, -30.22]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "edge_meridiananchor_meridian",
+        "source_node": "node_zone_dome_meridian_anchor",
+        "target_node": "node_dome_meridian",
+        "distance_km": 5.86,
+        "danger_level": 1,
+        "terrain_type": "corporate_highway",
+        "fuel_cost_multiplier": 1.0,
+        "description": "Corredor comercial do Dômo Meridiano sob monitoramento neutro."
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.55, -30.25],
+          [138.6, -30.28]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "edge_meridiananchor_thermal",
+        "source_node": "node_zone_dome_meridian_anchor",
+        "target_node": "node_oasis_thermal_spring",
+        "distance_km": 10.05,
+        "danger_level": 1,
+        "terrain_type": "sheltered_valley",
+        "fuel_cost_multiplier": 1.0,
+        "description": "Caminho suave margeando as tubulações termais até a fonte."
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.55, -30.25],
+          [138.54, -30.34]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "edge_frostspireanchor_tower",
+        "source_node": "node_zone_frostspire_anchor",
+        "target_node": "node_tower_frostspire",
+        "distance_km": 5.37,
+        "danger_level": 5,
+        "terrain_type": "black_ice_highway",
+        "fuel_cost_multiplier": 2.1,
+        "description": "Trilha congelada sob nevasca intensa na base da Torre Espinho."
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.82, -30.165],
+          [138.8, -30.12]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "edge_frostspireanchor_permafrost",
+        "source_node": "node_zone_frostspire_anchor",
+        "target_node": "node_mine_permafrost",
+        "distance_km": 4.84,
+        "danger_level": 4,
+        "terrain_type": "black_ice_highway",
+        "fuel_cost_multiplier": 1.8,
+        "description": "Pista de gelo negro ligando a marcação do vórtice à mina de permafrost."
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.82, -30.165],
+          [138.87, -30.16]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "edge_frostspireanchor_frostreach",
+        "source_node": "node_zone_frostspire_anchor",
+        "target_node": "node_zone_frost_reach_anchor",
+        "distance_km": 3.34,
+        "danger_level": 4,
+        "terrain_type": "black_ice_highway",
+        "fuel_cost_multiplier": 1.7,
+        "description": "Corredor de transição glacial entre o vórtice e a muralha de gelo do norte."
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.82, -30.165],
+          [138.82, -30.195]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "edge_frostreach_vulture",
+        "source_node": "node_zone_frost_reach_anchor",
+        "target_node": "node_camp_vulture",
+        "distance_km": 6.4,
+        "danger_level": 4,
+        "terrain_type": "minefield_pass",
+        "fuel_cost_multiplier": 1.9,
+        "description": "Perímetro vigiado pelos caçadores dos Abutres na muralha de gelo."
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.82, -30.195],
+          [138.76, -30.22]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "edge_frostreach_cryoveins",
+        "source_node": "node_zone_frost_reach_anchor",
+        "target_node": "node_mine_cryo_veins",
+        "distance_km": 9.17,
+        "danger_level": 4,
+        "terrain_type": "black_ice_highway",
+        "fuel_cost_multiplier": 1.8,
+        "description": "Pista fria conectando a muralha às jazidas de minério criogênico."
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.82, -30.195],
+          [138.86, -30.27]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "edge_radioscorch_refinery",
+        "source_node": "node_zone_radioactive_scorch_anchor",
+        "target_node": "node_refinery_scorch",
+        "distance_km": 4.47,
+        "danger_level": 4,
+        "terrain_type": "scorched_dunes",
+        "fuel_cost_multiplier": 1.7,
+        "description": "Via superaquecida entre as chamas da refinaria e a zona de impacto."
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.755, -30.44],
+          [138.76, -30.4]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "edge_radioscorch_ashreapers",
+        "source_node": "node_zone_radioactive_scorch_anchor",
+        "target_node": "node_camp_ash_reapers",
+        "distance_km": 6.22,
+        "danger_level": 5,
+        "terrain_type": "minefield_pass",
+        "fuel_cost_multiplier": 2.2,
+        "description": "Linha de frente radioativa disputada pelos Ceifadores com fogo contínuo."
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.755, -30.44],
+          [138.71, -30.48]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "edge_radioscorch_emberdunes",
+        "source_node": "node_zone_radioactive_scorch_anchor",
+        "target_node": "node_zone_ember_dunes_anchor",
+        "distance_km": 1.21,
+        "danger_level": 4,
+        "terrain_type": "scorched_dunes",
+        "fuel_cost_multiplier": 1.6,
+        "description": "Travessia de cinzas quentes e areia contaminada entre as ancoragens do sul."
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.755, -30.44],
+          [138.76, -30.45]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "edge_emberdunes_gastown",
+        "source_node": "node_zone_ember_dunes_anchor",
+        "target_node": "node_gas_town",
+        "distance_km": 6.81,
+        "danger_level": 4,
+        "terrain_type": "scorched_dunes",
+        "fuel_cost_multiplier": 1.7,
+        "description": "Acesso direto das dunas de cinzas aos portões blindados de Gas Town."
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.76, -30.45],
+          [138.83, -30.46]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "edge_emberdunes_ashreapers",
+        "source_node": "node_zone_ember_dunes_anchor",
+        "target_node": "node_camp_ash_reapers",
+        "distance_km": 5.86,
+        "danger_level": 5,
+        "terrain_type": "minefield_pass",
+        "fuel_cost_multiplier": 2.0,
+        "description": "Trecho minado na borda sul do acampamento dos Ceifadores."
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.76, -30.45],
+          [138.71, -30.48]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "edge_gatewest_deadpass",
+        "source_node": "node_gate_west_generic",
+        "target_node": "node_dead_pass",
+        "distance_km": 22.84,
+        "danger_level": 2,
+        "terrain_type": "desert_border_trail",
+        "fuel_cost_multiplier": 1.2,
+        "description": "Estrada externa de entrada no Wasteland pelo sudoeste, subindo a serra."
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.2, -30.6],
+          [138.39, -30.48]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "edge_gatewest_gorge",
+        "source_node": "node_gate_west_generic",
+        "target_node": "node_gorge_bastion",
+        "distance_km": 32.22,
+        "danger_level": 2,
+        "terrain_type": "desert_border_trail",
+        "fuel_cost_multiplier": 1.1,
+        "description": "Rota de aproximação neutra conectando o portão oeste ao bastião."
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.2, -30.6],
+          [138.42, -30.38]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "edge_gatewest_killpeaks",
+        "source_node": "node_gate_west_generic",
+        "target_node": "node_zone_canyon_killpeaks_anchor",
+        "distance_km": 25.13,
+        "danger_level": 3,
+        "terrain_type": "high_relief_pass",
+        "fuel_cost_multiplier": 1.4,
+        "description": "Atalho montanhoso íngreme direto do portal oeste para as agulhas rochosas."
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.2, -30.6],
+          [138.415, -30.47]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "edge_gateeast_gastown",
+        "source_node": "node_gate_east_generic",
+        "target_node": "node_gas_town",
+        "distance_km": 19.34,
+        "danger_level": 2,
+        "terrain_type": "desert_border_trail",
+        "fuel_cost_multiplier": 1.3,
+        "description": "Autoestrada externa desértica de entrada para os comboios petroleiros de Gas Town."
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.95, -30.6],
+          [138.83, -30.46]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "edge_gateeast_ashreapers",
+        "source_node": "node_gate_east_generic",
+        "target_node": "node_camp_ash_reapers",
+        "distance_km": 26.68,
+        "danger_level": 4,
+        "terrain_type": "minefield_pass",
+        "fuel_cost_multiplier": 1.8,
+        "description": "Entrada perigosa pelo sudeste através do território dos Ceifadores."
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.95, -30.6],
+          [138.71, -30.48]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "edge_gateeast_cryoveins",
+        "source_node": "node_gate_east_generic",
+        "target_node": "node_mine_cryo_veins",
+        "distance_km": 37.66,
+        "danger_level": 3,
+        "terrain_type": "shockwave_boundary",
+        "fuel_cost_multiplier": 1.6,
+        "description": "Rota leste externa de acesso direto às minas de gelo profundo."
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [138.95, -30.6],
+          [138.86, -30.27]
+        ]
+      }
     }
   ]
 }
