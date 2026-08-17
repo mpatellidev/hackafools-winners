@@ -10,6 +10,22 @@
 }
 .tour-replay:hover { color: var(--caution); }
 
+.results-guide-link {
+  display: block;
+  width: 100%;
+  margin-top: 11px;
+  padding: 8px 0 0;
+  border: 0;
+  border-top: 1px dotted #454439;
+  background: transparent;
+  color: #7e7867;
+  cursor: pointer;
+  font: 650 8px var(--data-font);
+  letter-spacing: .08em;
+  text-align: left;
+}
+.results-guide-link:hover { color: var(--caution); }
+
 .tour-overlay { position: fixed; inset: 0; z-index: 500; pointer-events: none; }
 
 .tour-spotlight {

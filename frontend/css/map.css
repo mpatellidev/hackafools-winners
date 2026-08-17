@@ -31,6 +31,31 @@
 .map-node.is-destination .node-ring { fill: var(--destination); stroke: #ffe1d6; stroke-width: 2.4; }
 .node-code { fill: #423a2b; font: 700 9px var(--data-font); text-anchor: middle; pointer-events: none; }
 .node-label { fill: #393326; stroke: rgba(225, 215, 185, .96); stroke-width: 3.5px; paint-order: stroke; font: 700 11px var(--data-font); text-anchor: middle; pointer-events: none; }
+.map-focus-ring {
+  fill: none;
+  stroke: #ffdf6b;
+  stroke-width: 4.5;
+  stroke-dasharray: 11 7;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+  filter: drop-shadow(0 0 7px rgba(255, 223, 107, .85));
+  animation: focus-pulse 1.15s ease-in-out infinite;
+}
+.map-focus-ring.is-circle { stroke-width: 5; }
+.map-focus-line {
+  fill: none;
+  stroke: #ffdf6b;
+  stroke-width: 9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+  opacity: .88;
+  filter: drop-shadow(0 0 7px rgba(255, 223, 107, .85));
+  animation: focus-pulse 1.15s ease-in-out infinite;
+}
+@keyframes focus-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }
 .placement-preview { fill: rgba(185, 72, 54, .1); stroke: var(--danger); stroke-width: 2; stroke-dasharray: 6 4; vector-effect: non-scaling-stroke; pointer-events: none; }
 .placement-preview.risk-tier-1 { fill: rgba(53, 184, 109, .12); stroke: #35b86d; }
 .placement-preview.risk-tier-2 { fill: rgba(242, 167, 45, .12); stroke: #f2a72d; }

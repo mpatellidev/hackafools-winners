@@ -1,6 +1,7 @@
-const STORAGE_KEY = 'dustnav.tour.completed.v1';
+const STORAGE_KEY_WELCOME = 'dustnav.tour.completed.v1';
+const STORAGE_KEY_RESULTS = 'dustnav.tour.results.completed.v1';
 
-function buildSteps() {
+function welcomeSteps() {
   return [
     {
       target: null,
@@ -56,6 +57,61 @@ function buildSteps() {
   ];
 }
 
+function resultsSteps() {
+  return [
+    {
+      target: '.route-option[data-route-id="fast"]',
+      eyebrow: 'ESTRATÉGIA',
+      title: 'ROTA DIRETA',
+      body: 'Usa somente a menor distância ao escolher o caminho, ignorando sonares e zonas de perigo durante o traçado. O percentual de sobrevivência ainda mostra os perigos que ela realmente atravessa.',
+      requiresPanel: true
+    },
+    {
+      target: '.route-option[data-route-id="safe"]',
+      eyebrow: 'ESTRATÉGIA',
+      title: 'MAIOR SOBREVIVÊNCIA',
+      body: 'Recalcula o caminho contornando sonares, zonas de risco e terrenos hostis sempre que possível — mesmo que a distância aumente.',
+      requiresPanel: true
+    },
+    {
+      target: '#zoneList',
+      eyebrow: 'CAMPO',
+      title: 'ZONAS MAPEADAS',
+      body: 'Dentro de INTELIGÊNCIA DE CAMPO, ZONAS MAPEADAS lista sonares e regiões de perigo conhecidos. Clique em uma zona da lista para destacá-la e centralizá-la no mapa.',
+      requiresPanel: true,
+      openDetails: ['#fieldIntelligence']
+    },
+    {
+      target: '.route-detail summary',
+      eyebrow: 'TRAVESSIA',
+      title: 'TRECHOS DA TRAVESSIA',
+      body: 'Cada trecho é um corredor entre dois setores da rota ativa. Expanda e clique em um trecho para destacá-lo no mapa e ver distância, terreno, risco e exposições em detalhe.',
+      requiresPanel: true
+    },
+    {
+      target: '#startZoneReport',
+      eyebrow: 'CAMPO',
+      title: 'REGISTRAR ZONA DE PERIGO',
+      body: 'Toque em ADICIONAR SONAR, marque o centro e o alcance no mapa, escolha o nível de risco e registre. A nova zona entra no cálculo de sobrevivência imediatamente.',
+      requiresPanel: true,
+      openDetails: ['#fieldIntelligence']
+    },
+    {
+      target: '.route-form',
+      eyebrow: 'NOVA TRAVESSIA',
+      title: 'CALCULAR OUTRA ROTA',
+      body: 'Para planejar uma nova travessia, defina outra origem e destino aqui e calcule novamente. Repita quantas vezes precisar.',
+      requiresPanel: true
+    },
+    {
+      target: null,
+      eyebrow: 'PRONTO',
+      title: 'RESULTADOS DOMINADOS',
+      body: 'Você já sabe comparar rotas, ler zonas e trechos, e ampliar a cartografia. Reabra este guia pelo link REVER GUIA DE RESULTADOS sempre que precisar.'
+    }
+  ];
+}
+
 let overlayEl = null;
 let spotlightEl = null;
 let cardEl = null;
@@ -65,8 +121,10 @@ let nextBtn = null;
 let skipBtn = null;
 let steps = [];
 let currentStep = 0;
+let activeStorageKey = null;
 let panelForcedOpen = false;
 let panelWasOpenInitially = false;
+let openedDetails = new Map();
 let resizeHandler = null;
 
 function isMobile() {
@@ -89,6 +147,20 @@ function restorePanel() {
     document.getElementById('panelScrim').hidden = true;
   }
   panelForcedOpen = false;
+}
+
+function ensureDetailsOpen(selectors = []) {
+  selectors.forEach((selector) => {
+    const details = document.querySelector(selector);
+    if (!details) return;
+    if (!openedDetails.has(details)) openedDetails.set(details, details.open);
+    details.open = true;
+  });
+}
+
+function restoreDetails() {
+  openedDetails.forEach((wasOpen, details) => { details.open = wasOpen; });
+  openedDetails = new Map();
 }
 
 function buildOverlay() {
@@ -133,7 +205,7 @@ function buildOverlay() {
 function onKeydown(event) {
   if (event.key === 'Escape') endTour();
   else if (event.key === 'ArrowRight') nextBtn.click();
-  else if (event.key === 'ArrowLeft' && !backBtn.disabled) backBtn.click();
+  else if (event.key === 'ArrowLeft' && !backBtn.hidden) backBtn.click();
 }
 
 function teardown() {
@@ -193,6 +265,7 @@ function positionStep() {
 function renderStep() {
   const step = steps[currentStep];
   ensurePanelVisible(step.requiresPanel);
+  ensureDetailsOpen(step.openDetails);
 
   overlayEl.querySelector('#tourEyebrow').textContent = step.eyebrow;
   overlayEl.querySelector('#tourTitle').textContent = step.title;
@@ -218,26 +291,42 @@ function goTo(index) {
 }
 
 function endTour() {
-  localStorage.setItem(STORAGE_KEY, '1');
+  if (activeStorageKey) {
+    try { localStorage.setItem(activeStorageKey, '1'); } catch { /* storage unavailable */ }
+  }
   restorePanel();
+  restoreDetails();
   teardown();
 }
 
-export function startTour({ force = false } = {}) {
+function run(storageKey, buildSteps, force) {
   if (overlayEl) return;
   if (!force) {
     try {
-      if (localStorage.getItem(STORAGE_KEY)) return;
+      if (localStorage.getItem(storageKey)) return;
     } catch { /* storage unavailable, show tour anyway */ }
   }
-  steps = buildSteps();
+  const resolvedSteps = buildSteps().filter((step) => !step.target || document.querySelector(step.target));
+  if (!resolvedSteps.length) return;
+  steps = resolvedSteps;
   currentStep = 0;
+  activeStorageKey = storageKey;
   panelForcedOpen = false;
   panelWasOpenInitially = document.getElementById('routePanel').classList.contains('is-open');
+  openedDetails = new Map();
   buildOverlay();
   renderStep();
 }
 
+export function startTour({ force = false } = {}) {
+  run(STORAGE_KEY_WELCOME, welcomeSteps, force);
+}
+
+export function startResultsTour({ force = false } = {}) {
+  run(STORAGE_KEY_RESULTS, resultsSteps, force);
+}
+
 export function initOnboarding() {
   document.getElementById('tourReplay')?.addEventListener('click', () => startTour({ force: true }));
+  document.getElementById('resultsGuideReplay')?.addEventListener('click', () => startResultsTour({ force: true }));
 }

@@ -59,7 +59,7 @@
 
       <aside class="sector-readout" id="sectorReadout" hidden aria-live="polite">
         <button type="button" class="readout-close" id="closeReadout" aria-label="Fechar detalhes do setor">×</button>
-        <span class="eyebrow">SETOR SELECIONADO</span>
+        <span class="eyebrow" id="readoutEyebrow">SETOR SELECIONADO</span>
         <h2 id="readoutTitle">—</h2>
         <div id="readoutBody"></div>
       </aside>
@@ -130,6 +130,7 @@
           </header>
           <dl class="route-metrics" id="routeMetrics"></dl>
           <p class="uncertainty-note">Estimativa baseada nos corredores e relatos disponíveis. Condições podem mudar.</p>
+          <button type="button" class="results-guide-link" id="resultsGuideReplay">REVER GUIA DE RESULTADOS</button>
         </article>
 
         <section class="risk-analysis">

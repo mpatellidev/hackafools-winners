@@ -315,7 +315,7 @@ const mimeTypes = {
 
 function serveStatic(req, res, safeUrl) {
   const staticDir = safeUrl.startsWith('/public/') ? publicDir : frontendDir;
-  const requestPath = safeUrl === '/' ? 'scar.html' : safeUrl.startsWith('/public/') ? safeUrl.slice('/public/'.length) : safeUrl.slice(1);
+  const requestPath = safeUrl === '/' ? 'world.html' : safeUrl.startsWith('/public/') ? safeUrl.slice('/public/'.length) : safeUrl.slice(1);
   let decodedPath;
   try {
     decodedPath = decodeURIComponent(requestPath);

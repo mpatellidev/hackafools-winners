@@ -33,7 +33,9 @@ inclui uma interface responsiva construída com HTML, CSS, JavaScript e SVG.
 - [Node.js](https://nodejs.org/) 18 ou mais recente.
 - Um navegador moderno com suporte a módulos JavaScript e SVG.
 
-O projeto não utiliza bibliotecas externas em tempo de execução.
+Fora do mapa global de países (`world.html`), que usa D3.js e o dataset
+`world-atlas` vendorizados em `frontend/vendor/`, o projeto não utiliza
+bibliotecas externas em tempo de execução.
 
 ## Como executar
 
@@ -70,6 +72,9 @@ PORT=3001 npm start
 
 ## Como usar
 
+0. Ao abrir o sistema, selecione um território no mapa global de operações — por enquanto
+   qualquer território leva à mesma cartografia local, com um efeito de zoom até a página
+   de setores (`scar.html`).
 1. Escolha a origem e o destino clicando nos nós ou utilizando os campos de busca.
 2. Selecione **Calcular rotas**.
 3. Compare a rota direta com a rota de maior sobrevivência.
@@ -148,8 +153,11 @@ DustNav/
 │   │   ├── ui/                    # painel e resultados
 │   │   ├── api.js                 # cliente da API
 │   │   ├── app.js                 # fluxo principal
-│   │   └── state.js               # estado da aplicação
-│   └── scar.html                  # página principal
+│   │   ├── state.js               # estado da aplicação
+│   │   └── world.js               # seleção de território no mapa global
+│   ├── vendor/                     # D3.js, TopoJSON e dataset de países (world-atlas)
+│   ├── world.html                 # página inicial — mapa global de países
+│   └── scar.html                  # página de setores, rotas e zonas
 ├── public/                        # recursos estáticos
 └── README.md
 ```
@@ -252,3 +260,4 @@ externo.
 - HTML5 e CSS responsivo
 - SVG para grafo, regiões, rotas e animações
 - GeoJSON para nós, arestas e zonas
+- D3.js e TopoJSON (vendorizados) para o mapa global de países em `world.html`

@@ -11,6 +11,13 @@ function pathFromPoints(points, close = false) {
   return `M ${points.map((point) => `${point[0].toFixed(1)} ${point[1].toFixed(1)}`).join(' L ')}${close ? ' Z' : ''}`;
 }
 
+function circlePoints([cx, cy], radius, segments = 28) {
+  return Array.from({ length: segments }, (_, index) => {
+    const angle = (index / segments) * Math.PI * 2;
+    return [cx + Math.cos(angle) * radius, cy + Math.sin(angle) * radius];
+  });
+}
+
 export function createMap(container, scene, callbacks = {}) {
   const svg = svgElement('svg', {
     class: 'dust-map',
@@ -95,6 +102,9 @@ export function createMap(container, scene, callbacks = {}) {
 
   const previewLayer = svgElement('g', { id: 'previewLayer', 'aria-hidden': 'true' });
   svg.appendChild(previewLayer);
+
+  const highlightLayer = svgElement('g', { id: 'highlightLayer', 'aria-hidden': 'true' });
+  svg.appendChild(highlightLayer);
   container.replaceChildren(svg);
 
   let radarFrame = null;
@@ -269,6 +279,7 @@ export function createMap(container, scene, callbacks = {}) {
     },
     drawRoute(route) {
       routeLayer.replaceChildren();
+      highlightLayer.replaceChildren();
       const intermediateIds = new Set(route?.pathNodes?.slice(1, -1) || []);
       nodeLayer.querySelectorAll('.map-node').forEach((node) => {
         node.classList.toggle('is-intermediate', intermediateIds.has(node.dataset.id));
@@ -287,6 +298,26 @@ export function createMap(container, scene, callbacks = {}) {
         routeLayer.appendChild(path);
       });
       fitPoints(routePoints);
+    },
+    clearFocus: () => highlightLayer.replaceChildren(),
+    focusZone(zone) {
+      highlightLayer.replaceChildren();
+      const ring = zone.rings[0]?.length
+        ? svgElement('path', { class: 'map-focus-ring', d: pathFromPoints(zone.rings[0], true) })
+        : svgElement('circle', {
+          class: 'map-focus-ring is-circle',
+          cx: zone.radarCenter[0],
+          cy: zone.radarCenter[1],
+          r: zone.radarRadius || 30
+        });
+      highlightLayer.appendChild(ring);
+      const boundsPoints = zone.rings[0]?.length ? zone.rings[0] : circlePoints(zone.radarCenter, zone.radarRadius || 30);
+      fitPoints(boundsPoints);
+    },
+    focusSegment(points) {
+      highlightLayer.replaceChildren();
+      highlightLayer.appendChild(svgElement('path', { class: 'map-focus-line', d: pathFromPoints(points) }));
+      fitPoints(points);
     },
     setSonarPreview(centerPoint, edgePoint, threatLevel = 'tier_2') {
       previewLayer.replaceChildren();

@@ -10,9 +10,10 @@ import {
   renderCommunityList,
   showZoneReadout,
   showNodeReadout,
+  showSegmentReadout,
   formatCoordinates
 } from './ui/panel.js';
-import { startTour, initOnboarding } from './ui/onboarding.js';
+import { startTour, startResultsTour, initOnboarding } from './ui/onboarding.js';
 
 let scene = null;
 let mapController = null;
@@ -56,7 +57,13 @@ function clearResults() {
   state.routes = [];
   state.activeRouteId = null;
   mapController?.drawRoute(null);
-  renderRouteResults([], null, scene || { nodes: [] }, () => {});
+  renderRouteResults([], null, scene || { nodes: [] }, () => {}, () => {});
+}
+
+function focusSegment(segment) {
+  mapController?.focusSegment(segment.geometry.coordinates.map(scene.project));
+  showSegmentReadout(segment, scene);
+  if (window.innerWidth < 761) closePanel();
 }
 
 function assignPoint(type, node) {
@@ -128,7 +135,7 @@ function renderSuggestions(type, query) {
 
 function activeRouteChanged(routeId) {
   state.activeRouteId = routeId;
-  renderRouteResults(state.routes, routeId, scene, activeRouteChanged);
+  renderRouteResults(state.routes, routeId, scene, activeRouteChanged, focusSegment);
   mapController.drawRoute(activeRoute());
 }
 
@@ -146,10 +153,11 @@ async function calculateRoutes() {
     const result = await api.routes(state.origin.id, state.destination.id);
     state.routes = result.routes;
     state.activeRouteId = result.recommendedRouteId || result.routes[0]?.id;
-    renderRouteResults(state.routes, state.activeRouteId, scene, activeRouteChanged);
+    renderRouteResults(state.routes, state.activeRouteId, scene, activeRouteChanged, focusSegment);
     mapController.drawRoute(activeRoute());
     notice(`${result.routes.length} ${result.routes.length === 1 ? 'corredor válido encontrado' : 'corredores válidos encontrados'}.`);
     if (window.innerWidth < 761) openPanel();
+    window.setTimeout(() => startResultsTour(), 450);
   } catch (error) {
     console.error('Route calculation failed:', error);
     clearResults();
@@ -164,6 +172,7 @@ async function calculateRoutes() {
 
 function showZone(zone) {
   showZoneReadout(zone);
+  mapController?.focusZone(zone);
   if (window.innerWidth < 761) closePanel();
 }
 
@@ -349,7 +358,10 @@ function wireInterface() {
   document.getElementById('zoomIn').addEventListener('click', () => mapController?.zoomIn());
   document.getElementById('zoomOut').addEventListener('click', () => mapController?.zoomOut());
   document.getElementById('zoomReset').addEventListener('click', () => mapController?.resetView());
-  document.getElementById('closeReadout').addEventListener('click', () => { document.getElementById('sectorReadout').hidden = true; });
+  document.getElementById('closeReadout').addEventListener('click', () => {
+    document.getElementById('sectorReadout').hidden = true;
+    mapController?.clearFocus();
+  });
   document.getElementById('mobilePanelToggle').addEventListener('click', openPanel);
   document.getElementById('panelClose').addEventListener('click', closePanel);
   document.getElementById('panelScrim').addEventListener('click', closePanel);

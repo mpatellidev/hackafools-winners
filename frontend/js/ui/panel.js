@@ -25,7 +25,7 @@ export function setFormError(message = '') {
   error.hidden = !message;
 }
 
-export function renderRouteResults(routes, activeRouteId, scene, onSelect) {
+export function renderRouteResults(routes, activeRouteId, scene, onSelectRoute, onSelectSegment) {
   const section = document.getElementById('routeResults');
   const options = document.getElementById('routeOptions');
   const idle = document.getElementById('idleGuidance');
@@ -38,12 +38,13 @@ export function renderRouteResults(routes, activeRouteId, scene, onSelect) {
   options.replaceChildren(...routes.map((route) => {
     const button = element('button', `route-option${route.id === activeRoute.id ? ' is-active' : ''}`);
     button.type = 'button';
+    button.dataset.routeId = route.id;
     button.setAttribute('role', 'listitem');
     button.setAttribute('aria-pressed', String(route.id === activeRoute.id));
     const heading = element('span');
     heading.append(element('strong', '', route.label), element('small', '', route.description));
     button.append(heading, element('b', '', `${route.summary.survivalProbability}%`), element('span', '', `${route.summary.distanceKm} KM`));
-    button.addEventListener('click', () => onSelect(route.id));
+    button.addEventListener('click', () => onSelectRoute(route.id));
     return button;
   }));
 
@@ -77,17 +78,21 @@ export function renderRouteResults(routes, activeRouteId, scene, onSelect) {
   const segmentList = document.getElementById('segmentList');
   segmentList.replaceChildren(...activeRoute.segments.map((segment, index) => {
     const item = element('li');
+    const button = element('button', 'segment-item');
+    button.type = 'button';
     const copy = element('div');
     const destination = nodesById.get(segment.to)?.label || segment.to;
     copy.append(
       element('strong', '', destination),
       element('small', '', `${segment.distanceKm} km · ${segment.terrainLabel} · perigo ${segment.dangerLevel}/5`)
     );
-    item.append(
+    button.append(
       element('span', 'segment-index', String(index + 1).padStart(2, '0')),
       copy,
       element('span', `segment-risk risk-${segment.riskLevel}`, segment.riskLabel.replace('RISCO ', ''))
     );
+    button.addEventListener('click', () => onSelectSegment(segment));
+    item.append(button);
     return item;
   }));
 }
@@ -127,6 +132,7 @@ export function renderCommunityList(nodes, onSelect) {
 
 export function showZoneReadout(zone) {
   const readout = document.getElementById('sectorReadout');
+  document.getElementById('readoutEyebrow').textContent = 'ZONA SELECIONADA';
   document.getElementById('readoutTitle').textContent = zone.name;
   const body = document.getElementById('readoutBody');
   const threat = { tier_1: 'CAUTELA', tier_2: 'HOSTIL', tier_3: 'CRÍTICA' }[zone.threatLevel] || 'INCERTA';
@@ -144,6 +150,7 @@ export function showZoneReadout(zone) {
 
 export function showNodeReadout(node) {
   const readout = document.getElementById('sectorReadout');
+  document.getElementById('readoutEyebrow').textContent = 'SETOR SELECIONADO';
   document.getElementById('readoutTitle').textContent = node.label;
   const body = document.getElementById('readoutBody');
   const description = element('p', '', node.description || 'Sem relato associado.');
@@ -156,6 +163,30 @@ export function showNodeReadout(node) {
       element('dt', '', 'ESTABILIDADE'), element('dd', '', `${node.resources.thermal_stability}/100`)
     );
   }
+  body.replaceChildren(description, details);
+  readout.hidden = false;
+}
+
+export function showSegmentReadout(segment, scene) {
+  const readout = document.getElementById('sectorReadout');
+  const nodesById = new Map(scene.nodes.map((node) => [node.id, node]));
+  const originLabel = nodesById.get(segment.from)?.label || segment.from;
+  const destinationLabel = nodesById.get(segment.to)?.label || segment.to;
+  document.getElementById('readoutEyebrow').textContent = 'TRECHO SELECIONADO';
+  document.getElementById('readoutTitle').textContent = `${originLabel} → ${destinationLabel}`;
+  const body = document.getElementById('readoutBody');
+  const description = element('p', '', segment.description || 'Sem relato associado a este trecho.');
+  const details = element('dl');
+  details.append(
+    element('dt', '', 'RISCO'), element('dd', '', segment.riskLabel.replace('RISCO ', '')),
+    element('dt', '', 'DISTÂNCIA'), element('dd', '', `${segment.distanceKm} km`),
+    element('dt', '', 'TEMPO'), element('dd', '', `${segment.timeMinutes} min`),
+    element('dt', '', 'TERRENO'), element('dd', '', segment.terrainLabel.toUpperCase()),
+    element('dt', '', 'PERIGO'), element('dd', '', `${segment.dangerLevel}/5`),
+    element('dt', '', 'SOBREVIVÊNCIA'), element('dd', '', `${segment.survivalProbability}%`)
+  );
+  const threats = [...segment.zones.map((zone) => zone.name), ...segment.sonars.map((sonar) => sonar.name)];
+  if (threats.length) details.append(element('dt', '', 'EXPOSIÇÃO A'), element('dd', '', threats.join(' · ')));
   body.replaceChildren(description, details);
   readout.hidden = false;
 }
