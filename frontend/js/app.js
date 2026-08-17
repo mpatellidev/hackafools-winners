@@ -12,6 +12,7 @@ import {
   showNodeReadout,
   formatCoordinates
 } from './ui/panel.js';
+import { startTour, initOnboarding } from './ui/onboarding.js';
 
 let scene = null;
 let mapController = null;
@@ -389,11 +390,13 @@ function wireInterface() {
 
 async function bootstrap() {
   wireInterface();
+  initOnboarding();
   try {
     const [health] = await Promise.all([api.health(), refreshScene()]);
     setSystemStatus(health.status === 'operational');
     syncTimestamp(new Date(health.updatedAt));
     notice('MAPA PRONTO // selecione origem e destino.');
+    window.setTimeout(() => startTour(), 500);
   } catch (error) {
     console.error('DustNav bootstrap failed:', error);
     setSystemStatus(false);
