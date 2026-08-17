@@ -1,110 +1,67 @@
-// Motor de rotas S.C.A.R. — porta em JS puro (sem dependências) do antigo
-// core/engine.py (networkx + shapely). Carrega os GeoJSON de data/, monta um
-// grafo direcionado em memória e calcula o caminho de menor custo (Dijkstra)
-// nos modos "survival" (maximiza a probabilidade de chegada) e "direct"
-// (minimiza exclusivamente a distância).
-
 'use strict';
 
-// Mantida sincronizada com os valores de "terrain_type" usados em
-// data/edges.geojson. Qualquer valor ausente aqui cai silenciosamente no
-// multiplicador padrão (1.0x).
-const TERRAIN_MULTIPLIERS = {
-  asphalt_ruins: 1.0,
-  highway_ruins: 1.1,
-  safe_pass: 1.0,
-  killzone_highway: 1.0,
-  packed_dirt: 1.2,
-  dirt_track: 1.2,
-  canyon_trail: 1.3,
-  sheltered_canyon: 1.2,
-  ambush_corridor: 1.3,
-  hostile_trail: 1.4,
-  sand_dunes: 1.8,
-  dune_bypass: 1.5,
-  storm_plains: 1.6,
-  radioactive_crater: 2.5
+const TERRAIN_MOVEMENT_MULTIPLIERS = {
+  asphalt_ruins: 1, highway_ruins: 1.08, corporate_highway: 0.9, safe_pass: 0.95,
+  packed_dirt: 1.15, dirt_track: 1.25, canyon_trail: 1.3, canyon_trench: 1.22,
+  sheltered_canyon: 1.18, sheltered_valley: 1.08, transition_plains: 1.2,
+  high_relief_pass: 1.55, storm_plains: 1.55, black_ice_highway: 1.7,
+  scorched_dunes: 1.65, sand_dunes: 1.75, shockwave_boundary: 1.9,
+  minefield_pass: 2.1, radioactive_crater: 2.4
 };
 
-// Exposição relativa ao risco por quilômetro.  Estes valores não são usados
-// pela rota direta: eles representam apenas quanto o tipo de terreno aumenta
-// ou reduz a chance de incidente durante uma travessia.
 const TERRAIN_RISK_MULTIPLIERS = {
-  safe_pass: 0.65,
-  corporate_highway: 0.85,
-  sheltered_valley: 0.8,
-  canyon_trail: 1.05,
-  canyon_trench: 1.15,
-  packed_dirt: 1.2,
-  transition_plains: 1.3,
-  high_relief_pass: 1.75,
-  storm_plains: 1.8,
-  black_ice_highway: 2.05,
-  scorched_dunes: 2.15,
-  sand_dunes: 2.2,
-  shockwave_boundary: 2.5,
-  minefield_pass: 2.8,
-  radioactive_crater: 3.1
+  safe_pass: 0.65, corporate_highway: 0.85, sheltered_valley: 0.8,
+  sheltered_canyon: 0.85, asphalt_ruins: 1, highway_ruins: 1.05,
+  canyon_trail: 1.05, canyon_trench: 1.15, packed_dirt: 1.2, dirt_track: 1.25,
+  transition_plains: 1.3, high_relief_pass: 1.75, storm_plains: 1.8,
+  black_ice_highway: 2.05, scorched_dunes: 2.15, sand_dunes: 2.2,
+  shockwave_boundary: 2.5, minefield_pass: 2.8, radioactive_crater: 3.1
 };
 
 const BASE_HAZARD_PER_KM = 0.0015;
 const DANGER_HAZARD_PER_KM = 0.0045;
+const ZONE_RISK_INFLUENCE = 0.25;
+const SONAR_HAZARD_PER_KM = { tier_1: 0.006, tier_2: 0.020, tier_3: 0.050 };
+const SONAR_RISK_LABELS = { tier_1: 'BAIXO', tier_2: 'MODERADO', tier_3: 'ALTO' };
+const PROFILE_META = {
+  safe: { label: 'MAIOR SOBREVIVÊNCIA', description: 'Contorna sonares e reduz a exposição às zonas.' },
+  balanced: { label: 'ROTA EQUILIBRADA', description: 'Compromisso entre distância e exposição.' },
+  fast: { label: 'ROTA DIRETA', description: 'Menor distância, ignorando riscos durante o traçado.' }
+};
 
-// ── Geometria (substitui o shapely) ──
+function clamp(value, min, max) { return Math.min(Math.max(value, min), max); }
+function round(value, precision = 0) {
+  const factor = 10 ** precision;
+  return Math.round(value * factor) / factor;
+}
+
+function haversineKm([lon1, lat1], [lon2, lat2]) {
+  const radius = 6371;
+  const toRad = (degrees) => degrees * Math.PI / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const value = Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+  return radius * 2 * Math.atan2(Math.sqrt(value), Math.sqrt(1 - value));
+}
+
+function lineLengthKm(coordinates) {
+  let distance = 0;
+  for (let index = 0; index < coordinates.length - 1; index += 1) {
+    distance += haversineKm(coordinates[index], coordinates[index + 1]);
+  }
+  return distance;
+}
 
 function pointInPolygon([x, y], ring) {
   let inside = false;
   for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
     const [xi, yi] = ring[i];
     const [xj, yj] = ring[j];
-    const crosses = (yi > y) !== (yj > y) &&
-      x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
+    const crosses = (yi > y) !== (yj > y) && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
     if (crosses) inside = !inside;
   }
   return inside;
-}
-
-function orientation(p, q, r) {
-  const val = (q[1] - p[1]) * (r[0] - q[0]) - (q[0] - p[0]) * (r[1] - q[1]);
-  if (Math.abs(val) < 1e-12) return 0;
-  return val > 0 ? 1 : 2;
-}
-
-function onSegment(p, q, r) {
-  return Math.min(p[0], r[0]) <= q[0] && q[0] <= Math.max(p[0], r[0]) &&
-         Math.min(p[1], r[1]) <= q[1] && q[1] <= Math.max(p[1], r[1]);
-}
-
-function segmentsIntersect(p1, p2, p3, p4) {
-  const o1 = orientation(p1, p2, p3);
-  const o2 = orientation(p1, p2, p4);
-  const o3 = orientation(p3, p4, p1);
-  const o4 = orientation(p3, p4, p2);
-
-  if (o1 !== o2 && o3 !== o4) return true;
-  if (o1 === 0 && onSegment(p1, p3, p2)) return true;
-  if (o2 === 0 && onSegment(p1, p4, p2)) return true;
-  if (o3 === 0 && onSegment(p3, p1, p4)) return true;
-  if (o4 === 0 && onSegment(p3, p2, p4)) return true;
-  return false;
-}
-
-// Equivalente a `edge_line.intersects(zone_geometry)`: verdadeiro se algum
-// ponto da linha está dentro do polígono OU algum segmento cruza a borda.
-function lineIntersectsPolygon(lineCoords, polygonRings) {
-  for (const ring of polygonRings) {
-    for (const point of lineCoords) {
-      if (pointInPolygon(point, ring)) return true;
-    }
-    for (let i = 0; i < lineCoords.length - 1; i++) {
-      for (let j = 0; j < ring.length - 1; j++) {
-        if (segmentsIntersect(lineCoords[i], lineCoords[i + 1], ring[j], ring[j + 1])) {
-          return true;
-        }
-      }
-    }
-  }
-  return false;
 }
 
 function pointInPolygonRings(point, rings) {
@@ -122,111 +79,167 @@ function segmentIntersectionParameter(a, b, c, d) {
   const t = cross(offset, s) / denominator;
   const u = cross(offset, r) / denominator;
   if (t < -1e-10 || t > 1 + 1e-10 || u < -1e-10 || u > 1 + 1e-10) return null;
-  return Math.max(0, Math.min(1, t));
+  return clamp(t, 0, 1);
 }
 
-// Calcula exatamente a fração da linha dentro do polígono. Cada segmento é
-// dividido nos pontos em que cruza uma borda; o ponto médio determina se o
-// intervalo pertence à zona. Isso evita saltos de peso causados por amostras.
-function lineExposureFraction(lineCoords, polygonRings) {
+function lineExposureFraction(lineCoordinates, polygonRings) {
   let total = 0;
   let exposed = 0;
-  for (let i = 0; i < lineCoords.length - 1; i++) {
-    const a = lineCoords[i];
-    const b = lineCoords[i + 1];
-    const length = haversineKm(a, b);
-    if (length === 0) continue;
-
+  for (let index = 0; index < lineCoordinates.length - 1; index += 1) {
+    const startPoint = lineCoordinates[index];
+    const endPoint = lineCoordinates[index + 1];
+    const length = haversineKm(startPoint, endPoint);
+    if (!length) continue;
     const cuts = [0, 1];
-    for (const ring of polygonRings) {
-      for (let j = 0; j < ring.length - 1; j++) {
-        const t = segmentIntersectionParameter(a, b, ring[j], ring[j + 1]);
-        if (t != null) cuts.push(t);
+    polygonRings.forEach((ring) => {
+      for (let ringIndex = 0; ringIndex < ring.length - 1; ringIndex += 1) {
+        const cut = segmentIntersectionParameter(startPoint, endPoint, ring[ringIndex], ring[ringIndex + 1]);
+        if (cut != null) cuts.push(cut);
       }
-    }
-
-    cuts.sort((x, y) => x - y);
-    const uniqueCuts = cuts.filter((value, index) => index === 0 || Math.abs(value - cuts[index - 1]) > 1e-9);
+    });
+    cuts.sort((a, b) => a - b);
+    const uniqueCuts = cuts.filter((value, cutIndex) => cutIndex === 0 || Math.abs(value - cuts[cutIndex - 1]) > 1e-9);
     total += length;
-    for (let j = 0; j < uniqueCuts.length - 1; j++) {
-      const start = uniqueCuts[j];
-      const end = uniqueCuts[j + 1];
+    for (let cutIndex = 0; cutIndex < uniqueCuts.length - 1; cutIndex += 1) {
+      const start = uniqueCuts[cutIndex];
+      const end = uniqueCuts[cutIndex + 1];
       const midpoint = (start + end) / 2;
-      const point = [a[0] + (b[0] - a[0]) * midpoint, a[1] + (b[1] - a[1]) * midpoint];
+      const point = [
+        startPoint[0] + (endPoint[0] - startPoint[0]) * midpoint,
+        startPoint[1] + (endPoint[1] - startPoint[1]) * midpoint
+      ];
       if (pointInPolygonRings(point, polygonRings)) exposed += length * (end - start);
     }
   }
   return total ? exposed / total : 0;
 }
 
-function calculateZoneRiskMultiplier(lineCoords, zones) {
-  return zones.reduce((multiplier, zone) => {
-    const exposure = lineExposureFraction(lineCoords, zone.rings);
-    if (!exposure) return multiplier;
+function lineCircleExposureFraction(lineCoordinates, center, radiusKm) {
+  let total = 0;
+  let exposed = 0;
+  const latitudeScale = 111.32;
+  const longitudeScale = 111.32 * Math.cos(center[1] * Math.PI / 180);
+  const localPoint = ([lon, lat]) => [(lon - center[0]) * longitudeScale, (lat - center[1]) * latitudeScale];
+  for (let index = 0; index < lineCoordinates.length - 1; index += 1) {
+    const startGeo = lineCoordinates[index];
+    const endGeo = lineCoordinates[index + 1];
+    const length = haversineKm(startGeo, endGeo);
+    if (!length) continue;
+    total += length;
+    const start = localPoint(startGeo);
+    const end = localPoint(endGeo);
+    const delta = [end[0] - start[0], end[1] - start[1]];
+    const a = delta[0] ** 2 + delta[1] ** 2;
+    const b = 2 * (start[0] * delta[0] + start[1] * delta[1]);
+    const c = start[0] ** 2 + start[1] ** 2 - radiusKm ** 2;
+    const cuts = [0, 1];
+    const discriminant = b ** 2 - 4 * a * c;
+    if (a > 0 && discriminant >= 0) {
+      const root = Math.sqrt(discriminant);
+      const first = (-b - root) / (2 * a);
+      const second = (-b + root) / (2 * a);
+      if (first > 0 && first < 1) cuts.push(first);
+      if (second > 0 && second < 1) cuts.push(second);
+    }
+    cuts.sort((left, right) => left - right);
+    for (let cut = 0; cut < cuts.length - 1; cut += 1) {
+      const from = cuts[cut];
+      const to = cuts[cut + 1];
+      const midpoint = (from + to) / 2;
+      const x = start[0] + delta[0] * midpoint;
+      const y = start[1] + delta[1] * midpoint;
+      if (x ** 2 + y ** 2 <= radiusKm ** 2) exposed += length * (to - from);
+    }
+  }
+  return total ? exposed / total : 0;
+}
+
+function edgeZoneImpacts(coordinates, zones) {
+  return zones.map((zone) => {
+    const exposure = lineExposureFraction(coordinates, zone.rings);
+    if (!exposure) return null;
     const dangerMultiplier = Number(zone.properties.danger_multiplier ?? zone.properties.penalty_multiplier ?? 1);
-    // A exposição parcial escala a penalidade; zonas sobrepostas acumulam.
-    return multiplier * (1 + Math.max(0, dangerMultiplier - 1) * exposure);
-  }, 1);
+    return {
+      id: zone.properties.id || zone.properties.name,
+      name: zone.properties.name || 'Zona sem identificação',
+      description: zone.properties.description || '',
+      threatLevel: zone.properties.threat_level || 'tier_2',
+      zoneType: zone.properties.zone_type || 'environmental_hazard',
+      dangerMultiplier,
+      exposure: round(exposure, 4)
+    };
+  }).filter(Boolean);
 }
 
-function calculateEdgeHazard(distanceKm, dangerLevel, terrainType, zoneRiskMultiplier) {
-  const terrainRisk = TERRAIN_RISK_MULTIPLIERS[terrainType] ?? 1;
-  const perKm = (BASE_HAZARD_PER_KM + Number(dangerLevel || 0) * DANGER_HAZARD_PER_KM) * terrainRisk;
-  return distanceKm * perKm * zoneRiskMultiplier;
+function zoneRiskMultiplier(impacts) {
+  return impacts.reduce((multiplier, impact) => (
+    multiplier * (1 + Math.max(0, impact.dangerMultiplier - 1) * impact.exposure * ZONE_RISK_INFLUENCE)
+  ), 1);
 }
 
-function formatSurvivalProbability(totalHazard) {
-  const probability = Math.exp(-totalHazard) * 100;
-  if (probability >= 10) return Math.round(probability * 10) / 10;
-  if (probability >= 1) return Math.round(probability * 100) / 100;
-  return Math.round(probability * 1000) / 1000;
+function edgeSonarImpacts(coordinates, zones) {
+  return zones.map((zone) => {
+    const center = zone.properties.sonar_center;
+    const radiusKm = Number(zone.properties.sonar_radius_km || 0);
+    if (!Array.isArray(center) || center.length !== 2 || !center.every(Number.isFinite) || radiusKm <= 0) return null;
+    const exposure = lineCircleExposureFraction(coordinates, center, radiusKm);
+    if (!exposure) return null;
+    const threatLevel = zone.properties.sonar_threat_level || zone.properties.threat_level || 'tier_2';
+    return {
+      id: `sonar-${zone.properties.id || zone.properties.name}`,
+      zoneId: zone.properties.id || zone.properties.name,
+      name: `Sonar · ${zone.properties.name || 'área não identificada'}`,
+      threatLevel,
+      riskLabel: SONAR_RISK_LABELS[threatLevel] || 'MODERADO',
+      radiusKm,
+      hazardPerKm: SONAR_HAZARD_PER_KM[threatLevel] || SONAR_HAZARD_PER_KM.tier_2,
+      exposure: round(exposure, 4)
+    };
+  }).filter(Boolean);
 }
 
-// Distância em km entre dois pontos [lon, lat] (fórmula de haversine) — usada
-// só pra ligar um local compartilhado pela comunidade aos nós reais mais
-// próximos (as arestas do dataset já vêm com distance_km pronto).
-function haversineKm([lon1, lat1], [lon2, lat2]) {
-  const R = 6371;
-  const toRad = (d) => (d * Math.PI) / 180;
-  const dLat = toRad(lat2 - lat1);
-  const dLon = toRad(lon2 - lon1);
-  const a = Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+function terrainLabel(type) { return String(type || 'trecho desconhecido').replaceAll('_', ' '); }
+function riskLevelFromProbability(probability) {
+  if (probability >= 85) return { id: 'low', label: 'RISCO BAIXO' };
+  if (probability >= 68) return { id: 'moderate', label: 'RISCO MODERADO' };
+  if (probability >= 48) return { id: 'high', label: 'RISCO ALTO' };
+  return { id: 'critical', label: 'RISCO CRÍTICO' };
 }
-
-// ── Fila de prioridade mínima (substitui heapq / a fila do networkx) ──
+function exposureLabel(averageDanger) {
+  if (averageDanger < 1.7) return 'BAIXA';
+  if (averageDanger < 3.2) return 'MÉDIA';
+  if (averageDanger < 4.3) return 'ALTA';
+  return 'SEVERA';
+}
 
 class MinHeap {
   constructor() { this.items = []; }
   get size() { return this.items.length; }
-
   push(item) {
     this.items.push(item);
-    let i = this.items.length - 1;
-    while (i > 0) {
-      const parent = (i - 1) >> 1;
-      if (this.items[parent].dist <= this.items[i].dist) break;
-      [this.items[parent], this.items[i]] = [this.items[i], this.items[parent]];
-      i = parent;
+    let index = this.items.length - 1;
+    while (index > 0) {
+      const parent = (index - 1) >> 1;
+      if (this.items[parent].dist <= this.items[index].dist) break;
+      [this.items[parent], this.items[index]] = [this.items[index], this.items[parent]];
+      index = parent;
     }
   }
-
   pop() {
     const top = this.items[0];
     const last = this.items.pop();
     if (this.items.length) {
       this.items[0] = last;
-      let i = 0;
+      let index = 0;
       while (true) {
-        const l = i * 2 + 1;
-        const r = i * 2 + 2;
-        let smallest = i;
-        if (l < this.items.length && this.items[l].dist < this.items[smallest].dist) smallest = l;
-        if (r < this.items.length && this.items[r].dist < this.items[smallest].dist) smallest = r;
-        if (smallest === i) break;
-        [this.items[smallest], this.items[i]] = [this.items[i], this.items[smallest]];
-        i = smallest;
+        const left = index * 2 + 1;
+        const right = index * 2 + 2;
+        let smallest = index;
+        if (left < this.items.length && this.items[left].dist < this.items[smallest].dist) smallest = left;
+        if (right < this.items.length && this.items[right].dist < this.items[smallest].dist) smallest = right;
+        if (smallest === index) break;
+        [this.items[smallest], this.items[index]] = [this.items[index], this.items[smallest]];
+        index = smallest;
       }
     }
     return top;
@@ -234,331 +247,384 @@ class MinHeap {
 }
 
 class WastelandRouter {
-  constructor() {
+  constructor() { this.reset(); }
+  reset() {
     this.nodesData = new Map();
     this.dangerZones = [];
-    this.adjacency = new Map(); // nodeId -> [{ to, ...edgeAttrs }]
-
-    // Locais compartilhados pela comunidade (recurso/local seguro) viram nós
-    // de verdade no grafo — guardados também como Features GeoJSON pra poder
-    // ser devolvidos em /api/v1/layers e persistidos em disco.
+    this.adjacency = new Map();
     this.communityNodeFeatures = [];
     this.communityEdgeFeatures = [];
-    this.nextCommunityId = 1;
-
-    // Zonas de perigo reportadas pela comunidade — mesmo esquema de
-    // data/zones.geojson (id, name, zone_type, threat_level,
-    // danger_multiplier, stealth_penalty, description + Polygon).
     this.communityZoneFeatures = [];
+    this.nextCommunityId = 1;
     this.nextCommunityZoneId = 1;
   }
 
-  /** Carrega nós (POIs), arestas (vias bidirecionais) e zonas de perigo. */
-  loadFromGeojson(nodesGeojson, edgesGeojson, zonesGeojson) {
-    if (zonesGeojson) {
-      for (const feature of zonesGeojson.features || []) {
-        this.dangerZones.push({
-          rings: feature.geometry.coordinates,
-          properties: feature.properties || {}
-        });
-      }
+  loadFromGeojson(nodesGeojson, edgesGeojson, zonesGeojson = { features: [] }) {
+    if (!Array.isArray(nodesGeojson?.features) || !Array.isArray(edgesGeojson?.features) || !Array.isArray(zonesGeojson?.features)) {
+      throw new Error('GeoJSON inválido: nodes, edges e zones devem ser FeatureCollections.');
     }
-
-    // O id pode vir no campo GeoJSON padrão (Feature.id) OU dentro de
-    // properties.id — o dataset atual usa o segundo formato.
-    for (const feature of nodesGeojson.features || []) {
-      const props = feature.properties || {};
-      const nodeId = feature.id ?? props.id;
-      if (nodeId == null) {
-        throw new Error(`Nó sem identificador (nem Feature.id nem properties.id): ${JSON.stringify(feature)}`);
+    this.reset();
+    this.dangerZones = zonesGeojson.features.map((feature) => {
+      if (feature.geometry?.type !== 'Polygon' || !Array.isArray(feature.geometry.coordinates?.[0])) {
+        throw new Error(`Zona inválida: ${feature.properties?.id || 'sem id'}.`);
       }
-      this.nodesData.set(nodeId, { coords: feature.geometry.coordinates, ...props });
-      this.adjacency.set(nodeId, []);
-    }
-
-    for (const feature of edgesGeojson.features || []) {
-      const props = feature.properties || {};
-      const u = props.source_node;
-      const v = props.target_node;
-
-      // "distance_km" é o nome usado no dataset atual; "base_distance_km"
-      // é mantido como fallback por compatibilidade com dados antigos.
-      const dist = props.distance_km ?? props.base_distance_km ?? 1.0;
-      const danger = props.danger_level ?? 0;
-      const terrain = props.terrain_type ?? 'asphalt_ruins';
-      const oneWay = props.one_way ?? false;
-      const geometryCoords = feature.geometry.coordinates;
-
-      const zonePenalty = calculateZoneRiskMultiplier(geometryCoords, this.dangerZones);
-
-      if (!(terrain in TERRAIN_RISK_MULTIPLIERS)) {
-        console.warn(
-          `terrain_type '${terrain}' (aresta ${feature.id || props.id || `${u}_${v}`}) não mapeado ` +
-          `em TERRAIN_RISK_MULTIPLIERS; usando multiplicador padrão 1.0x`
-        );
+      return { rings: feature.geometry.coordinates, properties: feature.properties || {} };
+    });
+    nodesGeojson.features.forEach((feature) => {
+      const properties = feature.properties || {};
+      const id = feature.id ?? properties.id;
+      const coordinates = feature.geometry?.coordinates;
+      if (!id || feature.geometry?.type !== 'Point' || !Array.isArray(coordinates) || coordinates.length !== 2 || !coordinates.every(Number.isFinite)) {
+        throw new Error(`Nó inválido: ${id || 'sem id'}.`);
       }
-      const directWeight = dist;
-      // Somar hazard equivale a maximizar o produto das probabilidades de
-      // sobrevivência dos trechos (P = exp(-hazard)).
-      const survivalWeight = calculateEdgeHazard(dist, danger, terrain, zonePenalty);
-
-      const baseAttrs = {
-        edgeId: feature.id || props.id || `${u}_${v}`,
-        distanceKm: dist,
-        dangerLevel: danger,
-        terrainType: terrain,
-        directWeight,
-        survivalWeight,
-        zonePenalty
-      };
-
-      if (this.adjacency.has(u)) {
-        this.adjacency.get(u).push({ to: v, geometry: geometryCoords, ...baseAttrs });
-      }
-      // Aresta reversa (volta), a menos que explicitamente one_way — inverte
-      // a geometria pra desenhar certo no sentido de volta.
-      if (!oneWay && this.adjacency.has(v)) {
-        this.adjacency.get(v).push({ to: u, geometry: [...geometryCoords].reverse(), ...baseAttrs });
-      }
-    }
+      if (this.nodesData.has(id)) throw new Error(`Nó duplicado: ${id}.`);
+      this.nodesData.set(id, { ...properties, id, coords: coordinates });
+      this.adjacency.set(id, []);
+    });
+    edgesGeojson.features.forEach((feature) => this.addEdgeFeature(feature));
   }
 
-  /**
-   * Registra um local compartilhado pela comunidade (recurso/local seguro)
-   * como um nó de verdade no grafo, ligado aos 1-2 nós existentes mais
-   * próximos (mesma ideia do community.js do modo fantasia, mas agora as
-   * arestas entram no motor de rotas de verdade — inclusive respeitando as
-   * zonas de perigo, igual a qualquer outra via).
-   *
-   * @param {{id?:string, label:string, category:'recurso'|'seguro', lon:number, lat:number}} input
-   *   `id` só é passado ao repor um registro já persistido em disco no boot.
-   */
+  supportRate(sourceId, targetId) {
+    let rate = 0;
+    [sourceId, targetId].map((id) => this.nodesData.get(id)).filter(Boolean).forEach((node) => {
+      if (node.community && node.type === 'seguro') rate += 0.12;
+      else if (node.resources && (Number(node.resources.water) >= 70 || Number(node.resources.thermal_stability) >= 80)) rate += 0.025;
+    });
+    return clamp(rate, 0, 0.18);
+  }
+
+  edgeAttributes(feature) {
+    const properties = feature.properties || {};
+    const coordinates = feature.geometry?.coordinates;
+    if (feature.geometry?.type !== 'LineString' || !Array.isArray(coordinates) || coordinates.length < 2) {
+      throw new Error(`Aresta inválida: ${properties.id || feature.id || 'sem id'}.`);
+    }
+    const source = properties.source_node;
+    const target = properties.target_node;
+    if (!this.adjacency.has(source) || !this.adjacency.has(target)) {
+      throw new Error(`Aresta ${properties.id || feature.id || 'sem id'} referencia nó inexistente.`);
+    }
+    const distanceKm = Number(properties.distance_km ?? properties.base_distance_km ?? lineLengthKm(coordinates));
+    if (!Number.isFinite(distanceKm) || distanceKm <= 0) throw new Error(`Distância inválida na aresta ${properties.id || feature.id || 'sem id'}.`);
+    const dangerLevel = clamp(Number(properties.danger_level ?? 0), 0, 5);
+    const terrainType = properties.terrain_type || 'asphalt_ruins';
+    const terrainRisk = TERRAIN_RISK_MULTIPLIERS[terrainType] ?? 1;
+    const movementMultiplier = TERRAIN_MOVEMENT_MULTIPLIERS[terrainType] ?? 1.25;
+    const zoneImpacts = edgeZoneImpacts(coordinates, this.dangerZones);
+    const zonePenalty = zoneRiskMultiplier(zoneImpacts);
+    const sonarImpacts = edgeSonarImpacts(coordinates, this.dangerZones);
+    const sonarHazard = distanceKm * sonarImpacts.reduce((sum, impact) => sum + impact.hazardPerKm * impact.exposure, 0);
+    const rawHazard = distanceKm * (BASE_HAZARD_PER_KM + dangerLevel * DANGER_HAZARD_PER_KM) * terrainRisk * zonePenalty + sonarHazard;
+    const safetyRate = this.supportRate(source, target);
+    const survivalWeight = Math.max(0.000001, rawHazard * (1 - safetyRate));
+    const sonarPenalty = sonarImpacts.reduce((penalty, impact) => (
+      penalty + impact.exposure * ({ tier_1: 0.35, tier_2: 1.15, tier_3: 2.8 }[impact.threatLevel] || 1.15)
+    ), 0);
+    const balancedWeight = distanceKm * Math.max(0.6,
+      1 + dangerLevel * 0.12 + Math.max(0, terrainRisk - 1) * 0.22 +
+      Math.max(0, zonePenalty - 1) * 0.20 + sonarPenalty - safetyRate
+    );
+    return {
+      edgeId: feature.id || properties.id || `${source}_${target}`,
+      source, target, distanceKm, dangerLevel, terrainType,
+      description: properties.description || '',
+      fuelMultiplier: Number(properties.fuel_cost_multiplier ?? movementMultiplier),
+      movementMultiplier, terrainRisk, zoneImpacts, zonePenalty,
+      sonarImpacts, sonarHazard, sonarPenalty, safetyRate,
+      directWeight: distanceKm, balancedWeight, survivalWeight,
+      geometry: coordinates, oneWay: properties.one_way === true
+    };
+  }
+
+  addEdgeFeature(feature, { community = false } = {}) {
+    const attributes = this.edgeAttributes(feature);
+    this.adjacency.get(attributes.source).push({ ...attributes, to: attributes.target });
+    if (!attributes.oneWay) {
+      this.adjacency.get(attributes.target).push({ ...attributes, to: attributes.source, geometry: [...attributes.geometry].reverse() });
+    }
+    if (community) this.communityEdgeFeatures.push(feature);
+    return attributes;
+  }
+
   addCommunityNode({ id, label, category, lon, lat }) {
     let finalId = id;
-    if (!finalId) {
-      finalId = `community_${this.nextCommunityId}`;
-      this.nextCommunityId += 1;
-    } else {
-      const n = parseInt(String(id).replace('community_', ''), 10);
-      if (Number.isFinite(n) && n >= this.nextCommunityId) this.nextCommunityId = n + 1;
+    if (!finalId) finalId = `community_${this.nextCommunityId++}`;
+    else {
+      const numericId = Number.parseInt(String(id).replace('community_', ''), 10);
+      if (Number.isFinite(numericId)) this.nextCommunityId = Math.max(this.nextCommunityId, numericId + 1);
     }
-
-    const coords = [lon, lat];
-    const dangerLevel = 1; // local vetado pela comunidade: risco baixo por padrão
-    const terrain = 'safe_pass';
-    const existingIds = [...this.adjacency.keys()];
-    const linkCount = existingIds.length > 1 ? 2 : Math.min(1, existingIds.length);
-    const neighbors = existingIds
-      .map((nid) => ({ nid, dist: haversineKm(coords, this.nodesData.get(nid).coords) }))
-      .sort((a, b) => a.dist - b.dist)
-      .slice(0, linkCount);
-
-    this.nodesData.set(finalId, { coords, id: finalId, name: label, type: category, danger_level: dangerLevel });
-    this.adjacency.set(finalId, []);
-
-    const edgeFeatures = [];
-    neighbors.forEach(({ nid, dist: distanceKm }) => {
-      const geometryCoords = [coords, this.nodesData.get(nid).coords];
-
-      const zonePenalty = calculateZoneRiskMultiplier(geometryCoords, this.dangerZones);
-      const roundedDist = Math.round(distanceKm * 100) / 100;
-      const directWeight = roundedDist;
-      const survivalWeight = calculateEdgeHazard(roundedDist, dangerLevel, terrain, zonePenalty);
-
-      const baseAttrs = {
-        edgeId: `edge_${finalId}_${nid}`,
-        distanceKm: roundedDist,
-        dangerLevel,
-        terrainType: terrain,
-        directWeight,
-        survivalWeight,
-        zonePenalty
-      };
-
-      this.adjacency.get(finalId).push({ to: nid, geometry: geometryCoords, ...baseAttrs });
-      this.adjacency.get(nid).push({ to: finalId, geometry: [...geometryCoords].reverse(), ...baseAttrs });
-
-      edgeFeatures.push({
-        type: 'Feature',
-        properties: {
-          id: baseAttrs.edgeId,
-          source_node: finalId,
-          target_node: nid,
-          distance_km: roundedDist,
-          danger_level: dangerLevel,
-          terrain_type: terrain,
-          description: 'Ligação criada pela comunidade.'
-        },
-        geometry: { type: 'LineString', coordinates: geometryCoords }
-      });
-    });
-
+    const coordinates = [lon, lat];
+    const candidates = [...this.nodesData.entries()]
+      .map(([nodeId, node]) => ({ nodeId, distance: haversineKm(coordinates, node.coords) }))
+      .sort((a, b) => a.distance - b.distance)
+      .slice(0, Math.min(2, this.nodesData.size));
     const nodeFeature = {
       type: 'Feature',
       properties: {
-        id: finalId,
-        name: label,
-        type: category,
-        danger_level: dangerLevel,
-        description: category === 'recurso'
-          ? 'Recurso compartilhado pela comunidade.'
-          : 'Local seguro compartilhado pela comunidade.',
-        community: true
+        id: finalId, name: label, type: category,
+        danger_level: category === 'seguro' ? 0 : 1,
+        description: 'Ponto verificado e compartilhado pela comunidade.', community: true
       },
-      geometry: { type: 'Point', coordinates: coords }
+      geometry: { type: 'Point', coordinates }
     };
-
+    this.nodesData.set(finalId, { ...nodeFeature.properties, coords: coordinates });
+    this.adjacency.set(finalId, []);
     this.communityNodeFeatures.push(nodeFeature);
-    this.communityEdgeFeatures.push(...edgeFeatures);
-
+    const edgeFeatures = candidates.map(({ nodeId, distance }, index) => ({
+      type: 'Feature',
+      properties: {
+        id: `edge_${finalId}_${index + 1}`, source_node: finalId, target_node: nodeId,
+        distance_km: round(distance, 2), danger_level: category === 'seguro' ? 0 : 1,
+        terrain_type: 'safe_pass', fuel_cost_multiplier: 1,
+        description: 'Ligação comunitária ao corredor conhecido mais próximo.'
+      },
+      geometry: { type: 'LineString', coordinates: [coordinates, this.nodesData.get(nodeId).coords] }
+    }));
+    edgeFeatures.forEach((edgeFeature) => this.addEdgeFeature(edgeFeature, { community: true }));
     return { id: finalId, nodeFeature, edgeFeatures };
   }
 
-  /**
-   * Registra uma zona de perigo reportada pela comunidade — mesmo formato de
-   * data/zones.geojson (Polygon + id/name/zone_type/threat_level/
-   * danger_multiplier/stealth_penalty/description). Qualquer aresta que já
-   * exista e cruze essa área tem o `zonePenalty`/`survivalWeight`
-   * recalculado na hora, do mesmo jeito que `loadFromGeojson` calcula pras
-   * zonas originais — não é preciso reiniciar o servidor.
-   *
-   * @param {{id?:string, name:string, zoneType:string, threatLevel:string,
-   *   dangerMultiplier:number, stealthPenalty:number, description:string,
-   *   rings:number[][][]}} input
-   *   `id` só é passado ao repor um registro já persistido em disco no boot.
-   */
   addDangerZone({ id, name, biomeFocus, zoneType, threatLevel, dangerMultiplier, stealthPenalty, description, rings }) {
     let finalId = id;
-    if (!finalId) {
-      finalId = `community_zone_${this.nextCommunityZoneId}`;
-      this.nextCommunityZoneId += 1;
-    } else {
-      const n = parseInt(String(id).replace('community_zone_', ''), 10);
-      if (Number.isFinite(n) && n >= this.nextCommunityZoneId) this.nextCommunityZoneId = n + 1;
+    if (!finalId) finalId = `community_zone_${this.nextCommunityZoneId++}`;
+    else {
+      const numericId = Number.parseInt(String(id).replace('community_zone_', ''), 10);
+      if (Number.isFinite(numericId)) this.nextCommunityZoneId = Math.max(this.nextCommunityZoneId, numericId + 1);
     }
-
     const properties = {
-      id: finalId,
-      name,
-      biome_focus: biomeFocus || 'scorched_desert',
-      zone_type: zoneType,
-      threat_level: threatLevel,
-      danger_multiplier: dangerMultiplier,
-      stealth_penalty: stealthPenalty,
-      description,
-      community: true
+      id: finalId, name, biome_focus: biomeFocus || 'scorched_desert', zone_type: zoneType,
+      threat_level: threatLevel, danger_multiplier: dangerMultiplier,
+      stealth_penalty: stealthPenalty, description, community: true
     };
-
     this.dangerZones.push({ rings, properties });
-
-    // Recalcular contra todas as zonas, em vez de multiplicar cegamente a
-    // nova penalidade. Assim uma aresta que apenas raspa a zona recebe risco
-    // proporcional à exposição e não uma penalidade integral.
-    for (const edges of this.adjacency.values()) {
-      for (const edge of edges) {
-        edge.zonePenalty = calculateZoneRiskMultiplier(edge.geometry, this.dangerZones);
-        edge.survivalWeight = calculateEdgeHazard(
-          edge.distanceKm, edge.dangerLevel, edge.terrainType, edge.zonePenalty
-        );
-      }
-    }
-
-    const zoneFeature = {
-      type: 'Feature',
-      properties,
-      geometry: { type: 'Polygon', coordinates: rings }
-    };
+    this.recalculateEdgeWeights();
+    const zoneFeature = { type: 'Feature', properties, geometry: { type: 'Polygon', coordinates: rings } };
     this.communityZoneFeatures.push(zoneFeature);
-
     return { id: finalId, zoneFeature };
   }
 
-  /** Calcula o melhor caminho com Dijkstra sobre o grafo em memória. */
-  calculateRoute(originId, destinationId, mode = 'survival') {
-    if (!this.adjacency.has(originId) || !this.adjacency.has(destinationId)) {
-      const unknown = !this.adjacency.has(originId) ? originId : destinationId;
-      return { error: `Localização desconhecida: ${unknown}` };
+  addDangerSonar({ id, name, threatLevel, description, center, radiusKm }) {
+    let finalId = id;
+    if (!finalId) finalId = `community_sonar_${this.nextCommunityZoneId++}`;
+    else {
+      const numericId = Number.parseInt(String(id).replace(/\D+/g, ''), 10);
+      if (Number.isFinite(numericId)) this.nextCommunityZoneId = Math.max(this.nextCommunityZoneId, numericId + 1);
     }
+    const properties = {
+      id: finalId,
+      name,
+      biome_focus: 'neutral',
+      zone_type: 'community_sonar',
+      threat_level: threatLevel,
+      sonar_threat_level: threatLevel,
+      sonar_center: center,
+      sonar_radius_km: radiusKm,
+      danger_multiplier: 1,
+      stealth_penalty: 0,
+      description,
+      community: true,
+      sonar_only: true
+    };
+    this.dangerZones.push({ rings: [], properties });
+    this.recalculateEdgeWeights();
+    const sonarFeature = { type: 'Feature', properties, geometry: { type: 'Point', coordinates: center } };
+    this.communityZoneFeatures.push(sonarFeature);
+    return { id: finalId, sonarFeature };
+  }
 
-    const weightKey = mode === 'survival' ? 'survivalWeight' : 'directWeight';
-
-    const dist = new Map();
-    for (const id of this.adjacency.keys()) dist.set(id, Infinity);
-    dist.set(originId, 0);
-
-    const cameFrom = new Map(); // nodeId -> { from, edge }
-    const settled = new Set();
-    const heap = new MinHeap();
-    heap.push({ id: originId, dist: 0 });
-
-    while (heap.size) {
-      const { id, dist: d } = heap.pop();
-      if (settled.has(id)) continue;
-      settled.add(id);
-      if (id === destinationId) break;
-
-      for (const edge of this.adjacency.get(id)) {
-        if (settled.has(edge.to)) continue;
-        const candidate = d + edge[weightKey];
-        if (candidate < dist.get(edge.to)) {
-          dist.set(edge.to, candidate);
-          cameFrom.set(edge.to, { from: id, edge });
-          heap.push({ id: edge.to, dist: candidate });
-        }
+  recalculateEdgeWeights() {
+    for (const [nodeId, edges] of this.adjacency.entries()) {
+      for (let index = 0; index < edges.length; index += 1) {
+        const edge = edges[index];
+        const feature = {
+          type: 'Feature',
+          properties: {
+            id: edge.edgeId, source_node: nodeId, target_node: edge.to,
+            distance_km: edge.distanceKm, danger_level: edge.dangerLevel,
+            terrain_type: edge.terrainType, fuel_cost_multiplier: edge.fuelMultiplier,
+            description: edge.description, one_way: true
+          },
+          geometry: { type: 'LineString', coordinates: edge.geometry }
+        };
+        edges[index] = { ...this.edgeAttributes(feature), to: edge.to };
       }
     }
+  }
 
-    if (dist.get(destinationId) === Infinity) {
-      return { error: 'Sem rota viável. O caminho está bloqueado.' };
+  shortestPath(originId, destinationId, profile) {
+    const weightKey = profile === 'safe' ? 'survivalWeight' : profile === 'balanced' ? 'balancedWeight' : 'directWeight';
+    const distances = new Map([...this.adjacency.keys()].map((id) => [id, Infinity]));
+    const previous = new Map();
+    const settled = new Set();
+    const heap = new MinHeap();
+    distances.set(originId, 0);
+    heap.push({ id: originId, dist: 0 });
+    while (heap.size) {
+      const current = heap.pop();
+      if (settled.has(current.id)) continue;
+      settled.add(current.id);
+      if (current.id === destinationId) break;
+      this.adjacency.get(current.id).forEach((edge) => {
+        if (settled.has(edge.to)) return;
+        const candidate = current.dist + edge[weightKey];
+        if (candidate < distances.get(edge.to)) {
+          distances.set(edge.to, candidate);
+          previous.set(edge.to, { from: current.id, edge });
+          heap.push({ id: edge.to, dist: candidate });
+        }
+      });
     }
-
+    if (!Number.isFinite(distances.get(destinationId))) return null;
     const pathNodes = [destinationId];
     const pathEdges = [];
-    let cur = destinationId;
-    while (cur !== originId) {
-      const { from, edge } = cameFrom.get(cur);
-      pathEdges.unshift(edge);
-      pathNodes.unshift(from);
-      cur = from;
+    let currentId = destinationId;
+    while (currentId !== originId) {
+      const step = previous.get(currentId);
+      if (!step) return null;
+      pathEdges.unshift(step.edge);
+      pathNodes.unshift(step.from);
+      currentId = step.from;
     }
+    return { pathNodes, pathEdges };
+  }
 
+  buildRiskBreakdown(pathEdges, supportPoints) {
+    const entries = [];
+    const seenZones = new Set();
+    const seenSonars = new Set();
+    pathEdges.forEach((edge) => {
+      edge.sonarImpacts.forEach((impact) => {
+        if (seenSonars.has(impact.id)) return;
+        seenSonars.add(impact.id);
+        entries.push({
+          kind: 'risk',
+          points: Math.max(4, Math.round(impact.hazardPerKm * impact.exposure * edge.distanceKm * 100)),
+          title: impact.name,
+          detail: `${impact.riskLabel} · ${Math.round(impact.exposure * 100)}% do trecho dentro do raio`
+        });
+      });
+      edge.zoneImpacts.forEach((impact) => {
+        if (seenZones.has(impact.id)) return;
+        seenZones.add(impact.id);
+        entries.push({
+          kind: 'risk', points: Math.max(2, Math.round((impact.dangerMultiplier - 1) * impact.exposure * 22)),
+          title: impact.name, detail: `${Math.round(impact.exposure * 100)}% do trecho dentro da zona`
+        });
+      });
+      if (edge.dangerLevel >= 4) {
+        entries.push({
+          kind: 'risk', points: Math.max(2, Math.round(edge.distanceKm * edge.dangerLevel / 5)),
+          title: edge.description || `Travessia em ${terrainLabel(edge.terrainType)}`,
+          detail: `Perigo ${edge.dangerLevel}/5 · exposição ${terrainLabel(edge.terrainType)}`
+        });
+      }
+    });
+    if (supportPoints.length) {
+      entries.push({
+        kind: 'safety', points: Math.min(12, supportPoints.length * 4), title: 'Pontos de apoio no corredor',
+        detail: supportPoints.slice(0, 3).map((node) => node.name || node.id).join(' · ')
+      });
+    }
+    if (!entries.length) entries.push({ kind: 'info', points: 0, title: 'Corredor sem alertas severos', detail: 'Dados locais indicam exposição controlada.' });
+    return entries.sort((a, b) => (b.kind === 'risk' ? b.points : -b.points) - (a.kind === 'risk' ? a.points : -a.points)).slice(0, 6);
+  }
+
+  formatRoute(profile, pathNodes, pathEdges) {
     let totalDistance = 0;
     let totalHazard = 0;
+    let totalMinutes = 0;
+    let totalFuel = 0;
+    let weightedDanger = 0;
     let routeCoordinates = [];
-
-    for (const edge of pathEdges) {
+    const uniqueZones = new Map();
+    const uniqueSonars = new Map();
+    const segments = pathEdges.map((edge, index) => {
       totalDistance += edge.distanceKm;
       totalHazard += edge.survivalWeight;
-
-      // Acumula coordenadas sem duplicar o ponto de intersecção.
-      if (!routeCoordinates.length) routeCoordinates = routeCoordinates.concat(edge.geometry);
-      else routeCoordinates = routeCoordinates.concat(edge.geometry.slice(1));
-    }
-
-    const fuelEstimate = Math.round(totalDistance * 0.8 * 10) / 10;
-
+      const minutes = edge.distanceKm / 30 * 60 * edge.movementMultiplier;
+      const fuel = edge.distanceKm * 0.42 * edge.fuelMultiplier;
+      totalMinutes += minutes;
+      totalFuel += fuel;
+      weightedDanger += edge.dangerLevel * edge.distanceKm;
+      edge.zoneImpacts.forEach((impact) => uniqueZones.set(impact.id, impact));
+      edge.sonarImpacts.forEach((impact) => uniqueSonars.set(impact.id, impact));
+      routeCoordinates = routeCoordinates.length ? routeCoordinates.concat(edge.geometry.slice(1)) : [...edge.geometry];
+      const segmentProbability = Math.exp(-edge.survivalWeight) * 100;
+      const risk = riskLevelFromProbability(segmentProbability);
+      return {
+        id: edge.edgeId, from: pathNodes[index], to: pathNodes[index + 1],
+        distanceKm: round(edge.distanceKm, 2), timeMinutes: Math.max(1, Math.round(minutes)),
+        dangerLevel: edge.dangerLevel, terrainType: edge.terrainType, terrainLabel: terrainLabel(edge.terrainType),
+        riskLevel: risk.id, riskLabel: risk.label, survivalProbability: Math.round(segmentProbability),
+        safetyBonusPercent: Math.round(edge.safetyRate * 100), description: edge.description,
+        zones: edge.zoneImpacts, sonars: edge.sonarImpacts,
+        geometry: { type: 'LineString', coordinates: edge.geometry }
+      };
+    });
+    const survivalProbability = Math.round(Math.exp(-totalHazard) * 100);
+    const risk = riskLevelFromProbability(survivalProbability);
+    const supportPoints = pathNodes.map((id) => this.nodesData.get(id)).filter((node) => (
+      node && (node.type === 'seguro' || Number(node.resources?.water) >= 70 || Number(node.resources?.thermal_stability) >= 80)
+    ));
+    const zones = [...uniqueZones.values()];
+    const sonars = [...uniqueSonars.values()];
+    const averageDanger = totalDistance ? weightedDanger / totalDistance : 0;
     return {
-      type: 'Feature',
-      properties: {
-        navigation_mode: mode,
-        path_nodes: pathNodes,
-        total_distance_km: Math.round(totalDistance * 100) / 100,
-        // Escala legível e coerente: menor pontuação significa menor risco.
-        // Ela inclui distância, terreno e exposição às zonas, exatamente como
-        // o custo otimizado no modo sobrevivência.
-        total_danger_score: Math.round(totalHazard * 100) / 10,
-        estimated_fuel_liters: fuelEstimate,
-        // Probabilidades independentes se compõem por multiplicação;
-        // log(P) transforma o problema em Dijkstra com pesos não negativos.
-        survival_probability: formatSurvivalProbability(totalHazard),
-        survival_hazard_score: Math.round(totalHazard * 10000) / 10000
+      id: profile, label: PROFILE_META[profile].label, description: PROFILE_META[profile].description,
+      summary: {
+        distanceKm: round(totalDistance, 1), timeMinutes: Math.round(totalMinutes), fuelLiters: round(totalFuel, 1),
+        survivalProbability, riskLevel: risk.id, riskLabel: risk.label, exposure: exposureLabel(averageDanger),
+        criticalZones: zones.filter((zone) => zone.threatLevel === 'tier_3').length,
+        hostileZones: zones.filter((zone) => zone.zoneType === 'faction_hostile').length,
+        sonarsCrossed: sonars.length,
+        highRiskSonars: sonars.filter((sonar) => sonar.threatLevel === 'tier_3').length,
+        supportPoints: supportPoints.length
       },
-      geometry: {
-        type: 'LineString',
-        coordinates: routeCoordinates
+      riskBreakdown: this.buildRiskBreakdown(pathEdges, supportPoints), pathNodes, segments,
+      geometry: { type: 'LineString', coordinates: routeCoordinates },
+      properties: {
+        navigation_mode: profile, path_nodes: pathNodes, total_distance_km: round(totalDistance, 2),
+        total_danger_score: round(totalHazard * 10, 1), estimated_fuel_liters: round(totalFuel, 1),
+        estimated_time_minutes: Math.round(totalMinutes), survival_probability: survivalProbability,
+        survival_hazard_score: round(totalHazard, 4), risk_level: risk.id, risk_label: risk.label
       }
     };
   }
+
+  validateEndpoints(originId, destinationId) {
+    if (!this.adjacency.has(originId)) return { error: `Localização de origem desconhecida: ${originId}`, code: 'UNKNOWN_ORIGIN' };
+    if (!this.adjacency.has(destinationId)) return { error: `Localização de destino desconhecida: ${destinationId}`, code: 'UNKNOWN_DESTINATION' };
+    if (originId === destinationId) return { error: 'Origem e destino precisam ser locais diferentes.', code: 'SAME_LOCATION' };
+    return null;
+  }
+
+  calculateRoute(originId, destinationId, mode = 'safe') {
+    const validationError = this.validateEndpoints(originId, destinationId);
+    if (validationError) return validationError;
+    const profile = mode === 'survival' ? 'safe' : mode === 'direct' ? 'fast' : mode;
+    const selectedProfile = PROFILE_META[profile] ? profile : 'safe';
+    const result = this.shortestPath(originId, destinationId, selectedProfile);
+    if (!result) return { error: 'Nenhum corredor conhecido conecta estes dois setores.', code: 'NO_ROUTE' };
+    return this.formatRoute(selectedProfile, result.pathNodes, result.pathEdges);
+  }
+
+  calculateRoutes(originId, destinationId) {
+    const validationError = this.validateEndpoints(originId, destinationId);
+    if (validationError) return validationError;
+    const routes = [];
+    ['safe', 'fast'].forEach((profile) => {
+      const result = this.shortestPath(originId, destinationId, profile);
+      if (!result) return;
+      routes.push(this.formatRoute(profile, result.pathNodes, result.pathEdges));
+    });
+    if (!routes.length) return { error: 'Nenhum corredor conhecido conecta estes dois setores.', code: 'NO_ROUTE' };
+    return { routes, recommendedRouteId: routes[0].id };
+  }
 }
 
-module.exports = { WastelandRouter, TERRAIN_MULTIPLIERS, TERRAIN_RISK_MULTIPLIERS };
+module.exports = {
+  WastelandRouter,
+  TERRAIN_MULTIPLIERS: TERRAIN_MOVEMENT_MULTIPLIERS,
+  TERRAIN_MOVEMENT_MULTIPLIERS,
+  TERRAIN_RISK_MULTIPLIERS
+};

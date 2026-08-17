@@ -1,8 +1,8 @@
 {
-  "name": "hackafools-backend",
+  "name": "dustnav-backend",
   "version": "1.0.0",
   "private": true,
-  "description": "Servidor HTTP único: serve o frontend estático e a API de rotas S.C.A.R. (sem dependências externas).",
+  "description": "Servidor local do DustNav e motor de rotas SCAR sem dependências externas.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

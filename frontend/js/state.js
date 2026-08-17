@@ -1,19 +1,13 @@
 export const state = {
-  src: null,
-  dst: null,
-  mode: 'driving',
+  origin: null,
+  destination: null,
+  routes: [],
+  activeRouteId: null,
+  loading: false,
   pickMode: null,
-  running: false
+  placement: null
 };
 
-export const markers = {
-  src: null,
-  dst: null
-};
-
-export const layers = {
-  route: null,
-  anim: []
-};
-
-export let logCount = 0;
+export function activeRoute() {
+  return state.routes.find((route) => route.id === state.activeRouteId) || state.routes[0] || null;
+}

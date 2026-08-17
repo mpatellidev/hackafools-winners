@@ -878,6 +878,150 @@
         "description": "Acesso regional do Ponto Neutro Leste até a Vila do Óleo."
       },
       "geometry": { "type": "LineString", "coordinates": [[138.95, -30.6], [138.83, -30.46]] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "edge_anchor_killpeaks_widow",
+        "source_node": "node_zone_canyon_killpeaks_anchor",
+        "target_node": "node_boneyard_iron_widow",
+        "distance_km": 4.85,
+        "danger_level": 3,
+        "terrain_type": "canyon_trail",
+        "fuel_cost_multiplier": 1.25,
+        "description": "Travessia direta pela borda das Agulhas de Pedra até a Sucata da Viúva das Fendas."
+      },
+      "geometry": { "type": "LineString", "coordinates": [[138.415, -30.47], [138.46, -30.45]] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "edge_observatory_canyon",
+        "source_node": "node_western_observatory",
+        "target_node": "node_canyon_hideout",
+        "distance_km": 18.82,
+        "danger_level": 2,
+        "terrain_type": "canyon_trail",
+        "description": "Trilha elevada entre o mirante ocidental e o esconderijo do cânion."
+      },
+      "geometry": { "type": "LineString", "coordinates": [[138.27, -30.16], [138.38, -30.30]] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "edge_observatory_hyperion",
+        "source_node": "node_western_observatory",
+        "target_node": "node_dome_hyperion",
+        "distance_km": 20.22,
+        "danger_level": 2,
+        "terrain_type": "packed_dirt",
+        "description": "Estrada de patrulha abandonada em direção ao Domo Hyperion Prime."
+      },
+      "geometry": { "type": "LineString", "coordinates": [[138.27, -30.16], [138.48, -30.15]] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "edge_windstation_hyperion",
+        "source_node": "node_meridian_wind_station",
+        "target_node": "node_dome_hyperion",
+        "distance_km": 20.75,
+        "danger_level": 1,
+        "terrain_type": "corporate_highway",
+        "description": "Via técnica entre as turbinas setentrionais e o complexo Hyperion."
+      },
+      "geometry": { "type": "LineString", "coordinates": [[138.68, -30.08], [138.48, -30.15]] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "edge_windstation_frostspire",
+        "source_node": "node_meridian_wind_station",
+        "target_node": "node_tower_frostspire",
+        "distance_km": 12.37,
+        "danger_level": 3,
+        "terrain_type": "storm_plains",
+        "description": "Corredor ventoso até a Torre Espinho de Gelo."
+      },
+      "geometry": { "type": "LineString", "coordinates": [[138.68, -30.08], [138.80, -30.12]] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "edge_drywell_westgate",
+        "source_node": "node_drywell_frontier",
+        "target_node": "node_gate_west_generic",
+        "distance_km": 15.39,
+        "danger_level": 2,
+        "terrain_type": "dirt_track",
+        "description": "Caminho seco entre o poço da fronteira e a entrada oeste."
+      },
+      "geometry": { "type": "LineString", "coordinates": [[138.28, -30.48], [138.20, -30.60]] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "edge_drywell_deadpass",
+        "source_node": "node_drywell_frontier",
+        "target_node": "node_dead_pass",
+        "distance_km": 10.54,
+        "danger_level": 2,
+        "terrain_type": "packed_dirt",
+        "description": "Atalho de fronteira até o Passo da Guilhotina."
+      },
+      "geometry": { "type": "LineString", "coordinates": [[138.28, -30.48], [138.39, -30.48]] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "edge_coldash_widow",
+        "source_node": "node_cold_ash_exchange",
+        "target_node": "node_boneyard_iron_widow",
+        "distance_km": 13.21,
+        "danger_level": 2,
+        "terrain_type": "transition_plains",
+        "description": "Corredor comercial entre o entreposto e a Sucata da Viúva das Fendas."
+      },
+      "geometry": { "type": "LineString", "coordinates": [[138.55, -30.54], [138.46, -30.45]] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "edge_coldash_reapers",
+        "source_node": "node_cold_ash_exchange",
+        "target_node": "node_camp_ash_reapers",
+        "distance_km": 16.72,
+        "danger_level": 3,
+        "terrain_type": "scorched_dunes",
+        "description": "Travessia meridional até o Forte dos Ceifadores de Cinzas."
+      },
+      "geometry": { "type": "LineString", "coordinates": [[138.55, -30.54], [138.71, -30.48]] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "edge_beacon_gastown",
+        "source_node": "node_frozen_plain_beacon",
+        "target_node": "node_gas_town",
+        "distance_km": 14.68,
+        "danger_level": 3,
+        "terrain_type": "black_ice_highway",
+        "description": "Rodovia congelada do farol oriental até a Vila do Óleo."
+      },
+      "geometry": { "type": "LineString", "coordinates": [[138.93, -30.36], [138.83, -30.46]] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "edge_beacon_cryo",
+        "source_node": "node_frozen_plain_beacon",
+        "target_node": "node_mine_cryo_veins",
+        "distance_km": 12.05,
+        "danger_level": 3,
+        "terrain_type": "storm_plains",
+        "description": "Rota de balizas entre o farol e as Veias Criogênicas."
+      },
+      "geometry": { "type": "LineString", "coordinates": [[138.93, -30.36], [138.86, -30.27]] }
     }
   ]
 }
