@@ -525,6 +525,71 @@
         "resources": { "water": 25, "fuel": 15, "scrap": 10, "thermal_stability": 60 }
       },
       "geometry": { "type": "Point", "coordinates": [138.95, -30.60] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "node_western_observatory",
+        "name": "Mirante do Horizonte Partido",
+        "type": "weather_tower",
+        "biome": "high_relief_canyons",
+        "danger_level": 2,
+        "description": "Posto elevado que observa as rotas vazias do quadrante noroeste.",
+        "resources": { "water": 25, "fuel": 10, "scrap": 35, "thermal_stability": 55 }
+      },
+      "geometry": { "type": "Point", "coordinates": [138.27, -30.16] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "node_meridian_wind_station",
+        "name": "Estação Eólica Setentrional",
+        "type": "weather_tower",
+        "biome": "corporate_domes",
+        "danger_level": 1,
+        "description": "Turbinas antigas formam um corredor de orientação no vazio ao norte.",
+        "resources": { "water": 35, "fuel": 30, "scrap": 45, "thermal_stability": 70 }
+      },
+      "geometry": { "type": "Point", "coordinates": [138.68, -30.08] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "node_drywell_frontier",
+        "name": "Poço Seco da Fronteira",
+        "type": "outpost_omega",
+        "biome": "neutral",
+        "danger_level": 2,
+        "description": "Marco de orientação entre a entrada oeste e os cânions interiores.",
+        "resources": { "water": 12, "fuel": 18, "scrap": 30, "thermal_stability": 45 }
+      },
+      "geometry": { "type": "Point", "coordinates": [138.28, -30.48] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "node_cold_ash_exchange",
+        "name": "Entreposto das Cinzas Frias",
+        "type": "supply_station",
+        "biome": "scorched_desert",
+        "danger_level": 2,
+        "description": "Ponto de troca isolado no corredor meridional entre cânions e dunas.",
+        "resources": { "water": 55, "fuel": 40, "scrap": 55, "thermal_stability": 60 }
+      },
+      "geometry": { "type": "Point", "coordinates": [138.55, -30.54] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "node_frozen_plain_beacon",
+        "name": "Farol da Planície Congelada",
+        "type": "weather_tower",
+        "biome": "frozen_wastes",
+        "danger_level": 3,
+        "description": "Baliza luminosa que cobre o vazio entre as minas orientais e a Vila do Óleo.",
+        "resources": { "water": 30, "fuel": 20, "scrap": 40, "thermal_stability": 50 }
+      },
+      "geometry": { "type": "Point", "coordinates": [138.93, -30.36] }
     }
   ]
 }

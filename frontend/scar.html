@@ -1,231 +1,191 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>DustNav — S.C.A.R. (Mapa Real do Wasteland)</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css">
-<link rel="stylesheet" href="game-styles.css">
-<link rel="stylesheet" href="scar-styles.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#171712">
+  <meta name="description" content="DustNav: navegação local orientada por risco e sobrevivência.">
+  <title>DustNav</title>
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/map.css">
+  <link rel="stylesheet" href="css/components.css">
 </head>
 <body>
-<div id="app">
-  <div id="map-wrap">
-    <div id="map-surface">
-    <div class="hud-topbar" aria-hidden="true">
-      <div class="hud-brand">
-        <span class="hud-kicker">MATRIZ DE NAVEGAÇÃO</span>
-        <strong>S.C.A.R. // MAPA TÁTICO</strong>
-      </div>
-      <div class="hud-readouts">
-        <span><i class="status-led"></i>SISTEMA OPERACIONAL</span>
-        <span id="hudMode">MODO: SOBREVIVÊNCIA</span>
-        <span id="hudClock">CORE // LOCAL</span>
-      </div>
-    </div>
+  <a class="skip-link" href="#routePanel">Ir para o calculador de rota</a>
 
-    <div class="hud-legend" aria-label="Legenda do mapa">
-      <span class="hud-module-label">LEGENDA / ESTADOS</span>
-      <span><i class="legend-mark mark-origin"></i>ORIGEM</span>
-      <span><i class="legend-mark mark-destination"></i>DESTINO</span>
-      <span><i class="legend-mark mark-route"></i>ROTA ÓTIMA</span>
-      <span><i class="legend-mark mark-risk-low"></i>RISCO BAIXO</span>
-      <span><i class="legend-mark mark-risk-mid"></i>RISCO MÉDIO</span>
-      <span><i class="legend-mark mark-risk-high"></i>RISCO ALTO</span>
-    </div>
-
-    <div class="hud-counter" aria-hidden="true">
-      <span>REDE LOCAL</span>
-      <strong id="hudGraphCount">—</strong>
-      <small>NÓS / ENLACES</small>
-    </div>
-
-    <div class="hud-corner corner-tl"></div>
-    <div class="hud-corner corner-tr"></div>
-    <div class="hud-corner corner-bl"></div>
-    <div class="hud-corner corner-br"></div>
-    <div id="scarMap"></div>
-    <div class="map-zoom-controls" aria-label="Controles do mapa">
-      <button id="mapZoomIn" type="button" aria-label="Aproximar mapa">+</button>
-      <button id="mapZoomOut" type="button" aria-label="Afastar mapa">−</button>
-      <button id="mapZoomReset" type="button" aria-label="Redefinir visualização">1:1</button>
-    </div>
-    <div class="map-attribution" aria-hidden="true">DUSTNAV TERRAIN · DADOS S.C.A.R.</div>
-    <div class="node-tooltip" id="nodeTooltip"></div>
-    <div class="pick-badge" id="pickBadge">Clique num ponto para definir a localização</div>
-    <div class="map-hint" id="mapHint">Carregando mapa real do wasteland...</div>
-
-    <button class="panel-toggle" id="panelToggle" aria-label="Abrir painel">
-      <svg class="toggle-icon-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M3 6h18M3 12h18M3 18h18"/>
-      </svg>
-      <svg class="toggle-icon-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M18 6L6 18M6 6l12 12"/>
-      </svg>
-      <span class="toggle-label-open">Rota</span>
-      <span class="toggle-label-close">Fechar</span>
-    </button>
-
-    <!-- Populado dinamicamente a partir de js/scar/ui.js (MODES) -->
-    <div class="floating-mode-bar" id="floatingModeBar"></div>
-
-    <div class="result-pill" id="resultPill" style="display:none">
-      <span id="pillDist">—</span>
-      <span class="pill-sep">·</span>
-      <span id="pillTime">—</span>
-    </div>
-    </div>
-
-  </div>
-
-  <div class="panel-overlay" id="panelOverlay"></div>
-
-  <div id="panel" class="panel-closed">
-    <div class="panel-handle" id="panelHandle">
-      <div class="handle-bar"></div>
-    </div>
-
-    <div class="panel-header">
-      <div class="logo">
-        <div class="logo-icon">
-          <img src="/public/logo.svg" alt="Logo DustNav" />
+  <div class="app-shell" id="app">
+    <main class="map-stage" aria-label="Mapa operacional do DustNav">
+      <header class="map-header">
+        <div class="brand-lockup">
+          <img src="/public/logo.svg" alt="" width="34" height="34">
+          <div>
+            <strong>DUSTNAV</strong>
+            <span>SCAR // CARTOGRAFIA DE SOBREVIVÊNCIA</span>
+          </div>
         </div>
+        <div class="system-strip" aria-label="Estado do sistema">
+          <span><i class="status-lamp" aria-hidden="true"></i><b id="systemStatus">CONECTANDO</b></span>
+          <span>MAPA <b>LOCAL</b></span>
+          <span class="system-time">ATUALIZADO <b id="lastSync">--:--</b></span>
+        </div>
+      </header>
+
+      <div class="map-canvas" id="mapCanvas" aria-busy="true">
+        <div class="map-loading" id="mapLoading" role="status">
+          <span class="loading-rule"></span>
+          <strong>CARREGANDO CARTOGRAFIA LOCAL</strong>
+          <small>Validando nós, corredores e zonas de risco.</small>
+        </div>
+      </div>
+
+      <div class="map-legend" aria-label="Legenda do mapa">
+        <span class="legend-title">RISCO DO TRECHO</span>
+        <span><i class="legend-line risk-low"></i>BAIXO</span>
+        <span><i class="legend-line risk-moderate"></i>MODERADO</span>
+        <span><i class="legend-line risk-high"></i>ALTO</span>
+        <span><i class="legend-line risk-critical"></i>CRÍTICO</span>
+      </div>
+
+      <div class="map-coordinates" id="mapCoordinates" aria-live="off">30.0000 S / 138.0000 E</div>
+
+      <div class="map-controls" aria-label="Controles de visualização">
+        <button type="button" id="zoomIn" aria-label="Aproximar mapa">+</button>
+        <button type="button" id="zoomOut" aria-label="Afastar mapa">−</button>
+        <button type="button" id="zoomReset" aria-label="Mostrar mapa inteiro">CENTRAR</button>
+      </div>
+
+      <aside class="sector-readout" id="sectorReadout" hidden aria-live="polite">
+        <button type="button" class="readout-close" id="closeReadout" aria-label="Fechar detalhes do setor">×</button>
+        <span class="eyebrow">SETOR SELECIONADO</span>
+        <h2 id="readoutTitle">—</h2>
+        <div id="readoutBody"></div>
+      </aside>
+
+      <div class="map-notice" id="mapNotice" role="status" aria-live="polite" hidden></div>
+      <button class="mobile-panel-toggle" id="mobilePanelToggle" type="button" aria-controls="routePanel" aria-expanded="false">
+        TRAÇAR ROTA
+      </button>
+    </main>
+
+    <div class="panel-scrim" id="panelScrim" hidden></div>
+
+    <aside class="route-panel" id="routePanel" aria-label="Planejamento de rota">
+      <div class="panel-grip" aria-hidden="true"></div>
+      <header class="panel-header">
         <div>
-          <div class="logo-name">DustNav</div>
-          <div class="logo-sub">S.C.A.R. · dados reais do wasteland</div>
+          <span class="eyebrow">PROTOCOLO SCAR / 04</span>
+          <h1>PLANEJAR TRAVESSIA</h1>
         </div>
-        <button class="panel-close-btn" id="panelCloseBtn" aria-label="Fechar painel">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-            <path d="M15 18l-6-6 6-6"/>
-          </svg>
+        <button class="panel-close" id="panelClose" type="button" aria-label="Fechar painel">×</button>
+      </header>
+
+      <form class="route-form" id="routeForm" novalidate>
+        <div class="location-field" id="originField">
+          <label for="originInput"><span class="point-mark origin-mark">A</span>ORIGEM</label>
+          <div class="input-row">
+            <input id="originInput" type="text" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="originSuggestions" placeholder="Buscar setor ou marcar no mapa">
+            <button type="button" class="field-action" id="pickOrigin" aria-label="Marcar origem no mapa">MARCAR</button>
+            <button type="button" class="field-clear" id="clearOrigin" aria-label="Limpar origem">×</button>
+          </div>
+          <div class="suggestions" id="originSuggestions" role="listbox" hidden></div>
+        </div>
+
+        <button type="button" class="swap-route" id="swapRoute" aria-label="Trocar origem e destino">⇅ <span>INVERTER</span></button>
+
+        <div class="location-field" id="destinationField">
+          <label for="destinationInput"><span class="point-mark destination-mark">B</span>DESTINO</label>
+          <div class="input-row">
+            <input id="destinationInput" type="text" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="destinationSuggestions" placeholder="Buscar setor ou marcar no mapa">
+            <button type="button" class="field-action" id="pickDestination" aria-label="Marcar destino no mapa">MARCAR</button>
+            <button type="button" class="field-clear" id="clearDestination" aria-label="Limpar destino">×</button>
+          </div>
+          <div class="suggestions" id="destinationSuggestions" role="listbox" hidden></div>
+        </div>
+
+        <p class="form-error" id="formError" role="alert" hidden></p>
+        <button class="calculate-route" id="calculateRoute" type="submit" disabled>
+          <span class="button-label">CALCULAR ROTAS</span>
+          <span class="button-loading" hidden>ANALISANDO CORREDORES…</span>
         </button>
-      </div>
-      <!-- Populado dinamicamente a partir de js/scar/ui.js (MODES) -->
-      <div class="mode-tabs" id="modeTabs"></div>
-    </div>
+        <button class="clear-route" id="clearRoute" type="button">LIMPAR TRAJETO</button>
+      </form>
 
-    <div class="panel-inputs">
-      <div class="input-group" id="srcGroup" style="position:relative">
-        <div class="input-label">
-          <span class="input-dot dot-src"></span>
-          Origem
+      <section class="route-results" id="routeResults" hidden aria-live="polite">
+        <div class="section-heading">
+          <span>ALTERNATIVAS DISPONÍVEIS</span>
+          <small id="routeCount">0 ROTAS</small>
         </div>
-        <input class="location-input" id="srcInput" placeholder="Buscar local ou clicar no mapa..." autocomplete="off"/>
-        <button class="input-clear" id="srcClear" title="Limpar">×</button>
-        <div class="suggestions" id="srcSug" style="display:none"></div>
-      </div>
+        <div class="route-options" id="routeOptions" role="list"></div>
 
-      <div class="swap-row">
-        <button class="swap-btn" id="swapBtn" title="Inverter rota">⇅</button>
-      </div>
+        <article class="survival-report">
+          <header>
+            <div>
+              <span class="eyebrow">ÍNDICE DE SOBREVIVÊNCIA</span>
+              <strong class="survival-value" id="survivalValue">—%</strong>
+            </div>
+            <span class="risk-stamp" id="riskStamp">—</span>
+          </header>
+          <dl class="route-metrics" id="routeMetrics"></dl>
+          <p class="uncertainty-note">Estimativa baseada nos corredores e relatos disponíveis. Condições podem mudar.</p>
+        </article>
 
-      <div class="input-group" id="dstGroup" style="position:relative">
-        <div class="input-label">
-          <span class="input-dot dot-dst"></span>
-          Destino
+        <section class="risk-analysis">
+          <div class="section-heading"><span>POR QUE ESTA ROTA?</span></div>
+          <div id="riskBreakdown"></div>
+        </section>
+
+        <details class="route-detail">
+          <summary>VER TRECHOS DA TRAVESSIA</summary>
+          <ol class="segment-list" id="segmentList"></ol>
+        </details>
+      </section>
+
+      <section class="idle-guidance" id="idleGuidance">
+        <span class="eyebrow">PRIMEIRA LEITURA</span>
+        <p>Defina dois setores. O DustNav compara distância, terreno e exposição antes de recomendar um corredor.</p>
+      </section>
+
+      <details class="field-intelligence" id="fieldIntelligence">
+        <summary>INTELIGÊNCIA DE CAMPO</summary>
+        <div class="intelligence-content">
+          <section>
+            <h2>ZONAS MAPEADAS</h2>
+            <div class="zone-list" id="zoneList"></div>
+          </section>
+          <section>
+            <h2>REDE COMUNITÁRIA</h2>
+            <p class="section-note">Pontos enviados entram no grafo local e podem servir como origem, destino ou apoio.</p>
+            <div class="community-actions">
+              <button type="button" data-community="recurso">MARCAR RECURSO</button>
+              <button type="button" data-community="seguro">MARCAR ABRIGO</button>
+              <button type="button" data-community="comum">MARCAR LOCAL</button>
+            </div>
+            <div class="inline-compose" id="communityCompose" hidden>
+              <label for="communityName">IDENTIFICAÇÃO DO PONTO</label>
+              <input id="communityName" maxlength="80" placeholder="Ex.: cisterna protegida">
+              <div><button type="button" id="cancelCommunity">CANCELAR</button><button type="button" id="saveCommunity">REGISTRAR</button></div>
+            </div>
+            <div class="community-list" id="communityList"></div>
+          </section>
+          <section>
+            <h2>ZONA DE PERIGO</h2>
+            <button class="report-zone" type="button" id="startZoneReport">ADICIONAR SONAR</button>
+            <div class="inline-compose" id="zoneCompose" hidden>
+              <label for="zoneThreat">RISCO DO SONAR</label>
+              <select id="zoneThreat"><option value="tier_1">BAIXO — VERDE</option><option value="tier_2">MODERADO — AMARELO</option><option value="tier_3">ALTO — VERMELHO</option></select>
+              <label for="zoneName">IDENTIFICAÇÃO</label>
+              <input id="zoneName" maxlength="80" placeholder="Ex.: radar dos saqueadores">
+              <label for="zoneDescription">RELATO CURTO</label>
+              <textarea id="zoneDescription" maxlength="240" rows="2" placeholder="Origem ou condição do sinal"></textarea>
+              <div><button type="button" id="cancelZone">CANCELAR</button><button type="button" id="saveZone">REGISTRAR</button></div>
+            </div>
+          </section>
         </div>
-        <input class="location-input" id="dstInput" placeholder="Buscar local ou clicar no mapa..." autocomplete="off"/>
-        <button class="input-clear" id="dstClear" title="Limpar">×</button>
-        <div class="suggestions" id="dstSug" style="display:none"></div>
-      </div>
-
-      <button class="run-btn" id="runBtn" disabled>Calcular rota</button>
-      <div class="clear-all">
-        <button id="clearBtn">Redefinir rota</button>
-      </div>
-    </div>
-
-    <section class="route-monitor" aria-label="Execução da rota">
-      <div class="section-title">Estatísticas da rota</div>
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-label">Distância</div>
-          <div class="stat-value accent2" id="statDist">—<span class="stat-unit">km</span></div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Nível de Perigo</div>
-          <div class="stat-value accent3" id="statDanger">—<span class="stat-unit">pts</span></div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Combustível Est.</div>
-          <div class="stat-value accent4" id="statFuel">—<span class="stat-unit">L</span></div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Sobrevivência</div>
-          <div class="stat-value accent" id="statSurvival">—<span class="stat-unit">%</span></div>
-        </div>
-      </div>
-    </section>
-
-    <div class="community-panel" id="communityPanel">
-      <div class="section-title">Compartilhar com a comunidade</div>
-      <div class="share-buttons">
-        <button class="share-btn cat-recurso" id="shareResourceBtn">Recurso</button>
-        <button class="share-btn cat-seguro" id="shareSafeBtn">Local seguro</button>
-        <button class="share-btn cat-comum" id="shareCommonBtn">Local comum</button>
-      </div>
-
-      <div class="share-compose" id="shareCompose" style="display:none">
-        <div class="share-compose-title" id="shareComposeTitle">Nomear local</div>
-        <input class="location-input" id="shareLabelInput" placeholder="Ex: Poço de água, Abrigo blindado..." autocomplete="off"/>
-        <div class="share-compose-actions">
-          <button class="share-cancel-btn" id="shareCancelBtn">Cancelar</button>
-          <button class="share-confirm-btn" id="shareConfirmBtn">Compartilhar</button>
-        </div>
-      </div>
-
-      <div class="community-header">
-        <span>Locais da comunidade</span>
-        <span id="communityCount">0 compartilhados</span>
-      </div>
-      <div class="community-list" id="communityList"></div>
-    </div>
-
-    <div class="zone-panel" id="zonePanel">
-      <div class="section-title">Zonas de perigo mapeadas</div>
-      <div class="zone-legend" id="zoneLegend"></div>
-
-      <button class="zone-report-btn" id="zoneReportBtn">Reportar zona de perigo</button>
-
-      <div class="zone-compose" id="zoneCompose" style="display:none">
-        <div class="share-compose-title" id="zoneComposeTitle">Escolha o nível de perigo</div>
-
-        <div class="zone-tier-row" id="zoneTierRow">
-          <button class="zone-tier-btn tier-1" data-tier="tier_1">Baixo</button>
-          <button class="zone-tier-btn tier-2" data-tier="tier_2">Médio</button>
-          <button class="zone-tier-btn tier-3" data-tier="tier_3">Alto</button>
-        </div>
-
-        <input class="location-input" id="zoneNameInput" placeholder="Nome da zona (ex: Emboscada na Rota 9)" autocomplete="off" style="display:none"/>
-        <input class="location-input" id="zoneDescInput" placeholder="Descrição (opcional)" autocomplete="off" style="display:none"/>
-
-        <div class="share-compose-actions">
-          <button class="share-cancel-btn" id="zoneCancelBtn">Cancelar</button>
-          <button class="share-confirm-btn" id="zoneConfirmBtn" style="display:none">Reportar</button>
-        </div>
-      </div>
-    </div>
-
-      <div class="section-title">Execução da rota</div>
-      <div class="progress-wrap">
-        <div class="progress-label">
-          <span id="progLabel">Aguardando cálculo...</span>
-          <span id="progPct">0%</span>
-        </div>
-        <div class="progress-track"><div class="progress-fill" id="progFill"></div></div>
-      </div>
-
-      <div class="route-monitor-path">
-        <div class="section-title">Caminho</div>
-        <div class="route-steps" id="routeSteps"></div>
-      </div>
-    </section>
-
+      </details>
+    </aside>
   </div>
-</div>
 
-<script type="module" src="js/scar/main.js"></script>
+  <script type="module" src="js/app.js"></script>
 </body>
 </html>

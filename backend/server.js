@@ -2,6 +2,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const { WastelandRouter } = require('./routing-engine');
+const { randomizeSonars, haversineKm } = require('./sonar-randomizer');
 
 const rootDir = path.resolve(__dirname, '..');
 const frontendDir = path.join(rootDir, 'frontend');
@@ -21,7 +22,7 @@ const router = new WastelandRouter();
 try {
   nodesData = JSON.parse(fs.readFileSync(path.join(dataDir, 'nodes.geojson'), 'utf-8'));
   edgesData = JSON.parse(fs.readFileSync(path.join(dataDir, 'edges.geojson'), 'utf-8'));
-  zonesData = JSON.parse(fs.readFileSync(path.join(dataDir, 'zones.geojson'), 'utf-8'));
+  zonesData = randomizeSonars(JSON.parse(fs.readFileSync(path.join(dataDir, 'zones.geojson'), 'utf-8')));
   router.loadFromGeojson(nodesData, edgesData, zonesData);
   console.log(
     `Motor de rotas carregado: ${nodesData.features?.length || 0} nós, ` +
@@ -74,7 +75,10 @@ function loadCommunityZonesStore() {
     if (!Array.isArray(entries)) return;
     // Repõe na mesma ordem em que foram criadas, pra recalcular o peso das
     // arestas afetadas exatamente como da primeira vez.
-    entries.forEach((entry) => router.addDangerZone(entry));
+    entries.forEach((entry) => {
+      if (entry.kind === 'sonar') router.addDangerSonar(entry);
+      else router.addDangerZone(entry);
+    });
     console.log(`Zonas de perigo da comunidade carregadas: ${entries.length}.`);
   } catch (err) {
     if (err.code !== 'ENOENT') {
@@ -115,6 +119,7 @@ function mergedZonesData() {
 function sendJson(res, status, body) {
   res.statusCode = status;
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  res.setHeader('Cache-Control', 'no-store');
   res.end(JSON.stringify(body));
 }
 
@@ -153,6 +158,16 @@ const THREAT_TIERS = {
 };
 
 async function handleApi(req, res, pathname) {
+  if (pathname === '/api/v1/health' && req.method === 'GET') {
+    sendJson(res, 200, {
+      status: router.adjacency.size ? 'operational' : 'degraded',
+      mapData: 'local',
+      nodes: router.adjacency.size,
+      updatedAt: new Date().toISOString()
+    });
+    return;
+  }
+
   if (pathname === '/api/v1/layers' && req.method === 'GET') {
     sendJson(res, 200, { nodes: mergedNodesData(), zones: mergedZonesData(), edges: mergedEdgesData() });
     return;
@@ -196,7 +211,7 @@ async function handleApi(req, res, pathname) {
     return;
   }
 
-  if (pathname === '/api/v1/zones' && req.method === 'POST') {
+  if (pathname === '/api/v1/sonars' && req.method === 'POST') {
     let body;
     try {
       body = await readJsonBody(req);
@@ -207,10 +222,9 @@ async function handleApi(req, res, pathname) {
 
     const name = String(body.name ?? '').trim().slice(0, 80);
     const description = String(body.description ?? '').trim().slice(0, 240);
-    const biomeFocus = String(body.biome_focus ?? 'scorched_desert').trim() || 'scorched_desert';
     const tier = THREAT_TIERS[body.threat_level];
-    const corner1 = body.corner1;
-    const corner2 = body.corner2;
+    const center = body.center;
+    const edge = body.edge;
 
     if (!name) {
       sendJson(res, 400, { error: 'name é obrigatório.' });
@@ -220,21 +234,16 @@ async function handleApi(req, res, pathname) {
       sendJson(res, 400, { error: "threat_level deve ser 'tier_1', 'tier_2' ou 'tier_3'." });
       return;
     }
-    const isValidCorner = (c) => Array.isArray(c) && c.length === 2 && c.every(Number.isFinite);
-    if (!isValidCorner(corner1) || !isValidCorner(corner2)) {
-      sendJson(res, 400, { error: 'corner1/corner2 devem ser pares [lon, lat] válidos.' });
+    const isValidPoint = (c) => Array.isArray(c) && c.length === 2 && c.every(Number.isFinite) &&
+      c[0] >= -180 && c[0] <= 180 && c[1] >= -90 && c[1] <= 90;
+    if (!isValidPoint(center) || !isValidPoint(edge)) {
+      sendJson(res, 400, { error: 'center/edge devem ser pares [lon, lat] válidos.' });
       return;
     }
 
-    const [lon1, lat1] = corner1;
-    const [lon2, lat2] = corner2;
-    const minLon = Math.min(lon1, lon2);
-    const maxLon = Math.max(lon1, lon2);
-    const minLat = Math.min(lat1, lat2);
-    const maxLat = Math.max(lat1, lat2);
-
-    if (maxLon - minLon < 0.001 || maxLat - minLat < 0.001) {
-      sendJson(res, 400, { error: 'Área da zona pequena demais — escolha dois cantos mais afastados.' });
+    const radiusKm = haversineKm(center, edge);
+    if (radiusKm < 0.5 || radiusKm > 12) {
+      sendJson(res, 400, { error: 'O alcance do sonar deve ficar entre 0,5 km e 12 km.' });
       return;
     }
     if (router.adjacency.size === 0) {
@@ -242,29 +251,19 @@ async function handleApi(req, res, pathname) {
       return;
     }
 
-    const rings = [[
-      [minLon, minLat],
-      [maxLon, minLat],
-      [maxLon, maxLat],
-      [minLon, maxLat],
-      [minLon, minLat]
-    ]];
-
-    const zoneInput = {
+    const sonarInput = {
+      kind: 'sonar',
       name,
-      biomeFocus,
-      zoneType: 'community_hazard',
       threatLevel: body.threat_level,
-      dangerMultiplier: tier.danger_multiplier,
-      stealthPenalty: tier.stealth_penalty,
-      description: description || 'Zona de perigo reportada pela comunidade.',
-      rings
+      description: description || 'Sonar de perigo reportado pela comunidade.',
+      center,
+      radiusKm: Math.round(radiusKm * 100) / 100
     };
 
-    const { id, zoneFeature } = router.addDangerZone(zoneInput);
-    appendCommunityZonesStore({ id, ...zoneInput });
+    const { id, sonarFeature } = router.addDangerSonar(sonarInput);
+    appendCommunityZonesStore({ id, ...sonarInput });
 
-    sendJson(res, 201, { zone: zoneFeature });
+    sendJson(res, 201, { sonar: sonarFeature });
     return;
   }
 
@@ -277,16 +276,17 @@ async function handleApi(req, res, pathname) {
       return;
     }
 
-    const { origin_id: originId, destination_id: destinationId } = body;
+    const originId = typeof body.origin_id === 'string' ? body.origin_id.trim() : '';
+    const destinationId = typeof body.destination_id === 'string' ? body.destination_id.trim() : '';
     if (!originId || !destinationId) {
       sendJson(res, 400, { error: 'origin_id e destination_id são obrigatórios.' });
       return;
     }
-    const navigationMode = body.navigation_mode === 'direct' ? 'direct' : 'survival';
 
-    const result = router.calculateRoute(originId, destinationId, navigationMode);
+    const result = router.calculateRoutes(originId, destinationId);
     if (result.error) {
-      sendJson(res, 404, { error: result.error });
+      const status = result.code === 'SAME_LOCATION' ? 422 : result.code === 'NO_ROUTE' ? 409 : 404;
+      sendJson(res, status, { error: result.error, code: result.code });
     } else {
       sendJson(res, 200, result);
     }
@@ -315,13 +315,20 @@ const mimeTypes = {
 
 function serveStatic(req, res, safeUrl) {
   const staticDir = safeUrl.startsWith('/public/') ? publicDir : frontendDir;
-  const requestPath = safeUrl === '/' ? '/index.html' : safeUrl.startsWith('/public/') ? safeUrl.slice('/public'.length) : safeUrl;
-  const normalizedPath = path.normalize(requestPath).replace(/^([.][.][/\\])+/, '');
-  const filePath = path.join(staticDir, normalizedPath);
+  const requestPath = safeUrl === '/' ? 'scar.html' : safeUrl.startsWith('/public/') ? safeUrl.slice('/public/'.length) : safeUrl.slice(1);
+  let decodedPath;
+  try {
+    decodedPath = decodeURIComponent(requestPath);
+  } catch {
+    res.statusCode = 400;
+    res.end('Bad request');
+    return;
+  }
+  const filePath = path.resolve(staticDir, decodedPath);
+  const relativePath = path.relative(staticDir, filePath);
+  const isInsideStaticDir = relativePath && !relativePath.startsWith('..') && !path.isAbsolute(relativePath);
 
-  const isInsideStaticDir = filePath.startsWith(staticDir);
-
-  if (!isInsideStaticDir) {
+  if (!isInsideStaticDir || req.method !== 'GET') {
     res.statusCode = 403;
     res.end('Forbidden');
     return;
