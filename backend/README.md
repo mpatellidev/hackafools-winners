@@ -1,24 +1,21 @@
-# Backend
+# Backend do DustNav
 
-Servidor único em Node, sem dependências externas (`http`/`fs` puros):
-
-- Serve a aplicação frontend em modo estático.
-- Serve a API real de rotas SCAR (`routing-engine.js`), que lê os dados de
-  `data/*.geojson` e compara perfis seguro, equilibrado e rápido por Dijkstra.
-
-## Como rodar
+Servidor Node.js sem dependências externas. Ele publica o frontend, carrega os
+arquivos GeoJSON, randomiza os sonares nativos e calcula as rotas direta e de
+maior sobrevivência.
 
 ```bash
-node backend/server.js
+npm install
+npm start
 ```
 
-A aplicação principal fica disponível em http://localhost:3000/.
+A aplicação fica disponível em [http://localhost:3000](http://localhost:3000).
 
-## Endpoints
+Para executar os testes:
 
-- `GET /api/v1/health` — estado do núcleo e dos dados locais.
-- `GET /api/v1/layers` — retorna nós, arestas e zonas de perigo (GeoJSON).
-- `POST /api/v1/routes/calculate` — compara rotas entre dois nós.
-  ```json
-  { "origin_id": "node_canyon_hideout", "destination_id": "node_dead_pass" }
-  ```
+```bash
+npm test
+```
+
+Consulte o [README principal](../README.md) para documentação da arquitetura,
+algoritmo de sobrevivência, persistência e API completa.
